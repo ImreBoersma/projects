@@ -104,3 +104,16 @@
 - **Page and issues in separate jobs**: job `build` makes the page, job `deploy` publishes it, and
   job `issues` changes the issues. `deploy` and `issues` both need `build`, but not each other. An
   error in an issue call does not stop the page deploy.
+
+## 9. Validation results (T030, 2026-10-28)
+
+- Quickstart steps 1 to 6 pass. Step 3 used the private test repo `ImreBoersma/status-test`:
+  issue #1 opened, a second run did not open a duplicate, and the run after the CI repair closed
+  it with the comment.
+- Job `build` takes 12 seconds. The goal is less than 2 minutes.
+- The CI result needs no "Checks" permission. The token needs Contents and Deployments read access
+  for private repos; without them GitHub returns the repo as `null`.
+- Beter-dan-de-MIDI (Azure Static Web Apps) shows "Unknown" for the last deploy: its workflow
+  makes no deployment records.
+- Not verified: if GitHub sends an email before it disables a scheduled workflow. Until this is
+  known, the 60-day risk in §8 stays open.

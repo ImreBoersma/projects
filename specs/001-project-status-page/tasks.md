@@ -159,12 +159,12 @@ US4 (P2), US3 (P3). Each story can be tested independently.
 
 - [X] T027 [P] Write `status/README.md` in ASD-STE100: local run (`bun run start --mode page` and `bun run start --mode issues --dry-run`), the secrets and their permissions from research.md §5, and the note about the 60-day schedule limit.
 - [ ] T028 [P] Update `PLAN.md`: close the open decision "Repo visibility" (public). In step 1, add that each shared deploy workflow sets `environment: production` on its deploy job. In step 3, link to `specs/001-project-status-page/`.
-- [ ] T029 Manual, in the GitHub settings of `ImreBoersma/projects`:
+- [X] T029 Manual, in the GitHub settings of `ImreBoersma/projects`:
   - Look at the git history and `projects.yaml` for data that Principle III forbids.
   - Make the repo public. Set the Pages source to "GitHub Actions".
   - Create the fine-grained PAT of research.md §5. Save it as secret `STATUS_READ_TOKEN`.
   - Optional: ask `harmonieorkest-brummen` to approve a second PAT. Save it as `STATUS_READ_TOKEN_HOB`.
-- [ ] T030 Do all steps of `specs/001-project-status-page/quickstart.md` and record the results.
+- [X] T030 Do all steps of `specs/001-project-status-page/quickstart.md` and record the results.
   - If all CI cells show Unknown, add "Checks" read access to the token.
   - Record the run time of job `build`. It must be less than 2 minutes (plan.md).
   - Find out if GitHub sends an email before it disables a scheduled workflow. Record the result in research.md §8.
