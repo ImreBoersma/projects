@@ -214,7 +214,7 @@ Make sure that the issue closes.
   `repo`, `status`). The other catalog fields of Principle II are not in the scope of this feature.
 - "Last deploy" comes only from GitHub deployment records. Vercel and Azure Static Web Apps make
   these records now. The shared deploy workflows must also make them. hob.nl shows "unknown" until
-  its rsync workflow exists (`PLAN.md` step 4).
+  it deploys through a workflow.
 - A Renovate PR is a PR that Renovate opened. The page counts these PRs also in the total of open PRs.
 - The main branch of each repo is `main`, or the default branch if the repo uses a different name.
 - A daily update is sufficient. The Maintainer does not need real-time data.
@@ -225,8 +225,7 @@ Make sure that the issue closes.
 - When the update stops for a project with "data not available", it does not close the open issues
   of that project.
 - The page is in English and uses ASD-STE100 (Principle X).
-- The `projects` repo becomes public, so that it can publish the page at no cost. This closes the
-  open decision about repo visibility in `PLAN.md`.
+- The `projects` repo becomes public, so that it can publish the page at no cost.
 - Project names and domains are not private data. Stakeholder names on the page are not necessary;
   the page does not show them.
 

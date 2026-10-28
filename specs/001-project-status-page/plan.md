@@ -99,7 +99,7 @@ status/
 ```
 
 **Structure Decision**: one small package in `status/`, so that the root stays free for
-`projects.yaml`, `renovate/` and the shared workflows from `PLAN.md` step 1. The rule logic
+`projects.yaml`, `renovate/` and the shared workflows. The rule logic
 (`problems.ts`, `render.ts`, the compare step in `issues.ts`) has no network calls, so the tests
 need no mocks.
 
@@ -108,4 +108,4 @@ need no mocks.
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | Principle V: the page does not deploy through a shared deploy workflow | The shared deploy workflows do not exist yet. This repo is the repo that will contain them. | A shared Pages workflow for one consumer is an abstraction for projects that do not exist (Principle VIII). Change to a shared workflow when a second Pages project exists. |
-| Principle IV: `status/` has dependencies without Renovate for a limited time | The shared preset (`PLAN.md` step 1) does not exist yet. | A local Renovate config that is not the shared preset breaks Principle IV in a different way. Add `renovate.json` when the preset exists; until then the dependencies are `yaml` and Biome only. |
+| Principle IV: `status/` has dependencies without Renovate for a limited time | The shared Renovate preset does not exist yet. | A local Renovate config that is not the shared preset breaks Principle IV in a different way. Add `renovate.json` when the preset exists; until then the dependencies are `yaml` and Biome only. |

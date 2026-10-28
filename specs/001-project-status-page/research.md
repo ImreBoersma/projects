@@ -34,8 +34,8 @@
 - **Why filter in the query**: Vercel makes one Preview deployment for each push to a PR. Without
   the filter, the newest 10 deployments can all be previews, and the result is "unknown".
 - **Alternatives considered**: the APIs of each host (rejected in clarification, question 1).
-- **Action for PLAN.md step 1**: each shared deploy workflow MUST set `environment: production` on
-  its deploy job.
+- **Rule in the constitution (Development Workflow)**: each shared deploy workflow MUST set
+  `environment: production` on its deploy job.
 - **Not verified**: if Azure Static Web Apps (Beter-dan-de-MIDI) makes deployment records with the
   current workflow. If not, that project shows "unknown" until it uses a shared deploy workflow.
 

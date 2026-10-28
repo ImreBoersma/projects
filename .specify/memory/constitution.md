@@ -137,12 +137,12 @@ easier to read, translate and use.
 
 - Before you merge a change to a shared workflow or to the Renovate preset into `main`, test it.
   Use a minimum of one real repo that uses it.
+- Each shared deploy workflow MUST set `environment: production` on its deploy job. GitHub then
+  makes a deployment record, and the status page shows the last deploy.
 - When a project is archived, set its status to `archived` in `projects.yaml`. Archive it on
   GitHub too. The status checks and Renovate then ignore it.
 
 ## Governance
-
-This constitution has priority over `PLAN.md` if the two are different.
 
 Use `/speckit-constitution` to change this constitution. Increase the version number for each
 change:
@@ -154,4 +154,4 @@ change:
 Each spec and each plan MUST identify the principles that it affects. It MUST also give the reason
 for each exception.
 
-**Version**: 2.0.0 | **Ratified**: 2026-10-28 | **Last Amended**: 2026-10-28
+**Version**: 2.1.0 | **Ratified**: 2026-10-28 | **Last Amended**: 2026-10-28

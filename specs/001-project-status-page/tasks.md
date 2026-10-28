@@ -31,7 +31,7 @@ US4 (P2), US3 (P3). Each story can be tested independently.
 - [X] T002 [P] Create `status/tsconfig.json` with `"strict": true`, `"module": "ESNext"`, `"moduleResolution": "bundler"`, `"types": ["bun"]`, `"noEmit": true`.
 - [X] T003 [P] Create `status/biome.json` with the recommended rules, formatter on, and `node_modules` and `_site` ignored.
 - [X] T004 [P] Add `_site/` to `.gitignore`.
-- [X] T005 [P] Create `projects.yaml` at the repo root in the format of `specs/001-project-status-page/contracts/catalog.md`. Add one entry for each project in the "Current state" table of `PLAN.md`, except the forks. Use only the fields `id`, `name`, `repo`, `status`. Set `status: active` for all entries; the Maintainer changes them later. Leave `repo` empty for projects with remote "none". Do not add contact details (Principle III).
+- [X] T005 [P] Create `projects.yaml` at the repo root in the format of `specs/001-project-status-page/contracts/catalog.md`. Add one entry for each personal project, except the forks. Use only the fields `id`, `name`, `repo`, `status`. Set `status: active` for all entries; the Maintainer changes them later. Leave `repo` empty for projects with remote "none". Do not add contact details (Principle III).
 
 ---
 
@@ -158,7 +158,7 @@ US4 (P2), US3 (P3). Each story can be tested independently.
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 - [X] T027 [P] Write `status/README.md` in ASD-STE100: local run (`bun run start --mode page` and `bun run start --mode issues --dry-run`), the secrets and their permissions from research.md §5, and the note about the 60-day schedule limit.
-- [ ] T028 [P] Update `PLAN.md`: close the open decision "Repo visibility" (public). In step 1, add that each shared deploy workflow sets `environment: production` on its deploy job. In step 3, link to `specs/001-project-status-page/`.
+- [X] T028 [P] Record the decisions of this feature outside the feature. Repo visibility (public) is in spec.md FR-017. The rule that each shared deploy workflow sets `environment: production` is in the constitution, Development Workflow (v2.1.0).
 - [X] T029 Manual, in the GitHub settings of `ImreBoersma/projects`:
   - Look at the git history and `projects.yaml` for data that Principle III forbids.
   - Make the repo public. Set the Pages source to "GitHub Actions".
@@ -235,5 +235,5 @@ Each step is a separate commit or PR that you can deploy.
 
 ### Outside this feature
 
-- `renovate.json` for this repo (Principle IV) needs the shared preset from `PLAN.md` step 1.
+- `renovate.json` for this repo (Principle IV) needs the shared Renovate preset.
   Add it when that preset exists.
