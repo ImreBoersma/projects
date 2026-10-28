@@ -49,3 +49,7 @@ projects:
     name: agent-native
     repo:
     status: active
+  - id: status-test
+    name: status-test
+    repo: ImreBoersma/status-test
+    status: active
