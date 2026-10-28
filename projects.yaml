@@ -1,0 +1,51 @@
+# Project catalog. Format: specs/001-project-status-page/contracts/catalog.md
+# Do not put contact details or secrets in this file (constitution, Principle III).
+projects:
+  - id: beter-dan-de-midi
+    name: Beter dan de MIDI
+    repo: ImreBoersma/Beter-dan-de-MIDI
+    status: active
+  - id: boek-de-bus
+    name: Boek de bus
+    repo: ImreBoersma/boek-de-bus
+    status: active
+  - id: personal-website
+    name: Personal website
+    repo: ImreBoersma/personal-website
+    status: active
+  - id: reperatie-formulier
+    name: Reperatie-Formulier
+    repo: ImreBoersma/Reperatie-Formulier
+    status: active
+  - id: scales-exercises
+    name: Scales exercises
+    repo: ImreBoersma/scales-exercises
+    status: active
+  - id: pretband-backend
+    name: Pretband backend
+    repo: harmonieorkest-brummen/pretband-backend
+    status: active
+  - id: pretband
+    name: Pretband
+    repo:
+    status: active
+  - id: hob-nl
+    name: hob.nl
+    repo:
+    status: active
+  - id: homelab
+    name: HomeLab
+    repo: ImreBoersma/HomeLab
+    status: active
+  - id: dev-toolkit
+    name: dev-toolkit
+    repo:
+    status: active
+  - id: lower-management
+    name: Lower Management
+    repo:
+    status: active
+  - id: agent-native
+    name: agent-native
+    repo:
+    status: active
