@@ -90,4 +90,10 @@ describe("buildQuery", () => {
       expect(query).not.toMatch(new RegExp(`\\b${field}\\b`));
     }
   });
+
+  test("reads GitHub Pages deploys", () => {
+    expect(buildQuery(["ImreBoersma/a"])).toContain(
+      'environments: ["production", "Production", "github-pages"]',
+    );
+  });
 });

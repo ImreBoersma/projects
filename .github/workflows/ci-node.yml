@@ -1,0 +1,111 @@
+# Shared CI for Node projects. Contract: specs/002-shared-workflows/contracts/workflows.md
+name: ci-node
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        default: "24"
+      artifact:
+        description: Folder to upload as artifact `build` after the build.
+        type: string
+        default: ""
+    secrets:
+      build-env:
+        description: KEY=value lines. CI writes them to .env.local before the build.
+        required: false
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: ci-${{ github.repository }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Find the package manager
+        id: pm
+        run: |
+          if [ -f bun.lock ]; then pm=bun
+          elif [ -f yarn.lock ]; then pm=yarn
+          elif [ -f package-lock.json ]; then pm=npm
+          else
+            echo "::error::No lock file found. Add bun.lock, yarn.lock or package-lock.json."
+            exit 1
+          fi
+          echo "pm=$pm" >> "$GITHUB_OUTPUT"
+
+      - name: Enable corepack
+        if: steps.pm.outputs.pm == 'yarn'
+        run: corepack enable
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ steps.pm.outputs.pm != 'bun' && steps.pm.outputs.pm || '' }}
+      - if: steps.pm.outputs.pm == 'bun'
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install the dependencies
+        env:
+          PM: ${{ steps.pm.outputs.pm }}
+        run: |
+          case "$PM" in
+            bun) bun install --frozen-lockfile ;;
+            yarn) yarn install --immutable ;;
+            npm) npm ci ;;
+          esac
+
+      - name: Lint
+        env:
+          PM: ${{ steps.pm.outputs.pm }}
+        run: |
+          case "$PM" in
+            bun) bunx biome ci . ;;
+            yarn) yarn biome ci . ;;
+            npm) npx biome ci . ;;
+          esac
+
+      - name: Write the build environment
+        env:
+          BUILD_ENV: ${{ secrets.build-env }}
+        run: |
+          if [ -n "$BUILD_ENV" ]; then printf '%s\n' "$BUILD_ENV" > .env.local; fi
+
+      - name: Build
+        env:
+          PM: ${{ steps.pm.outputs.pm }}
+        run: |
+          if ! node -e "process.exit(require('./package.json').scripts?.build ? 0 : 1)"; then
+            echo "No build script. CI does not build."
+            exit 0
+          fi
+          case "$PM" in
+            bun) bun run build ;;
+            yarn) yarn build ;;
+            npm) npm run build ;;
+          esac
+
+      - name: Test
+        env:
+          PM: ${{ steps.pm.outputs.pm }}
+        run: |
+          if ! node -e "process.exit(require('./package.json').scripts?.test ? 0 : 1)"; then
+            echo "No test script. CI does not test."
+            exit 0
+          fi
+          case "$PM" in
+            bun) bun run test ;;
+            yarn) yarn test ;;
+            npm) npm test ;;
+          esac
+
+      - if: inputs.artifact != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: build
+          path: ${{ inputs.artifact }}
+          if-no-files-found: error
