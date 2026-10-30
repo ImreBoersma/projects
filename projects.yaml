@@ -5,47 +5,107 @@ projects:
     name: Beter dan de MIDI
     repo: ImreBoersma/Beter-dan-de-MIDI
     status: active
+    stack: Vite
+    host: Azure Static Web Apps
+    domain:
+    stakeholder:
+    renewal:
   - id: boek-de-bus
     name: Boek de bus
     repo: ImreBoersma/boek-de-bus
     status: active
+    stack: Next.js, React
+    host: Vercel
+    domain:
+    stakeholder:
+    renewal:
   - id: personal-website
     name: Personal website
     repo: ImreBoersma/personal-website
     status: active
+    stack: Next.js, React
+    host: Vercel
+    domain: imreboersma.nl
+    stakeholder:
+    renewal:
   - id: reperatie-formulier
     name: Reperatie-Formulier
     repo: ImreBoersma/Reperatie-Formulier
     status: active
+    stack: Vite, React
+    host:
+    domain:
+    stakeholder:
+    renewal:
   - id: scales-exercises
     name: Scales exercises
     repo: ImreBoersma/scales-exercises
     status: active
+    stack: Vite, React
+    host: Firebase
+    domain: scales-imreboersma.web.app
+    stakeholder:
+    renewal:
   - id: pretband-backend
     name: Pretband backend
     repo: harmonieorkest-brummen/pretband-backend
     status: active
+    stack: Node.js, Redis
+    host: Vercel
+    domain:
+    stakeholder: Harmonieorkest Brummen
+    renewal:
   - id: pretband
     name: Pretband
     repo:
     status: active
+    stack:
+    host:
+    domain: pretband.nl
+    stakeholder: Harmonieorkest Brummen
+    renewal:
   - id: hob-nl
     name: hob.nl
     repo:
     status: active
+    stack: WordPress
+    host: WordPress hosting
+    domain: harmonieorkestbrummen.nl
+    stakeholder: HOB
+    renewal:
   - id: homelab
     name: HomeLab
     repo: ImreBoersma/HomeLab
     status: active
+    stack: Docker Compose
+    host: Self-hosted
+    domain:
+    stakeholder:
+    renewal:
   - id: dev-toolkit
     name: dev-toolkit
     repo:
     status: active
+    stack: pnpm monorepo
+    host:
+    domain:
+    stakeholder:
+    renewal:
   - id: lower-management
     name: Lower Management
     repo:
     status: active
+    stack:
+    host:
+    domain:
+    stakeholder:
+    renewal:
   - id: agent-native
     name: agent-native
     repo:
     status: active
+    stack:
+    host:
+    domain:
+    stakeholder:
+    renewal:

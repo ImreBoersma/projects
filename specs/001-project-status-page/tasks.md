@@ -237,3 +237,7 @@ Each step is a separate commit or PR that you can deploy.
 
 - `renovate.json` for this repo (Principle IV) needs the shared Renovate preset.
   Add it when that preset exists.
+
+## Phase 8: Convergence
+
+- [X] T031 CRITICAL: Add the fields `stack`, `host`, `domain`, `stakeholder` and `renewal` to each entry in `projects.yaml`, so that each entry contains all fields of Principle II. Use the known values (for example `stack: Vite`, `host: Azure Static Web Apps` for Beter-dan-de-MIDI; `host: Firebase` for scales-exercises; `host: Vercel` for pretband-backend; `host: WordPress hosting` for hob.nl). Leave a field empty when the value is not known. Record stakeholders only by name or role, never with contact details (Principle III). Keep the status page unchanged: it ignores these fields (contracts/catalog.md). per Constitution II (contradicts)
