@@ -66,11 +66,12 @@ project repo change in a PR.
   - Build: only if `package.json` has `scripts.build` (check with `node -e`). Run `npm run build`, `yarn build` or `bun run build`.
   - Test: only if `package.json` has `scripts.test`. Run `npm test`, `yarn test` or `bun run test`.
   - Upload: only if `inputs.artifact` is not empty. `actions/upload-artifact` (newest major) with `name: build`, `path: ${{ inputs.artifact }}`, `if-no-files-found: error`.
-- [ ] T008 [US1] Run actionlint locally on `.github/workflows/`. Push the branch. Make sure that `lint-workflows.yml` passes.
-- [ ] T009 [US1] Test in `scales-exercises` on a branch (constitution, Development Workflow):
+- [X] T008 [US1] Run actionlint locally on `.github/workflows/`. Push the branch. Make sure that `lint-workflows.yml` passes.
+- [X] T009 [US1] Test in `scales-exercises` on a branch (constitution, Development Workflow):
   - Replace `scales-exercises: .github/workflows/ci.yml` with the CI job of `contracts/caller.md` (`artifact: build`, secret `build-env: "${{ secrets.BUILD_ENV }}"`), with `@002-shared-workflows`. Keep `firebase-hosting-merge.yml` for now.
   - Manual: add the repo secret `BUILD_ENV` with the six `REACT_APP_*` lines (the values of the existing secrets).
   - Do quickstart.md §1 steps 2 and 3: CI passes; a Biome error fails CI at lint.
+  - Done 2026-10-30 in ImreBoersma/scales-exercises#373: CI passed; a Biome error failed CI at the lint step; CI passed again after the repair. The secret `BUILD_ENV` is not set yet; it is necessary before T018.
 - [ ] T010 [US1] Merge branch `002-shared-workflows` of this repo into `main`, so that other repos can use `@main`. At this point the branch contains T002 to T008 only (catalog fix, status change, `ci-node.yml`, `lint-workflows.yml`). Continue on the same branch for the deploy workflows. In scales-exercises, change the ref to `@main` and merge the PR.
 - [ ] T011 [P] [US1] `Beter-dan-de-MIDI`:
   - Manual: rename the default branch `pwa` to `main` (Settings → Branches). In Settings → Environments → `github-pages`, change the deployment branch rule from `pwa` to `main`. In `main.yml`, change `branches: [pwa]` to `branches: [main]`, so that the old deploy continues until T018.
