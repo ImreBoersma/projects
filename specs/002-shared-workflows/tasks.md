@@ -74,10 +74,11 @@ project repo change in a PR.
   - Done 2026-10-30 in ImreBoersma/scales-exercises#373: CI passed; a Biome error failed CI at the lint step; CI passed again after the repair. The secret `BUILD_ENV` is not set yet; it is necessary before T018.
 - [X] T010 [US1] Merge branch `002-shared-workflows` of this repo into `main`, so that other repos can use `@main`. At this point the branch contains T002 to T008 only (catalog fix, status change, `ci-node.yml`, `lint-workflows.yml`). Continue on the same branch for the deploy workflows. In scales-exercises, change the ref to `@main` and merge the PR.
   - Done 2026-10-30: ImreBoersma/projects#2 merged. scales-exercises#373 was merged with a Copilot Autofix `permissions: {}` that stopped CI (`startup_failure`); #375 sets `permissions: { contents: read }` and `@main`. CI on `main` passes.
-- [ ] T011 [P] [US1] `Beter-dan-de-MIDI`:
+- [X] T011 [P] [US1] `Beter-dan-de-MIDI`:
   - Manual: rename the default branch `pwa` to `main` (Settings → Branches). In Settings → Environments → `github-pages`, change the deployment branch rule from `pwa` to `main`. In `main.yml`, change `branches: [pwa]` to `branches: [main]`, so that the old deploy continues until T018.
   - Add `.npmrc` with `legacy-peer-deps=true`. Replace `.github/workflows/ci.yml` with the CI-only caller of `contracts/caller.md` with `artifact: dist`. Keep `main.yml` for now.
   - If `biome ci .` fails, repair the errors or change `biome.json`. Open the PR to `main`; CI must pass. Merge. The site must still deploy.
+  - Done 2026-10-30 in ImreBoersma/Beter-dan-de-MIDI#309: CI passed with the `dist` artifact. After the merge, `main.yml` deployed from `main` (deployment `github-pages`, 16:29 UTC). The site responds with HTTP 200.
 - [X] T012 [P] [US1] `boek-de-bus`: add `.github/workflows/ci.yml` as the CI-only caller. The repo has no CI now. Repair Biome or test errors until CI passes. Merge. Done 2026-10-30 in ImreBoersma/boek-de-bus#1: CI passed on the PR and on `main`, with no Biome errors.
 - [X] T013 [P] [US1] `personal-website`: replace `.github/workflows/ci.yml` with the CI-only caller. Repair Biome errors until CI passes. Merge. Done 2026-10-30 in ImreBoersma/personal-website#24: CI passed on the PR and on `main`, with no Biome errors.
 - [X] T014 [P] [US1] `Reperatie-Formulier`: remove `.github/workflows/node.js.yml`. Add `.github/workflows/ci.yml` as the CI-only caller (no deploy: no host). CI must pass. Merge. Done 2026-10-30 in ImreBoersma/Reperatie-Formulier#114: CI passed on the PR and on `main`, with no Biome errors.
