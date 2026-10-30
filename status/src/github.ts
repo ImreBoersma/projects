@@ -26,7 +26,7 @@ export function tokenFor(owner: string, env: Record<string, string | undefined>)
 const FIELDS = `
   defaultBranchRef { target { ... on Commit { committedDate statusCheckRollup { state } } } }
   pullRequests(states: OPEN, first: 100) { totalCount nodes { createdAt author { login } } }
-  deployments(environments: ["production", "Production"], first: 1,
+  deployments(environments: ["production", "Production", "github-pages"], first: 1,
     orderBy: { field: CREATED_AT, direction: DESC }) { nodes { createdAt latestStatus { state } } }`;
 
 export function buildQuery(repos: string[]): string {

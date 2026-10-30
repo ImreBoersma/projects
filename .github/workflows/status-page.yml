@@ -33,22 +33,17 @@ jobs:
         env:
           STATUS_READ_TOKEN: ${{ secrets.STATUS_READ_TOKEN }}
           STATUS_READ_TOKEN_HOB: ${{ secrets.STATUS_READ_TOKEN_HOB }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-artifact@v7
         with:
+          name: build
           path: _site
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+    uses: ./.github/workflows/deploy-pages.yml
 
   # Separate from deploy: an issue error does not stop the page deploy (research.md §8).
   issues:

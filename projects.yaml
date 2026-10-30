@@ -6,7 +6,7 @@ projects:
     repo: ImreBoersma/Beter-dan-de-MIDI
     status: active
     stack: Vite
-    host: Azure Static Web Apps
+    host: GitHub Pages
     domain:
     stakeholder:
     renewal:
