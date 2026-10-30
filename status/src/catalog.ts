@@ -21,13 +21,13 @@ export function parseCatalog(text: string): Project[] {
     seen.add(id as string);
     if (typeof name !== "string" || name === "") fail("name", "required.");
     if (!STATES.includes(status as ProjectState)) fail("status", `must be ${STATES.join(", ")}.`);
-    if (repo != null && (typeof repo !== "string" || !REPO.test(repo))) {
+    if (repo != null && repo !== "" && (typeof repo !== "string" || !REPO.test(repo))) {
       fail("repo", "must be owner/name or empty.");
     }
     return {
       id: id as string,
       name: name as string,
-      repo: (repo as string) ?? null,
+      repo: (repo as string) || null,
       status: status as ProjectState,
     };
   });

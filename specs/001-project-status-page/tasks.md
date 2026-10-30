@@ -241,3 +241,8 @@ Each step is a separate commit or PR that you can deploy.
 ## Phase 8: Convergence
 
 - [X] T031 CRITICAL: Add the fields `stack`, `host`, `domain`, `stakeholder` and `renewal` to each entry in `projects.yaml`, so that each entry contains all fields of Principle II. Use the known values (for example `stack: Vite`, `host: Azure Static Web Apps` for Beter-dan-de-MIDI; `host: Firebase` for scales-exercises; `host: Vercel` for pretband-backend; `host: WordPress hosting` for hob.nl). Leave a field empty when the value is not known. Record stakeholders only by name or role, never with contact details (Principle III). Keep the status page unchanged: it ignores these fields (contracts/catalog.md). per Constitution II (contradicts)
+
+## Phase 9: Convergence
+
+- [X] T032 Close the open 60-day schedule risk of research.md §8. Find out if GitHub sends an email before it disables a scheduled workflow. If it does not, add a monthly reminder. Record the result in research.md §9. per T030 (partial)
+- [X] T033 In `status/src/catalog.ts`, accept `repo: ""` as an empty repo (`null`), the same as `repo:` with no value. Add a test case to `status/tests/catalog.test.ts`. per T007, contracts/catalog.md (partial)

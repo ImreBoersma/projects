@@ -115,5 +115,7 @@
   for private repos; without them GitHub returns the repo as `null`.
 - Beter-dan-de-MIDI (Azure Static Web Apps) shows "Unknown" for the last deploy: its workflow
   makes no deployment records.
-- Not verified: if GitHub sends an email before it disables a scheduled workflow. Until this is
-  known, the 60-day risk in §8 stays open.
+- Email before GitHub disables a scheduled workflow (T032, 2026-10-30): users report that GitHub
+  sends an email approximately 7 days before it disables the workflow. The GitHub documentation
+  does not give this. Thus no monthly reminder is necessary. If a page shows the 48-hour warning,
+  enable the workflow again in the Actions tab and push one commit.

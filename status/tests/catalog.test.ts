@@ -36,6 +36,7 @@ describe("parseCatalog", () => {
 
   test("accepts an empty repo", () => {
     expect(parseCatalog(valid)[1].repo).toBeNull();
+    expect(parseCatalog(entry('id: a\nname: A\nrepo: ""\nstatus: active'))[0].repo).toBeNull();
   });
 
   test("rejects a missing top-level projects key", () => {
