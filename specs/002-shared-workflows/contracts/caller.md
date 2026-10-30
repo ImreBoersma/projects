@@ -33,8 +33,12 @@ jobs:
     needs: ci
     uses: ImreBoersma/projects/.github/workflows/deploy-firebase.yml@main
     with: { project-id: imre-boersma, target: scales }
-    secrets: { firebase-service-account: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA }}" }
+    secrets:
+      firebase-service-account: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA }}
 ```
+
+Biome formats YAML in some repos (line width 80). Write a long `secrets` entry as a block, not on
+one line. This example has 16 lines.
 
 The deploy workflow checks the event and the branch itself, so the caller has no `if:`.
 
