@@ -10,6 +10,7 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+permissions: { contents: read }
 jobs:
   ci:
     uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main
@@ -22,6 +23,7 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+permissions: { contents: read }
 jobs:
   ci:
     uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main
@@ -36,6 +38,10 @@ jobs:
 
 The deploy workflow checks the event and the branch itself, so the caller has no `if:`.
 
+Each caller MUST set `permissions: { contents: read }`. Without `permissions`, CodeQL reports the
+workflow. With `permissions: {}`, GitHub does not start the shared CI job, because the job needs
+`contents: read` (ImreBoersma/scales-exercises#375).
+
 ## CI and Pages deploy (example: Beter-dan-de-MIDI)
 
 ```yaml
@@ -43,6 +49,7 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+permissions: { contents: read }
 jobs:
   ci:
     uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main

@@ -72,7 +72,8 @@ project repo change in a PR.
   - Manual: add the repo secret `BUILD_ENV` with the six `REACT_APP_*` lines (the values of the existing secrets).
   - Do quickstart.md §1 steps 2 and 3: CI passes; a Biome error fails CI at lint.
   - Done 2026-10-30 in ImreBoersma/scales-exercises#373: CI passed; a Biome error failed CI at the lint step; CI passed again after the repair. The secret `BUILD_ENV` is not set yet; it is necessary before T018.
-- [ ] T010 [US1] Merge branch `002-shared-workflows` of this repo into `main`, so that other repos can use `@main`. At this point the branch contains T002 to T008 only (catalog fix, status change, `ci-node.yml`, `lint-workflows.yml`). Continue on the same branch for the deploy workflows. In scales-exercises, change the ref to `@main` and merge the PR.
+- [X] T010 [US1] Merge branch `002-shared-workflows` of this repo into `main`, so that other repos can use `@main`. At this point the branch contains T002 to T008 only (catalog fix, status change, `ci-node.yml`, `lint-workflows.yml`). Continue on the same branch for the deploy workflows. In scales-exercises, change the ref to `@main` and merge the PR.
+  - Done 2026-10-30: ImreBoersma/projects#2 merged. scales-exercises#373 was merged with a Copilot Autofix `permissions: {}` that stopped CI (`startup_failure`); #375 sets `permissions: { contents: read }` and `@main`. CI on `main` passes.
 - [ ] T011 [P] [US1] `Beter-dan-de-MIDI`:
   - Manual: rename the default branch `pwa` to `main` (Settings → Branches). In Settings → Environments → `github-pages`, change the deployment branch rule from `pwa` to `main`. In `main.yml`, change `branches: [pwa]` to `branches: [main]`, so that the old deploy continues until T018.
   - Add `.npmrc` with `legacy-peer-deps=true`. Replace `.github/workflows/ci.yml` with the CI-only caller of `contracts/caller.md` with `artifact: dist`. Keep `main.yml` for now.
@@ -108,7 +109,8 @@ project repo change in a PR.
   - `personal-website`: add `vercel.json` with `{ "git": { "deploymentEnabled": { "main": false } } }`. Manual: add secret `VERCEL_TOKEN` and variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`. Add the `deploy` job (`deploy-vercel.yml`, secret `vercel-token: "${{ secrets.VERCEL_TOKEN }}"`). Merge. One production deploy from Actions; none from the Git integration.
 - [ ] T019 [US2] Merge branch `002-shared-workflows` into `main`. In the three repos of T018, change the refs to `@main`.
 - [ ] T020 [US2] `boek-de-bus`: add `vercel.json` as in T018, the Vercel secret and variables, and the `deploy` job with `@main`. Merge. Check as in T018.
-- [ ] T021 [US2] In `.github/workflows/status-page.yml`: in job `build`, replace `actions/upload-pages-artifact@v3` with `actions/upload-artifact` (newest major) `name: build`, `path: _site`. Replace job `deploy` with `uses: ./.github/workflows/deploy-pages.yml`, `needs: build`, permissions `pages: write`, `id-token: write`. Keep job `issues` as it is. Run the workflow; the page must update (research.md §12).
+- [X] T021 [US2] In `.github/workflows/status-page.yml`: in job `build`, replace `actions/upload-pages-artifact@v3` with `actions/upload-artifact` (newest major) `name: build`, `path: _site`. Replace job `deploy` with `uses: ./.github/workflows/deploy-pages.yml`, `needs: build`, permissions `pages: write`, `id-token: write`. Keep job `issues` as it is. Run the workflow; the page must update (research.md §12).
+  - Done 2026-10-30: the status-page run of the merge of #2 deployed through `deploy-pages.yml` (deployment `github-pages`, 16:07 UTC).
 
 **Checkpoint**: each project with a host shows a last deploy on the status page (SC-002).
 
