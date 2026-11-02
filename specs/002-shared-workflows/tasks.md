@@ -72,14 +72,16 @@ project repo change in a PR.
   - Manual: add the repo secret `BUILD_ENV` with the six `REACT_APP_*` lines (the values of the existing secrets).
   - Do quickstart.md §1 steps 2 and 3: CI passes; a Biome error fails CI at lint.
   - Done 2026-10-30 in ImreBoersma/scales-exercises#373: CI passed; a Biome error failed CI at the lint step; CI passed again after the repair. The secret `BUILD_ENV` is not set yet; it is necessary before T018.
-- [ ] T010 [US1] Merge branch `002-shared-workflows` of this repo into `main`, so that other repos can use `@main`. At this point the branch contains T002 to T008 only (catalog fix, status change, `ci-node.yml`, `lint-workflows.yml`). Continue on the same branch for the deploy workflows. In scales-exercises, change the ref to `@main` and merge the PR.
-- [ ] T011 [P] [US1] `Beter-dan-de-MIDI`:
+- [X] T010 [US1] Merge branch `002-shared-workflows` of this repo into `main`, so that other repos can use `@main`. At this point the branch contains T002 to T008 only (catalog fix, status change, `ci-node.yml`, `lint-workflows.yml`). Continue on the same branch for the deploy workflows. In scales-exercises, change the ref to `@main` and merge the PR.
+  - Done 2026-10-30: ImreBoersma/projects#2 merged. scales-exercises#373 was merged with a Copilot Autofix `permissions: {}` that stopped CI (`startup_failure`); #375 sets `permissions: { contents: read }` and `@main`. CI on `main` passes.
+- [X] T011 [P] [US1] `Beter-dan-de-MIDI`:
   - Manual: rename the default branch `pwa` to `main` (Settings → Branches). In Settings → Environments → `github-pages`, change the deployment branch rule from `pwa` to `main`. In `main.yml`, change `branches: [pwa]` to `branches: [main]`, so that the old deploy continues until T018.
   - Add `.npmrc` with `legacy-peer-deps=true`. Replace `.github/workflows/ci.yml` with the CI-only caller of `contracts/caller.md` with `artifact: dist`. Keep `main.yml` for now.
   - If `biome ci .` fails, repair the errors or change `biome.json`. Open the PR to `main`; CI must pass. Merge. The site must still deploy.
-- [ ] T012 [P] [US1] `boek-de-bus`: add `.github/workflows/ci.yml` as the CI-only caller. The repo has no CI now. Repair Biome or test errors until CI passes. Merge.
-- [ ] T013 [P] [US1] `personal-website`: replace `.github/workflows/ci.yml` with the CI-only caller. Repair Biome errors until CI passes. Merge.
-- [ ] T014 [P] [US1] `Reperatie-Formulier`: remove `.github/workflows/node.js.yml`. Add `.github/workflows/ci.yml` as the CI-only caller (no deploy: no host). CI must pass. Merge.
+  - Done 2026-10-30 in ImreBoersma/Beter-dan-de-MIDI#309: CI passed with the `dist` artifact. After the merge, `main.yml` deployed from `main` (deployment `github-pages`, 16:29 UTC). The site responds with HTTP 200.
+- [X] T012 [P] [US1] `boek-de-bus`: add `.github/workflows/ci.yml` as the CI-only caller. The repo has no CI now. Repair Biome or test errors until CI passes. Merge. Done 2026-10-30 in ImreBoersma/boek-de-bus#1: CI passed on the PR and on `main`, with no Biome errors.
+- [X] T013 [P] [US1] `personal-website`: replace `.github/workflows/ci.yml` with the CI-only caller. Repair Biome errors until CI passes. Merge. Done 2026-10-30 in ImreBoersma/personal-website#24: CI passed on the PR and on `main`, with no Biome errors.
+- [X] T014 [P] [US1] `Reperatie-Formulier`: remove `.github/workflows/node.js.yml`. Add `.github/workflows/ci.yml` as the CI-only caller (no deploy: no host). CI must pass. Merge. Done 2026-10-30 in ImreBoersma/Reperatie-Formulier#114: CI passed on the PR and on `main`, with no Biome errors.
 
 **Checkpoint**: 5 of 5 repos run the shared CI (SC-001). The old deploys still work.
 
@@ -102,13 +104,18 @@ project repo change in a PR.
   - `workflow_call`, secret `vercel-token` (required). Job `deploy`: the same default-branch `if:`, `environment: production`, job concurrency `deploy-${{ github.repository }}`, no cancel.
   - Env: `VERCEL_TOKEN` from the secret, `VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}`, `VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}`. Check all three; a missing value fails with `::error::` and the name.
   - Steps: checkout; `actions/setup-node@v7`; if `bun.lock` exists, `oven-sh/setup-bun@v2`, because `vercel build` runs the install command of the project; `npx vercel@<exact version> pull --yes --environment=production --token="$VERCEL_TOKEN"`; `npx vercel@<same> build --prod --token=...`; `npx vercel@<same> deploy --prebuilt --prod --token=...`. Use one exact Vercel CLI version in a workflow-level env `VERCEL_CLI`.
-- [ ] T018 [US2] Run actionlint. Push branch `002-shared-workflows`. Then test each deploy workflow in one repo with `@002-shared-workflows` (constitution):
+- [X] T018 [US2] Run actionlint. Push branch `002-shared-workflows`. Then test each deploy workflow in one repo with `@002-shared-workflows` (constitution):
   - `scales-exercises`: add the `deploy` job of `contracts/caller.md` (`project-id: imre-boersma`, `target: scales`, secret `FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA`). Remove `firebase-hosting-merge.yml`. Merge. The site must change and a `production` deployment must exist.
   - `Beter-dan-de-MIDI`: set `base: "/Beter-dan-de-MIDI/"` in `vite.config.ts`. Change the `build` script to also run `cp dist/index.html dist/404.html`. Add the `deploy` job (`deploy-pages.yml`) as in the Pages example of `contracts/caller.md`, with job `permissions: { pages: write, id-token: write }`. Remove `main.yml`. Merge to `main`. The site must work at `imreboersma.github.io/Beter-dan-de-MIDI/`.
   - `personal-website`: add `vercel.json` with `{ "git": { "deploymentEnabled": { "main": false } } }`. Manual: add secret `VERCEL_TOKEN` and variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`. Add the `deploy` job (`deploy-vercel.yml`, secret `vercel-token: "${{ secrets.VERCEL_TOKEN }}"`). Merge. One production deploy from Actions; none from the Git integration.
-- [ ] T019 [US2] Merge branch `002-shared-workflows` into `main`. In the three repos of T018, change the refs to `@main`.
-- [ ] T020 [US2] `boek-de-bus`: add `vercel.json` as in T018, the Vercel secret and variables, and the `deploy` job with `@main`. Merge. Check as in T018.
-- [ ] T021 [US2] In `.github/workflows/status-page.yml`: in job `build`, replace `actions/upload-pages-artifact@v3` with `actions/upload-artifact` (newest major) `name: build`, `path: _site`. Replace job `deploy` with `uses: ./.github/workflows/deploy-pages.yml`, `needs: build`, permissions `pages: write`, `id-token: write`. Keep job `issues` as it is. Run the workflow; the page must update (research.md §12).
+  - Done 2026-10-30 for scales-exercises (#376) and Beter-dan-de-MIDI (#310), with `@main` because the deploy workflows were already on `main` since #2. PR runs: CI passed, deploy skipped. `main` runs: deploy passed; records `production` (scales) and `github-pages` (Beter). Both sites respond with HTTP 200; the scales build contains the Firebase settings of `BUILD_ENV`. The scales caller has 16 lines (Biome line width), one more than SC-003.
+  - Done 2026-11-02 for personal-website (#25): PR run CI passed, deploy skipped, Vercel preview continued. `main` run: deploy passed; one new `production` record, none from the Vercel Git integration. imreboersma.nl responds with HTTP 200.
+- [X] T019 [US2] Merge branch `002-shared-workflows` into `main`. In the three repos of T018, change the refs to `@main`.
+  - Done 2026-11-02: the shared workflows are on `main` since #2. All callers use `@main`. This PR adds only the spec documents.
+- [X] T020 [US2] `boek-de-bus`: add `vercel.json` as in T018, the Vercel secret and variables, and the `deploy` job with `@main`. Merge. Check as in T018.
+  - Done 2026-11-02 in ImreBoersma/boek-de-bus#2: the deploy installed bun and passed; one new `production` record. boek-de-bus.vercel.app responds with HTTP 200.
+- [X] T021 [US2] In `.github/workflows/status-page.yml`: in job `build`, replace `actions/upload-pages-artifact@v3` with `actions/upload-artifact` (newest major) `name: build`, `path: _site`. Replace job `deploy` with `uses: ./.github/workflows/deploy-pages.yml`, `needs: build`, permissions `pages: write`, `id-token: write`. Keep job `issues` as it is. Run the workflow; the page must update (research.md §12).
+  - Done 2026-10-30: the status-page run of the merge of #2 deployed through `deploy-pages.yml` (deployment `github-pages`, 16:07 UTC).
 
 **Checkpoint**: each project with a host shows a last deploy on the status page (SC-002).
 
@@ -122,13 +129,16 @@ project repo change in a PR.
 
 - [ ] T022 [US3] Do quickstart.md §5: add a step that prints the Node version to `ci-node.yml` on a branch, test it on one repo, merge, push to two repos, make sure that both show the step. Then remove the step the same way.
 - [ ] T023 [US3] Count the lines of `.github/workflows/ci.yml` in each of the 5 repos, without blank lines. Each must be 15 or fewer (SC-003) and contain only `uses:` jobs (FR-009).
+  - 2026-11-02: Beter-dan-de-MIDI 13, boek-de-bus 12, personal-website 12, Reperatie-Formulier 8, scales-exercises 16 lines. All jobs are `uses:` jobs (FR-009). scales-exercises is 1 line over SC-003, because Biome formats YAML with line width 80. Open: the Maintainer decides if SC-003 changes to 16.
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Make sure that no old workflow files remain (FR-012): `ci.yml` old content, `main.yml`, `node.js.yml`, `firebase-hosting-merge.yml`. Make sure that no workflow file contains a secret value (FR-010).
-- [ ] T025 Do quickstart.md §4 and §6. Record the results in a new section "14. Validation results" in `specs/002-shared-workflows/research.md`: the CI time of each repo (goal: less than 5 minutes), and the last deploy of each project on the status page.
+- [X] T024 [P] Make sure that no old workflow files remain (FR-012): `ci.yml` old content, `main.yml`, `node.js.yml`, `firebase-hosting-merge.yml`. Make sure that no workflow file contains a secret value (FR-010).
+  - Done 2026-11-02: each of the 5 repos has only `.github/workflows/ci.yml`. No workflow file contains a secret value; the only matches are `id-token: write` and `${{ secrets.VERCEL_TOKEN }}`.
+- [X] T025 Do quickstart.md §4 and §6. Record the results in a new section "14. Validation results" in `specs/002-shared-workflows/research.md`: the CI time of each repo (goal: less than 5 minutes), and the last deploy of each project on the status page.
+  - Done 2026-11-02: results in research.md §14.
 - [ ] T026 [P] In `PLAN.md`, move feature 002 to "Done".
 
 ---

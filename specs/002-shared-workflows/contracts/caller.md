@@ -10,6 +10,7 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+permissions: { contents: read }
 jobs:
   ci:
     uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main
@@ -22,6 +23,7 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+permissions: { contents: read }
 jobs:
   ci:
     uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main
@@ -31,10 +33,18 @@ jobs:
     needs: ci
     uses: ImreBoersma/projects/.github/workflows/deploy-firebase.yml@main
     with: { project-id: imre-boersma, target: scales }
-    secrets: { firebase-service-account: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA }}" }
+    secrets:
+      firebase-service-account: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA }}
 ```
 
+Biome formats YAML in some repos (line width 80). Write a long `secrets` entry as a block, not on
+one line. This example has 16 lines.
+
 The deploy workflow checks the event and the branch itself, so the caller has no `if:`.
+
+Each caller MUST set `permissions: { contents: read }`. Without `permissions`, CodeQL reports the
+workflow. With `permissions: {}`, GitHub does not start the shared CI job, because the job needs
+`contents: read` (ImreBoersma/scales-exercises#375).
 
 ## CI and Pages deploy (example: Beter-dan-de-MIDI)
 
@@ -43,6 +53,7 @@ name: CI
 on:
   push: { branches: [main] }
   pull_request:
+permissions: { contents: read }
 jobs:
   ci:
     uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main
