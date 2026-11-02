@@ -63,20 +63,29 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 **Independent Test**: quickstart.md §2 steps 1 and 2, then §4 for each repo.
 
-- [ ] T010 [US1] Test in `scales-exercises` before the merge (constitution, Development Workflow):
+- [X] T010 [US1] Test in `scales-exercises` before the merge (constitution, Development Workflow):
   - Add `scales-exercises: renovate.json` with `"extends": ["github>ImreBoersma/projects//renovate/default#003-renovate-preset"]`. Format it with the Biome settings of the repo, so that `biome ci` passes.
   - Remove `scales-exercises: .github/dependabot.yml`.
   - Turn off Dependabot security updates: `gh api -X DELETE repos/ImreBoersma/scales-exercises/automated-security-fixes`.
   - Open the PR. CI must pass. Merge.
   - Make sure that a "Dependency Dashboard" issue appears from `renovate[bot]` and that it shows no config error.
-- [ ] T011 [US1] Merge branch `003-renovate-preset` of this repo into `main` through a PR. In scales-exercises, remove `#003-renovate-preset` from the reference. Merge.
-- [ ] T012 [P] [US1] `Beter-dan-de-MIDI`: add `renovate.json` (`"extends": ["github>ImreBoersma/projects//renovate/default"]`), remove `.github/dependabot.yml`, turn off Dependabot security updates as in T010. CI must pass. Merge.
-- [ ] T013 [P] [US1] `personal-website`: the same as T012. Biome in this repo uses tabs.
-- [ ] T014 [P] [US1] `Reperatie-Formulier`: the same as T012.
-- [ ] T015 [P] [US1] `boek-de-bus`: add `renovate.json` as in T012. Turn on vulnerability alerts: `gh api -X PUT repos/ImreBoersma/boek-de-bus/vulnerability-alerts`. The repo has no `dependabot.yml`. CI must pass. Merge.
+  - Done 2026-11-02 in ImreBoersma/scales-exercises#378 (branch `use-renovate-preset`: the prefix `renovate/` is used by Renovate). Biome needed tabs in `renovate.json`. Dependency Dashboard #379: patch group "Awaiting Schedule", a minor update "Pending Status Checks" (release age), no config error. Renovate closed its onboarding PR #377.
+- [X] T011 [US1] Merge branch `003-renovate-preset` of this repo into `main` through a PR. In scales-exercises, remove `#003-renovate-preset` from the reference. Merge.
+  - Done 2026-11-02: ImreBoersma/projects#5 merged; scales-exercises#380 uses the preset from the default branch.
+- [X] T012 [P] [US1] `Beter-dan-de-MIDI`: add `renovate.json` (`"extends": ["github>ImreBoersma/projects//renovate/default"]`), remove `.github/dependabot.yml`, turn off Dependabot security updates as in T010. CI must pass. Merge.
+  - Done 2026-11-02 in Beter-dan-de-MIDI#313. Vulnerability alerts were off and are on now. The repo has issues turned off, so Renovate makes no Dependency Dashboard.
+- [X] T013 [P] [US1] `personal-website`: the same as T012. Biome in this repo uses tabs.
+  - Done 2026-11-02 in personal-website#27. Issues are turned off: no Dependency Dashboard.
+- [X] T014 [P] [US1] `Reperatie-Formulier`: the same as T012.
+  - Done 2026-11-02 in Reperatie-Formulier#116. Issues are turned off: no Dependency Dashboard.
+- [X] T015 [P] [US1] `boek-de-bus`: add `renovate.json` as in T012. Turn on vulnerability alerts: `gh api -X PUT repos/ImreBoersma/boek-de-bus/vulnerability-alerts`. The repo has no `dependabot.yml`. CI must pass. Merge.
+  - Done 2026-11-02 in boek-de-bus#4. Dependabot security updates were on and are off now. Renovate opened security PR #5 (`next` 16.4.1, label `security`) outside the window, with automerge disabled.
 - [ ] T016 [US1] This repo: turn on vulnerability alerts with `gh api -X PUT repos/ImreBoersma/projects/vulnerability-alerts`. After T011, make sure that a Dependency Dashboard issue appears in `projects`.
+  - 2026-11-02: vulnerability alerts on. Open: no Dependency Dashboard yet in `projects` (and boek-de-bus), although Renovate closed the onboarding PRs. Check again after the next Renovate run.
 - [ ] T017 [US1] `HomeLab: .github/renovate.json`: add `"github>ImreBoersma/projects//renovate/default"` as the first entry of `extends`. Keep all HomeLab rules. Add one last rule `{ "matchUpdateTypes": ["patch", "minor"], "automerge": false }` with a `description`, so that nothing automerges. Open the PR; `validate` must pass. CAUTION: a merge to `main` of HomeLab starts `deploy` on the Pi. The Maintainer merges this PR. After the merge, run the `renovate` workflow manually; it must pass.
+  - 2026-11-02: ImreBoersma/HomeLab#23 open; `renovate-config-validator --strict` and `validate` pass. Open: the Maintainer merges it, then runs the `renovate` workflow.
 - [ ] T018 [US1] Run the status page workflow. Make sure that the Renovate PR count of HomeLab includes the open PRs of `imreboersma-homelab-renovate`.
+  - 2026-11-02: the status page runs with the new author rule (unit test in `status/tests/github.test.ts`). HomeLab has 0 open PRs of its Renovate app now, so the live count is 0. Open: check again when the HomeLab app opens a PR.
 
 **Checkpoint**: SC-001 and SC-002: 7 of 7 repos extend the preset, 0 use Dependabot version updates.
 
