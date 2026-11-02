@@ -35,7 +35,7 @@ The repos already use these major versions.
 
 **Performance Goals**: CI in less than 5 minutes for each repo.
 
-**Constraints**: €0 each month. Caller maximum 15 lines (SC-003). No secret in a workflow file or a
+**Constraints**: €0 each month. Caller maximum 16 lines (SC-003). No secret in a workflow file or a
 log. Hosts do not change (Principle V).
 
 **Scale/Scope**: 5 project repos, 4 shared workflows, 1 workflow-lint workflow.

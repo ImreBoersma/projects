@@ -1,7 +1,7 @@
 # Contract: caller workflow in a project repo
 
 File: `.github/workflows/ci.yml`. It contains only calls to shared workflows (FR-009). Maximum
-15 lines without blank lines (SC-003).
+16 lines without blank lines (SC-003).
 
 ## CI only (Reperatie-Formulier)
 

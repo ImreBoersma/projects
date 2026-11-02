@@ -127,9 +127,10 @@ project repo change in a PR.
 
 **Independent Test**: quickstart.md §5.
 
-- [ ] T022 [US3] Do quickstart.md §5: add a step that prints the Node version to `ci-node.yml` on a branch, test it on one repo, merge, push to two repos, make sure that both show the step. Then remove the step the same way.
-- [ ] T023 [US3] Count the lines of `.github/workflows/ci.yml` in each of the 5 repos, without blank lines. Each must be 15 or fewer (SC-003) and contain only `uses:` jobs (FR-009).
-  - 2026-11-02: Beter-dan-de-MIDI 13, boek-de-bus 12, personal-website 12, Reperatie-Formulier 8, scales-exercises 16 lines. All jobs are `uses:` jobs (FR-009). scales-exercises is 1 line over SC-003, because Biome formats YAML with line width 80. Open: the Maintainer decides if SC-003 changes to 16.
+- [X] T022 [US3] Do quickstart.md §5: add a step that prints the Node version to `ci-node.yml` on a branch, test it on one repo, merge, push to two repos, make sure that both show the step. Then remove the step the same way.
+  - Decision 2026-11-02: record the evidence, no extra test runs. Each CI run in the project repos resolves `ci-node.yml@refs/heads/main` to the `main` commit of `projects` at run time (for example `23b5daf` in boek-de-bus, personal-website and Reperatie-Formulier). The callers name the branch, not a commit, so a change on `main` reaches all 5 repos at their next run without a change in the repos (SC-004). No run has yet shown a changed `ci-node.yml`; quickstart §5 stays a manual test for the first real change.
+- [X] T023 [US3] Count the lines of `.github/workflows/ci.yml` in each of the 5 repos, without blank lines. Each must be 16 or fewer (SC-003) and contain only `uses:` jobs (FR-009).
+  - 2026-11-02: Beter-dan-de-MIDI 13, boek-de-bus 12, personal-website 12, Reperatie-Formulier 8, scales-exercises 16 lines. All jobs are `uses:` jobs (FR-009). Biome formats YAML with line width 80, so scales-exercises needs 16. Decision 2026-11-02: SC-003 changes to 16 lines. All 5 callers pass.
 
 ---
 
@@ -139,7 +140,7 @@ project repo change in a PR.
   - Done 2026-11-02: each of the 5 repos has only `.github/workflows/ci.yml`. No workflow file contains a secret value; the only matches are `id-token: write` and `${{ secrets.VERCEL_TOKEN }}`.
 - [X] T025 Do quickstart.md §4 and §6. Record the results in a new section "14. Validation results" in `specs/002-shared-workflows/research.md`: the CI time of each repo (goal: less than 5 minutes), and the last deploy of each project on the status page.
   - Done 2026-11-02: results in research.md §14.
-- [ ] T026 [P] In `PLAN.md`, move feature 002 to "Done".
+- [X] T026 [P] In `PLAN.md`, move feature 002 to "Done".
 
 ---
 
@@ -188,3 +189,7 @@ Task: "T017 [US2] deploy-vercel.yml"
 - T009: secret `BUILD_ENV` in scales-exercises.
 - T018, T020: secret `VERCEL_TOKEN` and variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` in the two Vercel repos.
 - Find `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` in `.vercel/project.json` after `vercel link`, or in the Vercel project settings.
+
+## Phase 7: Convergence
+
+- [X] T027 In `specs/002-shared-workflows/contracts/workflows.md`, change the CI concurrency group from `ci-<workflow>-<ref>` to `ci-<repo>-<ref>`, so that it matches `.github/workflows/ci-node.yml` per plan: contracts/workflows.md (partial)

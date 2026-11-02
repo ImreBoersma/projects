@@ -145,7 +145,7 @@ Make sure that both runs do the new step.
 
 - **SC-001**: 5 of the 5 own Node project repos run CI through the shared workflow.
 - **SC-002**: Each project with a known host shows a last deploy on the status page, not "Unknown".
-- **SC-003**: Each caller workflow is a maximum of 15 lines, without blank lines.
+- **SC-003**: Each caller workflow is a maximum of 16 lines, without blank lines.
 - **SC-004**: A change to CI needs a change in 1 file, not in each project repo.
 - **SC-005**: The feature costs €0 each month to operate.
 

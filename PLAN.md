@@ -15,6 +15,8 @@ roadmap.
   folders and `node_modules` removed, bun for new work.
 - `projects.yaml` with all fields of Principle II.
 - Spec 001: the project status page on GitHub Pages, with one issue for each problem.
+- Spec 002: shared CI and deploy workflows. All 5 Node repos use the shared CI. GitHub Pages,
+  Firebase and Vercel deploys run through shared workflows on push to `main`.
 
 ## Features
 
@@ -23,7 +25,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 
 | Spec | Feature | Needs |
 |---|---|---|
-| 002 | Shared CI and deploy workflows | — |
+| 002 | Shared CI and deploy workflows (done) | — |
 | 003 | Shared Renovate preset | 002 (automerge needs CI) |
 | 004 | Project board and public roadmap | 002 (the shared workflow adds issues) |
 | 005 | Uptime checks on the status page | 001 |

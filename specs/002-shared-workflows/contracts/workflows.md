@@ -21,7 +21,7 @@ Steps, in this order. A failed step stops CI.
 6. If a `test` script exists: run it.
 7. If `artifact` is set: upload the folder as artifact `build`. Missing folder → fail.
 
-Permissions: `contents: read`. Concurrency: `ci-<workflow>-<ref>`, cancel in progress.
+Permissions: `contents: read`. Concurrency: `ci-<repo>-<ref>`, cancel in progress.
 
 ## `deploy-pages.yml`
 

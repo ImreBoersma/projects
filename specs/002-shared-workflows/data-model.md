@@ -16,7 +16,7 @@ This feature has no stored data. The entities are workflow files and their setti
 |---|---|
 | `repo` | An own repo in `projects.yaml` with status `active` or `maintenance` and a Node project |
 | `jobs` | `ci` (always), `deploy` (only when the catalog `host` has a shared deploy workflow) |
-| length | Maximum 15 lines without blank lines |
+| length | Maximum 16 lines without blank lines |
 
 ## Host to deploy workflow
 
