@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>ImreBoersma/projects//renovate/default"],
+  "packageRules": [
+    {
+      "description": "Do not merge action updates automatically. A change in a shared workflow reaches all repos, so test it on a real repo first.",
+      "matchManagers": ["github-actions"],
+      "automerge": false
+    }
+  ]
+}

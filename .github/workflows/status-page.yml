@@ -9,9 +9,14 @@ on:
     paths:
       - projects.yaml
       - "status/**"
+  # CI for PRs, for example Renovate updates of status/ (spec 003). Only job build runs.
+  pull_request:
+    paths:
+      - projects.yaml
+      - "status/**"
 
 concurrency:
-  group: status-page
+  group: status-page-${{ github.ref }}
   cancel-in-progress: false
 
 defaults:
@@ -48,6 +53,7 @@ jobs:
   # Separate from deploy: an issue error does not stop the page deploy (research.md §8).
   issues:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read

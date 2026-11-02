@@ -4,7 +4,8 @@ const TOKEN_BY_OWNER: Record<string, string> = {
   ImreBoersma: "STATUS_READ_TOKEN",
   "harmonieorkest-brummen": "STATUS_READ_TOKEN_HOB",
 };
-const RENOVATE = new Set(["renovate", "renovate[bot]"]);
+// The hosted app (renovate) and self-hosted Renovate apps such as imreboersma-homelab-renovate.
+const RENOVATE = /(^|-)renovate(\[bot\])?$/;
 
 interface RepoNode {
   defaultBranchRef: {
@@ -56,7 +57,7 @@ export function mapRepo(node: RepoNode | null, project: Project): ProjectStatus 
   const commit = node.defaultBranchRef?.target;
   const rollup = commit?.statusCheckRollup?.state;
   const renovate = node.pullRequests.nodes
-    .filter((pr) => pr.author && RENOVATE.has(pr.author.login))
+    .filter((pr) => pr.author && RENOVATE.test(pr.author.login))
     .map((pr) => new Date(pr.createdAt))
     .sort((a, b) => a.getTime() - b.getTime());
   const dep = node.deployments.nodes[0];

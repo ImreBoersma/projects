@@ -100,12 +100,14 @@ one PR for them, in the weekly time window.
 - **FR-007**: The preset MUST wait a minimum of 3 days after a release before it opens a PR for it,
   except for security updates.
 - **FR-008**: Each own project repo in the catalog with a repo and status `active` or `maintenance`
-  MUST have a `renovate.json` that extends `github>ImreBoersma/projects//renovate/default`.
+  MUST have a Renovate config file (`renovate.json`, or `.github/renovate.json` in HomeLab) that
+  extends `github>ImreBoersma/projects//renovate/default`.
 - **FR-009**: The `projects` repo MUST also have a `renovate.json` that extends the preset. This
   removes the Principle IV exception of spec 001.
 - **FR-010**: No repo in the scope of FR-008 MUST contain `dependabot.yml` for version updates.
-- **FR-011**: The update PRs MUST be from Renovate (author `renovate[bot]` or `renovate`), so that
-  the status page counts them (spec 001).
+- **FR-011**: The update PRs MUST be from Renovate: the hosted app (`renovate[bot]`) or the
+  HomeLab Renovate app (`imreboersma-homelab-renovate[bot]`). The status page (spec 001) MUST count
+  the PRs of both as Renovate PRs.
 
 ### Key Entities
 
@@ -120,14 +122,16 @@ one PR for them, in the weekly time window.
 - **SC-001**: 0 repos in the scope of FR-008 use Dependabot for version updates.
 - **SC-002**: 100% of the repos in the scope of FR-008 extend the preset.
 - **SC-003**: The Maintainer merges 0 patch updates by hand when CI passes.
-- **SC-004**: Each repo gets a maximum of 2 non-security update PRs each week (one minor group, and
-  patch PRs that merge automatically), plus major updates.
+- **SC-004**: Each repo that uses the hosted Renovate app gets a maximum of 2 non-security update
+  PRs each week (one minor group and one patch group that merges automatically), plus major
+  updates. HomeLab keeps its own groups and is not in the scope of this criterion.
 - **SC-005**: The feature costs €0 each month to operate.
 
 ## Assumptions
 
 - Renovate runs as the free hosted Renovate GitHub App on the account `ImreBoersma`. HomeLab keeps
-  its own Renovate workflow if it needs private registries.
+  its own Renovate workflow, because it needs `postUpgradeTasks`, and the hosted app does not run
+  commands.
 - CI comes from spec 002. Before spec 002 is complete, a repo without CI gets update PRs but no
   automerge (FR-006).
 - The 3-day wait (FR-007) is not in PLAN.md. It is added because automerge without a wait can merge
@@ -135,7 +139,9 @@ one PR for them, in the weekly time window.
 - The weekly window is on one morning in the weekend, time zone Europe/Amsterdam.
 - `harmonieorkest-brummen/pretband-backend` is a repo of a different owner. This feature does not
   change it.
-- Dependabot security alerts are a separate setting. They can stay on; they do not open PRs.
+- Dependabot alerts (GitHub vulnerability alerts) stay on. They open no PRs, and Renovate reads
+  them to find security updates. Dependabot security updates (automatic PRs) are off, so that each
+  fix gets one PR, from Renovate.
 
 ## Principles Affected
 
