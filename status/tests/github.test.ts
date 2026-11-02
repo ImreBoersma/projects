@@ -61,6 +61,26 @@ describe("mapRepo", () => {
     expect(map("r0").renovatePrCount).toBe(0);
   });
 
+  test("counts the PRs of a self-hosted Renovate app", () => {
+    const logins = [
+      "renovate",
+      "renovate[bot]",
+      "imreboersma-homelab-renovate",
+      "imreboersma-homelab-renovate[bot]",
+      "renovatefan",
+      "some-person",
+    ];
+    const node = {
+      defaultBranchRef: null,
+      pullRequests: {
+        totalCount: logins.length,
+        nodes: logins.map((login) => ({ createdAt: "2026-10-01T00:00:00Z", author: { login } })),
+      },
+      deployments: { nodes: [] },
+    };
+    expect(mapRepo(node, project("x")).renovatePrCount).toBe(4);
+  });
+
   test("a null alias is unavailable", () => {
     expect(map("r3").availability).toBe("unavailable");
   });

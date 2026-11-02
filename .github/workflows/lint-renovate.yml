@@ -1,0 +1,25 @@
+name: lint-renovate
+
+on:
+  push:
+    paths:
+      - "renovate/**"
+      - renovate.json
+  pull_request:
+    paths:
+      - "renovate/**"
+      - renovate.json
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Check the Renovate configuration
+        run: npx --yes --package renovate@44.201.0 -- renovate-config-validator --strict --no-global renovate/default.json renovate.json
