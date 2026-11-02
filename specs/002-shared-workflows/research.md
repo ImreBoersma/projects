@@ -129,3 +129,19 @@ All facts about the project repos are from the GitHub API on 2026-10-30.
   `.github/workflows/**`.
 - **Rationale**: an error in a shared workflow breaks CI in all repos. HomeLab already uses
   actionlint.
+
+## 14. Validation results (T025, 2026-11-02)
+
+- CI time of the last `main` run: Beter-dan-de-MIDI 23 s, boek-de-bus 21 s, personal-website 23 s,
+  Reperatie-Formulier 19 s, scales-exercises 29 s. The goal is less than 5 minutes.
+- Deploy time: Beter-dan-de-MIDI 25 s, scales-exercises 27 s, boek-de-bus 46 s, personal-website 53 s.
+- Package managers in the CI logs: npm (Beter-dan-de-MIDI, personal-website, Reperatie-Formulier),
+  bun (boek-de-bus), yarn (scales-exercises). Quickstart §4 passes.
+- Status page on 2026-11-02 (quickstart §6): Beter dan de MIDI 2026-10-30 Succeeded, Boek de bus
+  2026-11-02 Succeeded, Personal website 2026-11-02 Succeeded, Scales exercises 2026-10-30
+  Succeeded. HomeLab (out of scope) and Reperatie-Formulier (no host) show "Unknown".
+  Pretband backend shows "Data not available", because `STATUS_READ_TOKEN_HOB` is not set.
+- The status page deploys through `deploy-pages.yml` since ImreBoersma/projects#2.
+- Lessons: a caller MUST set `permissions: { contents: read }` (scales-exercises#375). Biome
+  formats YAML in some repos, so a long `secrets` line must be a block (scales-exercises#376).
+  `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` MUST be Actions variables, not secrets.

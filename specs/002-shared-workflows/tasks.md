@@ -104,14 +104,15 @@ project repo change in a PR.
   - `workflow_call`, secret `vercel-token` (required). Job `deploy`: the same default-branch `if:`, `environment: production`, job concurrency `deploy-${{ github.repository }}`, no cancel.
   - Env: `VERCEL_TOKEN` from the secret, `VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}`, `VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}`. Check all three; a missing value fails with `::error::` and the name.
   - Steps: checkout; `actions/setup-node@v7`; if `bun.lock` exists, `oven-sh/setup-bun@v2`, because `vercel build` runs the install command of the project; `npx vercel@<exact version> pull --yes --environment=production --token="$VERCEL_TOKEN"`; `npx vercel@<same> build --prod --token=...`; `npx vercel@<same> deploy --prebuilt --prod --token=...`. Use one exact Vercel CLI version in a workflow-level env `VERCEL_CLI`.
-- [ ] T018 [US2] Run actionlint. Push branch `002-shared-workflows`. Then test each deploy workflow in one repo with `@002-shared-workflows` (constitution):
+- [X] T018 [US2] Run actionlint. Push branch `002-shared-workflows`. Then test each deploy workflow in one repo with `@002-shared-workflows` (constitution):
   - `scales-exercises`: add the `deploy` job of `contracts/caller.md` (`project-id: imre-boersma`, `target: scales`, secret `FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA`). Remove `firebase-hosting-merge.yml`. Merge. The site must change and a `production` deployment must exist.
   - `Beter-dan-de-MIDI`: set `base: "/Beter-dan-de-MIDI/"` in `vite.config.ts`. Change the `build` script to also run `cp dist/index.html dist/404.html`. Add the `deploy` job (`deploy-pages.yml`) as in the Pages example of `contracts/caller.md`, with job `permissions: { pages: write, id-token: write }`. Remove `main.yml`. Merge to `main`. The site must work at `imreboersma.github.io/Beter-dan-de-MIDI/`.
   - `personal-website`: add `vercel.json` with `{ "git": { "deploymentEnabled": { "main": false } } }`. Manual: add secret `VERCEL_TOKEN` and variables `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`. Add the `deploy` job (`deploy-vercel.yml`, secret `vercel-token: "${{ secrets.VERCEL_TOKEN }}"`). Merge. One production deploy from Actions; none from the Git integration.
   - Done 2026-10-30 for scales-exercises (#376) and Beter-dan-de-MIDI (#310), with `@main` because the deploy workflows were already on `main` since #2. PR runs: CI passed, deploy skipped. `main` runs: deploy passed; records `production` (scales) and `github-pages` (Beter). Both sites respond with HTTP 200; the scales build contains the Firebase settings of `BUILD_ENV`. The scales caller has 16 lines (Biome line width), one more than SC-003.
-  - Open: personal-website, after the Maintainer sets `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`.
+  - Done 2026-11-02 for personal-website (#25): PR run CI passed, deploy skipped, Vercel preview continued. `main` run: deploy passed; one new `production` record, none from the Vercel Git integration. imreboersma.nl responds with HTTP 200.
 - [ ] T019 [US2] Merge branch `002-shared-workflows` into `main`. In the three repos of T018, change the refs to `@main`.
-- [ ] T020 [US2] `boek-de-bus`: add `vercel.json` as in T018, the Vercel secret and variables, and the `deploy` job with `@main`. Merge. Check as in T018.
+- [X] T020 [US2] `boek-de-bus`: add `vercel.json` as in T018, the Vercel secret and variables, and the `deploy` job with `@main`. Merge. Check as in T018.
+  - Done 2026-11-02 in ImreBoersma/boek-de-bus#2: the deploy installed bun and passed; one new `production` record. boek-de-bus.vercel.app responds with HTTP 200.
 - [X] T021 [US2] In `.github/workflows/status-page.yml`: in job `build`, replace `actions/upload-pages-artifact@v3` with `actions/upload-artifact` (newest major) `name: build`, `path: _site`. Replace job `deploy` with `uses: ./.github/workflows/deploy-pages.yml`, `needs: build`, permissions `pages: write`, `id-token: write`. Keep job `issues` as it is. Run the workflow; the page must update (research.md §12).
   - Done 2026-10-30: the status-page run of the merge of #2 deployed through `deploy-pages.yml` (deployment `github-pages`, 16:07 UTC).
 
@@ -127,13 +128,16 @@ project repo change in a PR.
 
 - [ ] T022 [US3] Do quickstart.md §5: add a step that prints the Node version to `ci-node.yml` on a branch, test it on one repo, merge, push to two repos, make sure that both show the step. Then remove the step the same way.
 - [ ] T023 [US3] Count the lines of `.github/workflows/ci.yml` in each of the 5 repos, without blank lines. Each must be 15 or fewer (SC-003) and contain only `uses:` jobs (FR-009).
+  - 2026-11-02: Beter-dan-de-MIDI 13, boek-de-bus 12, personal-website 12, Reperatie-Formulier 8, scales-exercises 16 lines. All jobs are `uses:` jobs (FR-009). scales-exercises is 1 line over SC-003, because Biome formats YAML with line width 80. Open: the Maintainer decides if SC-003 changes to 16.
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Make sure that no old workflow files remain (FR-012): `ci.yml` old content, `main.yml`, `node.js.yml`, `firebase-hosting-merge.yml`. Make sure that no workflow file contains a secret value (FR-010).
-- [ ] T025 Do quickstart.md §4 and §6. Record the results in a new section "14. Validation results" in `specs/002-shared-workflows/research.md`: the CI time of each repo (goal: less than 5 minutes), and the last deploy of each project on the status page.
+- [X] T024 [P] Make sure that no old workflow files remain (FR-012): `ci.yml` old content, `main.yml`, `node.js.yml`, `firebase-hosting-merge.yml`. Make sure that no workflow file contains a secret value (FR-010).
+  - Done 2026-11-02: each of the 5 repos has only `.github/workflows/ci.yml`. No workflow file contains a secret value; the only matches are `id-token: write` and `${{ secrets.VERCEL_TOKEN }}`.
+- [X] T025 Do quickstart.md §4 and §6. Record the results in a new section "14. Validation results" in `specs/002-shared-workflows/research.md`: the CI time of each repo (goal: less than 5 minutes), and the last deploy of each project on the status page.
+  - Done 2026-11-02: results in research.md §14.
 - [ ] T026 [P] In `PLAN.md`, move feature 002 to "Done".
 
 ---
