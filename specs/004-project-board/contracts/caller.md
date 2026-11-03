@@ -19,8 +19,10 @@ jobs:
 
 In `projects`, the caller uses `./.github/workflows/add-to-board.yml`.
 
-Repos: Beter-dan-de-MIDI, boek-de-bus, personal-website, Reperatie-Formulier, scales-exercises,
-HomeLab, projects. Each repo needs the secret `BOARD_TOKEN`. `pretband-backend` gets no caller
-(research.md §1).
+Repos: Beter-dan-de-MIDI, boek-de-bus, personal-website, scales-exercises, projects. These are the
+public own catalog repos. Each repo needs the secret `BOARD_TOKEN` (scope `project` only,
+research.md §3).
 
-Caution: a HomeLab merge to `main` deploys on the Pi. The Maintainer merges the HomeLab PR.
+No caller in: HomeLab and Reperatie-Formulier (private: the sync adds their issues), and
+`pretband-backend` (other owner: built-in auto-add, research.md §1). When a repo changes from private
+to public, add the caller.

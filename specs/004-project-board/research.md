@@ -23,7 +23,7 @@ organisation (spec edge case) and record the result here.
 
 ## 2. How a new issue goes to the board (FR-005, SC-001)
 
-**Decision**: a reusable workflow `add-to-board.yml`. Each own catalog repo calls it on
+**Decision**: a reusable workflow `add-to-board.yml`. Each public own catalog repo calls it on
 `issues: [opened, transferred]`. The job reads the catalog of `projects`, finds the entry, adds
 the issue with `actions/add-to-project@v2`, and sets Project and Roadmap = No.
 
@@ -32,23 +32,40 @@ auto-add is limited to 1 repo on the free plan. FR-005 asks for the shared workf
 
 **Alternatives**:
 - Only a scheduled sweep in `projects`. One secret and no callers, but scheduled runs come late
-  by 5 to 30 minutes, so SC-001 fails. Rejected as the main path. The daily sync (§4) still adds
-  items that the add job missed.
+  by 5 to 30 minutes, so the 5-minute target fails. Rejected for public repos. For private repos
+  the sync is the path (§3). The sync also adds items that the add job missed.
 - Built-in auto-add for all repos. Rejected: 1 repo on the free plan, and it sets no fields.
 
 ## 3. Token (FR-011)
 
-**Decision**: one classic PAT with the scopes `project` and `repo`, expiry 1 year, as secret
-`BOARD_TOKEN` in each own catalog repo.
+**Decision**: two classic PATs, each with expiry 1 year.
+
+| Secret | Scopes | Where | Used by |
+|---|---|---|---|
+| `BOARD_TOKEN` | `project` | `projects` and the 4 public project repos | the add job |
+| `BOARD_SYNC_TOKEN` | `project`, `repo` | `projects` only | the sync |
+
+The private repos (HomeLab, Reperatie-Formulier) get no caller. The sync adds their open issues
+two times each day (§4, §7). FR-005 and SC-001 were changed for this on 2026-11-03.
 
 **Rationale**: `GITHUB_TOKEN` has no access to user projects. Fine-grained PATs do not support
-user-owned projects. GitHub App tokens are documented only for organisation projects. Issues of
-the private repos (HomeLab, Reperatie-Formulier) need `repo`.
+user-owned projects. GitHub App tokens are documented only for organisation projects. So the only
+token type is a classic PAT. A classic PAT reads public issues without a repo scope, so `project`
+is sufficient for the add job. Issues of private repos need `repo`, and `repo` gives write access to
+all repos of the owner. With the split, a leak from a project repo exposes only the board. The
+token with `repo` is in 1 repo, and only workflows on `main` of `projects` use it.
 
-**Risk**: `repo` gives write access to all repos of the owner. The secret is in 7 repos. Only
-workflows on the default branch get it, and pull requests from forks do not get secrets. Accept
-this, because there is no narrower token for user projects. When the token expires, the add job
-fails and GitHub sends a notification (spec edge case).
+**Not confirmed**: that `project` alone can add an issue of a public repo. quickstart.md §3 tests
+it. If it fails, add the scope `public_repo` to `BOARD_TOKEN`. That scope gives write access to
+public repos, so record the result here.
+
+**Alternatives**:
+- One token with `project` and `repo` in all 7 repos. Rejected: a leak from any repo exposes
+  all repos, also HomeLab, which deploys as root.
+- Keep the private repos off the board. Rejected: the board then misses the work of 2 projects.
+
+When a token expires, the add job or the sync fails, and GitHub sends a notification (spec edge
+case). Rotate both tokens on the same day.
 
 ## 4. Field options follow the catalog (FR-004)
 
@@ -99,8 +116,8 @@ Project value. `projects` is not in the catalog, so its other issues stay off th
 **Rationale**: the issues job opens issues with `GITHUB_TOKEN`. GitHub does not start workflows for
 events that `GITHUB_TOKEN` makes, so the `issues` caller of `projects` does not run for them.
 
-**Alternatives**: open the problem issues with `BOARD_TOKEN`. Rejected: the issues job then needs a
-token with `repo` scope only to open issues. The add job also reads the marker, for a problem issue
+**Alternatives**: open the problem issues with a PAT, so that the caller runs. Rejected: the sync
+runs in the same job and adds them already. The add job also reads the marker, for a problem issue
 that a person opens by hand.
 
 **Open point**: the Maintainer can add `projects` to the catalog if its own issues must be on the

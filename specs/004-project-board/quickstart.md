@@ -3,8 +3,11 @@
 ## Prerequisites
 
 - `gh auth refresh -s project` on the Maintainer machine.
-- A classic PAT with the scopes `project` and `repo`, expiry 1 year, as secret `BOARD_TOKEN` in
-  `projects` and in the 6 own catalog repos (`gh secret set BOARD_TOKEN -R ImreBoersma/<repo>`).
+- Classic PAT 1, scope `project`, expiry 1 year: secret `BOARD_TOKEN` in `projects`,
+  Beter-dan-de-MIDI, boek-de-bus, personal-website and scales-exercises
+  (`gh secret set BOARD_TOKEN -R ImreBoersma/<repo>`).
+- Classic PAT 2, scopes `project` and `repo`, expiry 1 year: secret `BOARD_SYNC_TOKEN` in
+  `projects` only.
 
 ## 1. Make the board
 
@@ -32,7 +35,8 @@ Expected: all tests pass.
 1. On a branch of `projects`, add the shared workflows. In scales-exercises, add the caller with
    `@<branch>`.
 2. Open an issue in scales-exercises. Expected: within 1 minute, the issue is on the board with
-   Project "Scales exercises" and Roadmap No (FR-005).
+   Project "Scales exercises" and Roadmap No (FR-005). This also tests that `BOARD_TOKEN` with only
+   `project` is sufficient (research.md §3).
 3. Close the issue. Expected: Status Done (US1 AC3).
 
 ## 4. Sync
@@ -41,7 +45,8 @@ Expected: all tests pass.
    catalog names and stakeholders) and removes "Placeholder".
 2. Set a value on one test item. Run the sync without dry run. Expected: the options match the
    catalog, and the value on the test item stays (research.md §4).
-3. Expected: open issues of catalog repos that were not on the board are now on the board.
+3. Expected: open issues of catalog repos that were not on the board are now on the board, also
+   the issues of HomeLab and Reperatie-Formulier (FR-005, private repos).
 
 ## 5. Other owner (FR-010)
 

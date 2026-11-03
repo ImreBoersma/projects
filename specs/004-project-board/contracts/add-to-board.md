@@ -6,7 +6,7 @@ Trigger: `workflow_call`. The caller runs it on `issues: [opened, transferred]`.
 
 | Kind | Name | Required | Note |
 |---|---|---|---|
-| secret | `board-token` | yes | classic PAT, scopes `project` and `repo` (research.md §3) |
+| secret | `board-token` | yes | classic PAT, scope `project` (research.md §3) |
 
 No inputs. The job reads the issue from `github.event.issue` and the repo from
 `github.repository`.
@@ -16,7 +16,7 @@ No inputs. The job reads the issue from `github.event.issue` and the repo from
 1. Check out `ImreBoersma/projects` at `main` (catalog and `status/`).
 2. `bun run board:add`. It finds the catalog entry (data-model.md, "Catalog lookup").
 3. No entry: write "Not in the catalog: <repo>. Not added." to the log. Exit 0.
-4. Entry: add the issue to the board. Set Project to the entry `name`. Set Roadmap to No.
+4. Entry: add the issue. Use only the secret `board-token` to the board. Set Project to the entry `name`. Set Roadmap to No.
 5. The issue is already on the board: set only an empty Project. Exit 0.
 6. The Project option for the entry does not exist: exit 1 with "Run the board sync: no Project
    option <name>."
@@ -31,6 +31,7 @@ workflow as an environment value. It is not a secret.
 
 Triggers: `push` to `main` that changes `projects.yaml`, `workflow_dispatch`. The issues job of
 `status-page.yml` also runs `bun run board:sync` on each scheduled status run (research.md §7).
-Secret: `BOARD_TOKEN`. It runs `bun run board:sync` (research.md §4 and §5). With
+Secret: `BOARD_SYNC_TOKEN`, scopes `project` and `repo`. The issues job of `status-page.yml` also
+gets this secret. Do not give it to other jobs or repos. It runs `bun run board:sync` (research.md §4 and §5). With
 `workflow_dispatch` input `dry-run: true`, it writes the planned changes to the log and changes
 nothing.

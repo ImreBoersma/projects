@@ -17,6 +17,11 @@ issues from `harmonieorkest-brummen/pretband-backend`."
 
 - Q: Which items are on the roadmap? → A: Only items that the Maintainer marks with the field Roadmap = Yes.
 
+### Session 2026-11-03
+
+- Q: Can the token with `repo` scope be in each project repo? → A: No. It stays in `projects`.
+  Private repos get no caller, and the sync adds their issues (FR-005, FR-011, SC-001).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See all work of all projects on one board (Priority: P1)
@@ -106,8 +111,9 @@ sure that it shows the planned items and no internal data.
 - **FR-003**: The board MUST have the fields Project, Priority, Status and Stakeholder.
 - **FR-004**: The values of Project MUST be the `name` values of the catalog entries that are not
   archived.
-- **FR-005**: A new issue in a catalog repo MUST go to the board automatically, through the shared
-  workflow of spec 002, with the Project field set.
+- **FR-005**: A new issue in a public catalog repo MUST go to the board automatically, through the
+  shared workflow of spec 002, with the Project field set. An open issue in a private catalog repo
+  MUST go to the board with the next scheduled sync, with the Project field set.
 - **FR-006**: A `status-problem` issue MUST go to the board with the Project of the problem.
 - **FR-007**: The board MUST have a Roadmap view that a person without a GitHub login can open.
 - **FR-008**: The board MUST have a field Roadmap (Yes or No, default No). The Roadmap view MUST
@@ -116,7 +122,8 @@ sure that it shows the planned items and no internal data.
   cost, credentials or private notes (Principle VII).
 - **FR-010**: The issues of `harmonieorkest-brummen/pretband-backend` MUST be on a board: the user
   board if GitHub permits it, or a separate board of that organisation if not.
-- **FR-011**: Tokens for the auto-add MUST be Actions secrets (Principle III).
+- **FR-011**: Tokens for the auto-add MUST be Actions secrets (Principle III). A token with write
+  access to repos MUST be only in the secrets of `projects`.
 
 ### Key Entities
 
@@ -128,8 +135,9 @@ sure that it shows the planned items and no internal data.
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of the issues that open in catalog repos after the feature starts are on the
-  board within 5 minutes.
+- **SC-001**: 100% of the issues that open in public catalog repos after the feature starts are on
+  the board within 5 minutes. 100% of the issues that open in private catalog repos are on the
+  board within 13 hours (the status page runs at 05:00 and 17:00 UTC).
 - **SC-002**: The Maintainer finds the open tasks of all projects in one place in less than 1
   minute.
 - **SC-003**: A stakeholder opens the roadmap without a GitHub account.
@@ -146,7 +154,9 @@ sure that it shows the planned items and no internal data.
 - Issues that are open before the feature starts are added one time by hand or with a one-time
   script.
 - The auto-add uses a token with write access to the board, because the workflow token of a repo
-  cannot write to a user-level project.
+  cannot write to a user-level project. To read issues of private repos, a classic PAT needs the
+  `repo` scope, which also gives write access to all repos. That token stays in `projects`, so
+  private repos get no caller and their issues come with the sync.
 - A board is configuration (Principle IX). This spec gives the acceptance tests.
 
 ## Principles Affected

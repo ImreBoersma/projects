@@ -30,14 +30,16 @@ Real issues in one test repo before the merge (constitution, Development Workflo
 
 **Project Type**: shared workflow and a small Bun script.
 
-**Performance Goals**: an issue is on the board within 5 minutes (SC-001). The add job runs on the
+**Performance Goals**: an issue of a public repo is on the board within 5 minutes, and an issue of
+a private repo within 13 hours (SC-001). The add job runs on the
 `issues` event, so it takes less than 1 minute.
 
-**Constraints**: €0 each month. A classic PAT is necessary (research.md §3). No change to the
+**Constraints**: €0 each month. Classic PATs are necessary: `BOARD_TOKEN` (`project`) in the
+public repos, `BOARD_SYNC_TOKEN` (`project`, `repo`) only in `projects` (research.md §3). No change to the
 settings of `harmonieorkest-brummen` repos.
 
-**Scale/Scope**: 7 own repos with a repo in the catalog (5 Node repos, HomeLab, `projects`), plus
-`pretband-backend`. Fewer than 100 open issues.
+**Scale/Scope**: 6 own catalog repos (4 public with a caller, 2 private through the sync),
+`projects`, and `pretband-backend`. Fewer than 100 open issues.
 
 ## Constitution Check
 
@@ -47,7 +49,7 @@ settings of `harmonieorkest-brummen` repos.
 |---|---|---|
 | I. GitHub for all project work | Pass | GitHub Projects only. |
 | II. Catalog is the only project list | Pass | The add job and the sync read `projects.yaml`. No repo list in code or in view filters. |
-| III. No secrets or private data | Pass | `BOARD_TOKEN` is an Actions secret. Stakeholders by name only. |
+| III. No secrets or private data | Pass | Both tokens are Actions secrets. The token with `repo` is only in `projects`. Stakeholders by name only. |
 | IV. Shared configuration | Pass | One shared workflow. Each caller is 11 lines (contracts/caller.md). |
 | VII. Read-only views for stakeholders | Pass | Public project, Roadmap view, no login. Sync removes private and problem items (research.md §5). |
 | VIII. Keep the work small | Pass | Event workflow, and the sync runs in the existing status page schedule. No server. |
@@ -56,8 +58,8 @@ settings of `harmonieorkest-brummen` repos.
 | Development Workflow: test on a real repo | Pass | quickstart.md §3. |
 | Repos of other owners | Pass | `pretband-backend` uses the built-in auto-add of the board. No change in that repo. |
 
-Re-check after Phase 1: no violations. One risk to accept: the classic PAT has `repo` scope and is
-in the secrets of 7 repos (research.md §3).
+Re-check after Phase 1: no violations. One risk to accept: `BOARD_SYNC_TOKEN` has `repo` scope.
+It is only in `projects` (research.md §3).
 
 ## Project Structure
 
@@ -91,7 +93,7 @@ projects/ (this repo)
 ├── status/tests/board.test.ts            # new
 └── status/package.json                   # changed: scripts board:add and board:sync
 
-each own repo with a repo in the catalog (6)
+each public own repo in the catalog (4)
 └── .github/workflows/board.yml           # new caller, secret BOARD_TOKEN
 ```
 
