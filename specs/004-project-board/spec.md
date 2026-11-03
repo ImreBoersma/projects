@@ -108,9 +108,9 @@ sure that it shows the planned items and no internal data.
 
 - **FR-001**: There MUST be one user-level GitHub Project for all projects of `ImreBoersma`.
 - **FR-002**: The issues MUST stay in the repo of each project. The board MUST NOT copy them.
-- **FR-003**: The board MUST have the fields Project, Priority, Status and Stakeholder.
+- **FR-003**: The board MUST have the fields Project, Priority, Status, Stakeholder and Roadmap.
 - **FR-004**: The values of Project MUST be the `name` values of the catalog entries that are not
-  archived.
+  archived, plus the archived entries that still have open items on the board.
 - **FR-005**: A new issue in a public catalog repo MUST go to the board automatically, through the
   shared workflow of spec 002, with the Project field set. An open issue in a private catalog repo
   MUST go to the board with the next scheduled sync, with the Project field set.
@@ -151,8 +151,8 @@ sure that it shows the planned items and no internal data.
   removes them.
 - Priority values: P1, P2, P3. Status values: Todo, In progress, Done. Stakeholder values are the
   `stakeholder` names in the catalog, not contact details (Principle III).
-- Issues that are open before the feature starts are added one time by hand or with a one-time
-  script.
+- Issues that are open before the feature starts are added by the sync, which also adds issues
+  that the auto-add missed.
 - The auto-add uses a token with write access to the board, because the workflow token of a repo
   cannot write to a user-level project. To read issues of private repos, a classic PAT needs the
   `repo` scope, which also gives write access to all repos. That token stays in `projects`, so

@@ -25,7 +25,8 @@ organisation (spec edge case) and record the result here.
 
 **Decision**: a reusable workflow `add-to-board.yml`. Each public own catalog repo calls it on
 `issues: [opened, transferred]`. The job reads the catalog of `projects`, finds the entry, adds
-the issue with `actions/add-to-project@v2`, and sets Project and Roadmap = No.
+the issue with the GraphQL mutation `addProjectV2ItemById`, and sets Project and Roadmap = No.
+`actions/add-to-project@v2` was rejected: it sets no fields, so the script must call the API anyway.
 
 **Rationale**: the `issues` event runs in seconds, so SC-001 (5 minutes) is easy. The built-in
 auto-add is limited to 1 repo on the free plan. FR-005 asks for the shared workflow of spec 002.
@@ -70,7 +71,9 @@ case). Rotate both tokens on the same day.
 ## 4. Field options follow the catalog (FR-004)
 
 **Decision**: a sync script (`board:sync`) in `projects`. It runs in the issues job of each status
-page run (§7), on a push that changes `projects.yaml`, and on dispatch. It:
+page run (§7) and on dispatch. The status page runs on each push that changes `projects.yaml`, so a
+catalog change starts one sync. Both runs use the concurrency group `board-sync`, because two syncs
+at the same time can make duplicate options. It:
 
 1. Adds a Project option for each catalog entry that is not archived, and a Stakeholder option for
    each non-empty `stakeholder` value.
@@ -98,6 +101,10 @@ A viewer without access sees a private-repo item as a locked, redacted row. That
 title, but SC-004 wants 0 private items, so the sync removes them. There is no filter for repo
 visibility, and a `-repo:` list in the filter is a project list outside the catalog (Principle II).
 
+**Accepted**: a public project makes all views public, not only Roadmap. The views Board and By
+project show Priority, Stakeholder and `status-problem` items of public repos. That data is
+already public in those repos, and items of private repos stay redacted, so Principle VII holds.
+
 **Not confirmed**: that a person without a login can open `/users/ImreBoersma/projects/N/views/M`.
 quickstart.md §6 tests it in a private browser window.
 
@@ -123,7 +130,13 @@ that a person opens by hand.
 **Open point**: the Maintainer can add `projects` to the catalog if its own issues must be on the
 board. That is a catalog change, not a change to this plan.
 
-## 8. Views
+## 8. An issue moves to a different repo
+
+**Decision**: no task. GitHub keeps the project item when an issue moves, and the caller also runs
+on `transferred`. The sync does not change a Project value that exists. If the new repo belongs to
+a different project, the Maintainer changes the value by hand.
+
+## 9. Views
 
 **Decision**: views are made by hand in the web UI. The API has no mutation to make views.
 contracts/board.md lists the views and filters, so that the board can be made again.

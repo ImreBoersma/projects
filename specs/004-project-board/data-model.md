@@ -7,11 +7,11 @@ options.
 
 | Field | Type | Values | Source |
 |---|---|---|---|
-| Project | single select | `name` of each catalog entry that is not archived | sync (research.md §4) |
+| Project | single select | `name` of each catalog entry that is not archived, plus archived entries with open items (FR-004) | sync (research.md §4) |
 | Priority | single select | P1, P2, P3 | Maintainer |
 | Status | built-in single select | Todo, In progress, Done | Maintainer; Done from the built-in close workflow |
 | Stakeholder | single select | each non-empty `stakeholder` of the catalog | sync; the Maintainer sets the value on an item |
-| Roadmap | single select | Yes, No | add job sets No; Maintainer sets Yes; sync sets No (§5) |
+| Roadmap | single select | Yes, No | add job and sync set No on new items; Maintainer sets Yes; sync sets No (research.md §5) |
 
 Visibility: Public. Name: "Projects".
 

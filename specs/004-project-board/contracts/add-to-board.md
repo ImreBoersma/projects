@@ -29,8 +29,9 @@ workflow as an environment value. It is not a secret.
 
 ## Shared workflow `board-sync.yml` (in `projects` only)
 
-Triggers: `push` to `main` that changes `projects.yaml`, `workflow_dispatch`. The issues job of
-`status-page.yml` also runs `bun run board:sync` on each scheduled status run (research.md §7).
+Trigger: `workflow_dispatch` only. The issues job of `status-page.yml` runs `bun run board:sync` on
+each status run: the schedule, and each push that changes `projects.yaml` (research.md §4, §7). Both
+use the concurrency group `board-sync`.
 Secret: `BOARD_SYNC_TOKEN`, scopes `project` and `repo`. The issues job of `status-page.yml` also
 gets this secret. Do not give it to other jobs or repos. It runs `bun run board:sync` (research.md §4 and §5). With
 `workflow_dispatch` input `dry-run: true`, it writes the planned changes to the log and changes

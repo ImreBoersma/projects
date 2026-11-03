@@ -18,8 +18,7 @@ private and `status-problem` items from the roadmap. The Roadmap view filters on
 
 **Language/Version**: TypeScript on Bun, in the existing `status/` package. GitHub Actions YAML.
 
-**Primary Dependencies**: GitHub Projects (v2) GraphQL API. `actions/add-to-project@v2`. `yaml`
-(already in `status/`).
+**Primary Dependencies**: GitHub Projects (v2) GraphQL API. `yaml` (already in `status/`).
 
 **Storage**: the GitHub Project. No other storage.
 
@@ -84,7 +83,7 @@ specs/004-project-board/
 projects/ (this repo)
 ├── .github/workflows/add-to-board.yml    # new, reusable: add one issue to the board
 ├── .github/workflows/board.yml           # new: caller for issues of projects
-├── .github/workflows/board-sync.yml      # new: sync on catalog change and on dispatch
+├── .github/workflows/board-sync.yml      # new: sync on dispatch, with dry run
 ├── .github/workflows/status-page.yml     # changed: the issues job also runs the sync
 ├── status/src/board/project.ts           # new: catalog lookup, marker parse, sync plan (pure)
 ├── status/src/board/graphql.ts           # new: Projects v2 queries and mutations
