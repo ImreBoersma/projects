@@ -135,7 +135,7 @@ export async function readOpenIssues(
       repository: {
         issues: {
           pageInfo: { hasNextPage: boolean; endCursor: string };
-          nodes: { id: string; number: number; body?: string }[];
+          nodes: { id: string; number: number; body?: string; author: { login: string } | null }[];
         };
       } | null;
     } = await graphql(
@@ -143,7 +143,7 @@ export async function readOpenIssues(
         repository(owner: $owner, name: $name) {
           issues(states: OPEN, first: 100, after: $after, labels: $labels) {
             pageInfo { hasNextPage endCursor }
-            nodes { id number body @include(if: $withBody) } } }
+            nodes { id number author { login } body @include(if: $withBody) } } }
       }`,
       {
         owner,
@@ -156,7 +156,13 @@ export async function readOpenIssues(
     );
     if (!data.repository) throw new Error(`No access to ${repo}.`);
     for (const n of data.repository.issues.nodes) {
-      issues.push({ id: n.id, repo, number: n.number, body: n.body ?? null });
+      issues.push({
+        id: n.id,
+        repo,
+        number: n.number,
+        body: n.body ?? null,
+        author: n.author?.login ?? null,
+      });
     }
     const page = data.repository.issues.pageInfo;
     after = page.hasNextPage ? page.endCursor : null;

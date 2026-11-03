@@ -3,7 +3,7 @@ import { parseArgs } from "node:util";
 import { parseCatalog } from "../catalog";
 import { field, optionId, required } from "./env";
 import { addItem, readBoard, readItemValues, setOption } from "./graphql";
-import { findEntry, planAdd } from "./project";
+import { findEntry, isRenovate, planAdd } from "./project";
 
 const { values: args } = parseArgs({
   options: { catalog: { type: "string", default: "../projects.yaml" } },
@@ -11,7 +11,7 @@ const { values: args } = parseArgs({
 
 interface IssueEvent {
   action: string;
-  issue: { node_id: string; body: string | null };
+  issue: { node_id: string; body: string | null; user: { login: string } | null };
   changes?: {
     new_issue: { node_id: string; body: string | null };
     new_repository: { full_name: string };
@@ -26,6 +26,11 @@ try {
   const moved = event.action === "transferred" ? event.changes : undefined;
   const issue = moved?.new_issue ?? event.issue;
   const repo = moved?.new_repository.full_name ?? required("GITHUB_REPOSITORY");
+
+  if (isRenovate(event.issue.user?.login ?? null)) {
+    console.log(`Opened by Renovate: ${repo}. Not added.`);
+    process.exit(0);
+  }
 
   const projects = parseCatalog(await Bun.file(args.catalog).text());
   const entry = findEntry(projects, repo, issue.body);

@@ -1,4 +1,5 @@
 // Pure rules of the project board (spec 004). The GraphQL calls are in graphql.ts.
+import { RENOVATE } from "../github";
 import { LABEL, parseMarker } from "../issues";
 import type { Project } from "../types";
 
@@ -30,7 +31,12 @@ export interface OpenIssue {
   repo: string;
   number: number;
   body: string | null;
+  author: string | null;
 }
+
+// Renovate opens a Dependency Dashboard issue in each repo. It is not a task, so it stays off the
+// board (FR-005).
+export const isRenovate = (login: string | null) => login !== null && RENOVATE.test(login);
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
@@ -69,7 +75,8 @@ export interface ItemPlan {
 export function planItems(projects: Project[], items: BoardItem[], issues: OpenIssue[]): ItemPlan {
   const onBoard = new Set(items.map((i) => i.contentId));
   const add = issues.flatMap((issue) => {
-    const entry = onBoard.has(issue.id) ? null : findEntry(projects, issue.repo, issue.body);
+    const skip = onBoard.has(issue.id) || isRenovate(issue.author);
+    const entry = skip ? null : findEntry(projects, issue.repo, issue.body);
     return entry ? [{ issue, project: entry.name }] : [];
   });
   const setProject = items.flatMap((item) => {

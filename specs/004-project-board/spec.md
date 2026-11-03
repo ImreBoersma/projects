@@ -113,7 +113,8 @@ sure that it shows the planned items and no internal data.
   archived, plus the archived entries that still have open items on the board.
 - **FR-005**: A new issue in a public catalog repo MUST go to the board automatically, through the
   shared workflow of spec 002, with the Project field set. An open issue in a private catalog repo
-  MUST go to the board with the next scheduled sync, with the Project field set.
+  MUST go to the board with the next scheduled sync, with the Project field set. Issues that
+  Renovate opens (the Dependency Dashboard) MUST NOT go to the board, because they are not tasks.
 - **FR-006**: A `status-problem` issue MUST go to the board with the Project of the problem.
 - **FR-007**: The board MUST have a Roadmap view that a person without a GitHub login can open.
 - **FR-008**: The board MUST have a field Roadmap (Yes or No, default No). The Roadmap view MUST

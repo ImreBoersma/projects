@@ -31,6 +31,7 @@ One issue of a repo. The board keeps a reference, not a copy (FR-002).
 |---|---|
 | repo `owner/name` of a catalog entry, status `active` or `maintenance` | that entry |
 | repo of an archived entry, or not in the catalog | none: do not add |
+| author is a Renovate app (`renovate`, `*-renovate`, with or without `[bot]`) | none: do not add (FR-005) |
 | `ImreBoersma/projects` and body starts with `<!-- status-problem: <id>/<reason> -->` | entry with that `id` |
 
 Repo names compare without case, because GitHub repo names are not case sensitive.

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   type BoardItem,
   findEntry,
+  isRenovate,
   type OpenIssue,
   planAdd,
   planItems,
@@ -41,12 +42,12 @@ function item(overrides: Partial<BoardItem> = {}): BoardItem {
   };
 }
 
-const issue = (id: string, repo: string, body: string | null = null): OpenIssue => ({
-  id,
-  repo,
-  number: 1,
-  body,
-});
+const issue = (
+  id: string,
+  repo: string,
+  body: string | null = null,
+  author: string | null = "ImreBoersma",
+): OpenIssue => ({ id, repo, number: 1, body, author });
 
 describe("findEntry", () => {
   test("finds the entry of a catalog repo, without case", () => {
@@ -103,6 +104,13 @@ describe("planItems", () => {
         issue("other", "someone/else"),
         issue("problem", "ImreBoersma/projects", marker),
         issue("own", "ImreBoersma/projects", "An issue of projects."),
+        issue("dashboard", "ImreBoersma/boek-de-bus", null, "renovate"),
+        issue(
+          "homelab-dashboard",
+          "ImreBoersma/scales-exercises",
+          null,
+          "imreboersma-homelab-renovate",
+        ),
       ],
     );
     expect(plan.add.map((a) => [a.issue.id, a.project])).toEqual([
@@ -125,6 +133,16 @@ describe("planItems", () => {
   test("sets Roadmap No on items without a value", () => {
     const plan = planItems(projects, [item({ id: "empty", roadmap: null }), item()], []);
     expect(plan.setRoadmapNo.map((i) => i.id)).toEqual(["empty"]);
+  });
+});
+
+describe("isRenovate", () => {
+  test("finds the Renovate apps", () => {
+    expect(isRenovate("renovate")).toBe(true);
+    expect(isRenovate("renovate[bot]")).toBe(true);
+    expect(isRenovate("imreboersma-homelab-renovate[bot]")).toBe(true);
+    expect(isRenovate("ImreBoersma")).toBe(false);
+    expect(isRenovate(null)).toBe(false);
   });
 });
 

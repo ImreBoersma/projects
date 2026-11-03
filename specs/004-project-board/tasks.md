@@ -123,6 +123,12 @@ public items and no private or `status-problem` items.
 
 ---
 
+## Change during implementation (2026-11-03)
+
+- [X] T037 [US1] [US2] Skip issues that Renovate opens (the Dependency Dashboard), in the sync and in the add job. Rule: the author login matches `RENOVATE` of `status/src/github.ts` (now exported). `isRenovate()` in `status/src/board/project.ts`, tests in `status/tests/board.test.ts`. FR-005 and data-model.md updated. The 5 dashboard items that T016 added were removed from the board; a dry run then gave "No changes".
+
+---
+
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [ ] T034 [P] Add the validation results to `specs/004-project-board/research.md` as §10: board number, the result of T016 (option ids), T018 (other owner), T024 (token scope) and T033 (roadmap without login), with dates.
