@@ -87,8 +87,8 @@ at the same time can make duplicate options. It:
 **Rationale**: `updateProjectV2Field` replaces the full option list. Each option that keeps its
 `id` keeps its item values. The script always sends the existing ids.
 
-**Not confirmed**: that values stay when the ids are sent. quickstart.md §4 tests it on a copy of
-the field before the first real sync.
+**Not confirmed**: that values stay when the ids are sent. quickstart.md §4 step 3 tests it: an
+extra unused option is removed while items keep their values.
 
 ## 5. Roadmap filter (FR-007, FR-008, FR-009)
 

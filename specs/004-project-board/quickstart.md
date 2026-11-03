@@ -41,12 +41,22 @@ Expected: all tests pass.
 
 ## 4. Sync
 
-1. Run `board-sync.yml` with `dry-run: true`. Expected: the log lists the options to add (all
-   catalog names and stakeholders) and removes "Placeholder".
-2. Set a value on one test item. Run the sync without dry run. Expected: the options match the
-   catalog, and the value on the test item stays (research.md §4).
-3. Expected: open issues of catalog repos that were not on the board are now on the board, also
-   the issues of HomeLab and Reperatie-Formulier (FR-005, private repos).
+Before the merge, run the sync locally: `board-sync.yml` is not on `main` yet, and GitHub starts a
+`workflow_dispatch` workflow only from the default branch. After the merge, use `board-sync.yml`.
+
+```sh
+cd status
+BOARD_URL=https://github.com/users/ImreBoersma/projects/<N> BOARD_SYNC_TOKEN=$(gh auth token) bun run board:sync --dry-run
+```
+
+1. Run with `--dry-run`. Expected: the log lists the options to add (all catalog names and
+   stakeholders) and removes "Placeholder".
+2. Run without `--dry-run`. Expected: the options match the catalog. Open issues of catalog repos
+   are on the board with a Project value, also the issues of HomeLab and Reperatie-Formulier
+   (FR-005, private repos).
+3. In the web UI, add the unused option "Test" to the field Project. Record the Project values of
+   three items. Run the sync again. Expected: "Test" is gone, and the three items keep their values
+   (research.md §4).
 
 ## 5. Other owner (FR-010)
 
