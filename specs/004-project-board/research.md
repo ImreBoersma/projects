@@ -56,9 +56,8 @@ is sufficient for the add job. Issues of private repos need `repo`, and `repo` g
 all repos of the owner. With the split, a leak from a project repo exposes only the board. The
 token with `repo` is in 1 repo, and only workflows on `main` of `projects` use it.
 
-**Not confirmed**: that `project` alone can add an issue of a public repo. quickstart.md §3 tests
-it. If it fails, add the scope `public_repo` to `BOARD_TOKEN`. That scope gives write access to
-public repos, so record the result here.
+**Confirmed 2026-11-03**: `project` alone can add an issue of a public repo. scales-exercises#382
+was on the board 18 seconds after it opened (T024). `public_repo` is not necessary.
 
 **Alternatives**:
 - One token with `project` and `repo` in all 7 repos. Rejected: a leak from any repo exposes
@@ -112,6 +111,9 @@ quickstart.md §6 tests it in a private browser window.
 
 **Decision**: use the built-in workflows "Item closed" and "Pull request merged". Both set Status
 to Done. Make sure that they are on after the board is made.
+
+**Confirmed 2026-11-03**: "Item closed" is on by default. scales-exercises#382 got Status Done when
+it closed.
 
 ## 7. `status-problem` issues (FR-006)
 
