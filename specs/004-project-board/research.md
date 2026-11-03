@@ -14,9 +14,13 @@ item. The free plan gives 1 auto-add workflow, for 1 repo. The constitution does
 changes to settings of `harmonieorkest-brummen` repos, so a caller in that repo is not possible.
 The built-in auto-add is a setting of the board, not of the repo.
 
-**Not confirmed**: the docs do not say directly that cross-owner items are permitted, and the org
-can block classic PATs. quickstart.md §5 tests this. If it fails, make a small board in the
-organisation (spec edge case) and record the result here.
+**Confirmed 2026-11-03**: the user board accepts issues of `harmonieorkest-brummen`, and the org
+does not block classic PATs. `BOARD_SYNC_TOKEN` read the repo and set the fields of #42. No
+separate board is necessary.
+
+**Result**: the built-in auto-add did not add #42 within 3 minutes. The sync also reads
+`pretband-backend`, because it is a catalog repo, so its issues come with the next status run
+(within 13 hours), as for the private repos.
 
 **Alternatives**: a board in the organisation for all projects. Rejected: most repos are of
 `ImreBoersma`.
