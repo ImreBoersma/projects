@@ -55,6 +55,10 @@ jobs:
     needs: build
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    # The sync step must not run at the same time as board-sync.yml (spec 004).
+    concurrency:
+      group: board-sync
+      cancel-in-progress: false
     permissions:
       contents: read
       issues: write
@@ -67,3 +71,9 @@ jobs:
           STATUS_READ_TOKEN: ${{ secrets.STATUS_READ_TOKEN }}
           STATUS_READ_TOKEN_HOB: ${{ secrets.STATUS_READ_TOKEN_HOB }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Adds the problem issues to the board. GITHUB_TOKEN events start no workflow (spec 004).
+      - name: Sync the board
+        run: bun run board:sync
+        env:
+          BOARD_URL: https://github.com/users/ImreBoersma/projects/4
+          BOARD_SYNC_TOKEN: ${{ secrets.BOARD_SYNC_TOKEN }}

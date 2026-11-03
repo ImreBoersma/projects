@@ -29,5 +29,7 @@ Stakeholder, assignees or labels (Principle VII).
 
 ## Links
 
-The roadmap link for stakeholders is `https://github.com/users/ImreBoersma/projects/<N>/views/<M>`.
-Record N and M in PLAN.md after the board is made. The status page can link to it later.
+Board: `https://github.com/users/ImreBoersma/projects/4` (N = 4, made on 2026-11-03).
+
+The roadmap link for stakeholders is `https://github.com/users/ImreBoersma/projects/4/views/<M>`.
+Record M here and in PLAN.md after T032. The status page can link to it later.

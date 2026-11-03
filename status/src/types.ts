@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   repo: string | null;
   status: ProjectState;
+  stakeholder?: string | null;
 }
 
 export type Reason = "ci-failed" | "deploy-failed" | "renovate-stale" | "inactive";

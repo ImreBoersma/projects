@@ -1,0 +1,10 @@
+name: Board
+on:
+  issues:
+    types: [opened, transferred]
+permissions: { contents: read }
+jobs:
+  board:
+    uses: ./.github/workflows/add-to-board.yml
+    secrets:
+      board-token: ${{ secrets.BOARD_TOKEN }}

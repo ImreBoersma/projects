@@ -5,7 +5,9 @@
   "scripts": {
     "test": "bun test",
     "lint": "biome check .",
-    "start": "bun run src/main.ts"
+    "start": "bun run src/main.ts",
+    "board:add": "bun run src/board/add.ts",
+    "board:sync": "bun run src/board/sync.ts"
   },
   "dependencies": {
     "yaml": "^2.8.1"

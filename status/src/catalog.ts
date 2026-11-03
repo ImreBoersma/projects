@@ -15,7 +15,7 @@ export function parseCatalog(text: string): Project[] {
     const fail = (field: string, rule: string): never => {
       throw new Error(`Catalog error in entry ${i}, field \`${field}\`: ${rule}`);
     };
-    const { id, name, repo, status } = raw ?? {};
+    const { id, name, repo, status, stakeholder } = raw ?? {};
     if (typeof id !== "string" || !ID.test(id)) fail("id", "required, only a-z, 0-9 and -.");
     if (seen.has(id as string)) fail("id", `"${id}" is not unique.`);
     seen.add(id as string);
@@ -29,6 +29,7 @@ export function parseCatalog(text: string): Project[] {
       name: name as string,
       repo: (repo as string) || null,
       status: status as ProjectState,
+      stakeholder: typeof stakeholder === "string" && stakeholder !== "" ? stakeholder : null,
     };
   });
 }

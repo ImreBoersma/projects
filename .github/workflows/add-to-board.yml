@@ -1,0 +1,37 @@
+# Adds a new issue to the project board, with Project from the catalog (spec 004).
+# Callers: contracts/caller.md of specs/004-project-board.
+name: add-to-board
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Ref of ImreBoersma/projects for the catalog and the script. Set it only to test a branch.
+        type: string
+        default: main
+    secrets:
+      board-token:
+        description: Classic PAT with the scope project.
+        required: true
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Get the catalog and the board script
+        uses: actions/checkout@v7
+        with:
+          repository: ImreBoersma/projects
+          ref: ${{ inputs.ref }}
+      - uses: oven-sh/setup-bun@v2
+      - name: Install the dependencies
+        working-directory: status
+        run: bun install --frozen-lockfile
+      - name: Add the issue to the board
+        working-directory: status
+        run: bun run board:add
+        env:
+          BOARD_URL: https://github.com/users/ImreBoersma/projects/4
+          BOARD_TOKEN: ${{ secrets.board-token }}
