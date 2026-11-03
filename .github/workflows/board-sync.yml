@@ -1,0 +1,34 @@
+# Sync of the project board with the catalog (spec 004, research.md §4).
+# The issues job of status-page.yml also runs the sync, on each status run.
+name: board-sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Show the changes, but do not change the board.
+        type: boolean
+        default: false
+
+concurrency:
+  group: board-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: status
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - name: Install the dependencies
+        run: bun install --frozen-lockfile
+      - name: Sync the board
+        run: bun run board:sync ${{ inputs.dry-run && '--dry-run' || '' }}
+        env:
+          BOARD_URL: https://github.com/users/ImreBoersma/projects/4
+          BOARD_SYNC_TOKEN: ${{ secrets.BOARD_SYNC_TOKEN }}

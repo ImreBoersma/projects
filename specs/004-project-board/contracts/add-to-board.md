@@ -7,8 +7,9 @@ Trigger: `workflow_call`. The caller runs it on `issues: [opened, transferred]`.
 | Kind | Name | Required | Note |
 |---|---|---|---|
 | secret | `board-token` | yes | classic PAT, scope `project` (research.md §3) |
+| input | `ref` | no | ref of `ImreBoersma/projects` for the catalog and the script, default `main`. Set it only to test a branch (T024). actionlint 1.7.12 does not know `job.workflow_sha`. |
 
-No inputs. The job reads the issue from `github.event.issue` and the repo from
+The job reads the issue from `github.event.issue` and the repo from
 `github.repository`.
 
 ## Behaviour

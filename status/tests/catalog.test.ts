@@ -31,7 +31,18 @@ describe("parseCatalog", () => {
       name: "One",
       repo: "ImreBoersma/one",
       status: "active",
+      stakeholder: null,
     });
+  });
+
+  test("reads the stakeholder name", () => {
+    const projects = parseCatalog(
+      entry("id: a\nname: A\nstatus: active\nstakeholder: Harmonieorkest Brummen"),
+    );
+    expect(projects[0].stakeholder).toBe("Harmonieorkest Brummen");
+    expect(
+      parseCatalog(entry("id: a\nname: A\nstatus: active\nstakeholder:"))[0].stakeholder,
+    ).toBeNull();
   });
 
   test("accepts an empty repo", () => {

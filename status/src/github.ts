@@ -5,7 +5,7 @@ const TOKEN_BY_OWNER: Record<string, string> = {
   "harmonieorkest-brummen": "STATUS_READ_TOKEN_HOB",
 };
 // The hosted app (renovate) and self-hosted Renovate apps such as imreboersma-homelab-renovate.
-const RENOVATE = /(^|-)renovate(\[bot\])?$/;
+export const RENOVATE = /(^|-)renovate(\[bot\])?$/;
 
 interface RepoNode {
   defaultBranchRef: {
