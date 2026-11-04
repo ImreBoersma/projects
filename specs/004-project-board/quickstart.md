@@ -3,10 +3,10 @@
 ## Prerequisites
 
 - `gh auth refresh -s project` on the Maintainer machine.
-- Classic PAT 1, scope `project`, expiry 1 year: secret `BOARD_TOKEN` in `projects`,
+- Classic PAT 1, scope `project`, no expiry: secret `BOARD_TOKEN` in `projects`,
   Beter-dan-de-MIDI, boek-de-bus, personal-website and scales-exercises
   (`gh secret set BOARD_TOKEN -R ImreBoersma/<repo>`).
-- Classic PAT 2, scopes `project` and `repo`, expiry 1 year: secret `BOARD_SYNC_TOKEN` in
+- Classic PAT 2, scopes `project` and `repo`, no expiry: secret `BOARD_SYNC_TOKEN` in
   `projects` only.
 
 ## 1. Make the board

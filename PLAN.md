@@ -21,8 +21,8 @@ roadmap.
   of the public repos go to the board through the shared workflow. The sync in the status page run
   adds the issues of private repos, `pretband-backend` and problem issues. Public roadmap for
   stakeholders: <https://github.com/users/ImreBoersma/projects/4/views/3>.
-- Token renewal: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` expire on 2027-11-03. Make new classic PATs
-  with the same scopes before that date (spec 004, research.md §3).
+- Tokens: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` have no expiry date. Make new classic PATs with the
+  same scopes only when a token is revoked or leaks (spec 004, research.md §3).
 
 ## Features
 

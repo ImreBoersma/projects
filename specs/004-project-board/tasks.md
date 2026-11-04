@@ -34,7 +34,7 @@ with N from T004. The scripts read the URL from the environment value `BOARD_URL
 ## Phase 1: Setup
 
 - [X] T001 Create the branch `004-project-board` in this repo. All changes in this repo stay on this branch until T027.
-- [X] T002 [P] Manual (Maintainer): make two classic PATs with expiry 2027-11-03 (research.md §3). Set `BOARD_TOKEN` (scope `project`) in `projects`, Beter-dan-de-MIDI, boek-de-bus, personal-website and scales-exercises. Set `BOARD_SYNC_TOKEN` (scopes `project`, `repo`) in `projects` only. Done 2026-11-03.
+- [X] T002 [P] Manual (Maintainer): make two classic PATs with no expiry date (research.md §3; first planned with expiry 2027-11-03). Set `BOARD_TOKEN` (scope `project`) in `projects`, Beter-dan-de-MIDI, boek-de-bus, personal-website and scales-exercises. Set `BOARD_SYNC_TOKEN` (scopes `project`, `repo`) in `projects` only. Done 2026-11-03.
 - [X] T003 [P] Manual (Maintainer): run `gh auth refresh -s project`, so that the `gh` login on the Maintainer machine can make the board. Done: `gh` has the scope `project`.
 - [X] T004 Make the board with `gh` (quickstart.md §1): `gh project create --owner ImreBoersma --title Projects`, then the single-select fields `Priority` (P1, P2, P3), `Roadmap` (Yes, No), `Project` (Placeholder) and `Stakeholder` (Placeholder). Use the built-in field `Status` (Todo, In progress, Done). Record N and the board URL in `specs/004-project-board/contracts/board.md`, section "Links". Done 2026-11-03: board 4. The account also has the old project 2 "Scales exercises"; this feature does not change it.
 
@@ -132,7 +132,7 @@ public items and no private or `status-problem` items.
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [X] T034 [P] Add the validation results to `specs/004-project-board/research.md` as §10: board number, the result of T016 (option ids), T018 (other owner), T024 (token scope) and T033 (roadmap without login), with dates. Done.
-- [X] T035 [P] In `PLAN.md`, mark feature 004 as done, add the roadmap link for stakeholders, and add the token renewal date 2027-11-03 for `BOARD_TOKEN` and `BOARD_SYNC_TOKEN`. Done.
+- [X] T035 [P] In `PLAN.md`, mark feature 004 as done, add the roadmap link for stakeholders, and add the token renewal date 2027-11-03 for `BOARD_TOKEN` and `BOARD_SYNC_TOKEN`. Done. Changed on 2026-11-04: the tokens have no expiry date, and PLAN.md says so.
 - [X] T036 Final check: run `bun test` and `bun run lint` in `status/`, and actionlint on `.github/workflows/`. Make sure that the board has the open issues of all 6 own catalog repos and `pretband-backend`, and that each item has a Project value. Done 2026-11-04: 64 tests pass, Biome and actionlint pass. All 6 items on the board have a Project value. Beter-dan-de-MIDI, boek-de-bus, personal-website and HomeLab have no open issues except the Renovate dashboards, so they have no items yet.
 
 ---
