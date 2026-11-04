@@ -1,5 +1,7 @@
 # Contract: `projects.yaml` (fields this feature reads)
 
+Spec 005 changes this contract: see `specs/005-uptime-checks/contracts/catalog.md` (field `domain`).
+
 ```yaml
 projects:
   - id: beter-dan-de-midi          # required, unique, a-z0-9-

@@ -40,6 +40,7 @@ export function planIssueActions(
   problems: Problem[],
   openIssues: OpenIssue[],
   unavailableIds: Set<string>,
+  uptimeNotAvailable: boolean,
   projects: Map<string, Project>,
   today: string,
 ): IssueActions {
@@ -49,6 +50,9 @@ export function planIssueActions(
     if (key) openKeys.set(key, issue.number);
   }
   const found = new Set(problems.map((p) => p.key));
+  // A site-down issue depends only on the site check (spec 005, FR-008); other issues on the repo data.
+  const keep = (key: string) =>
+    key.endsWith("/site-down") ? uptimeNotAvailable : unavailableIds.has(key.split("/")[0]);
   return {
     open: problems
       .filter((p) => !openKeys.has(p.key))
@@ -57,7 +61,7 @@ export function planIssueActions(
         ...issueContent(p, projects.get(p.projectId) as Project, today),
       })),
     close: [...openKeys]
-      .filter(([key]) => !found.has(key) && !unavailableIds.has(key.split("/")[0]))
+      .filter(([key]) => !found.has(key) && !keep(key))
       .map(([, number]) => ({
         number,
         comment: `The status update on ${today} did not find this problem. The update closes this issue.`,

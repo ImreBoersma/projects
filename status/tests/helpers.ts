@@ -11,6 +11,7 @@ export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
     ci: "passed",
     deploy: "unknown",
     problems: [],
+    uptime: { state: "no-domain", at: null },
     ...overrides,
   };
 }

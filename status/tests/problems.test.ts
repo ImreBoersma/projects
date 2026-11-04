@@ -9,6 +9,28 @@ const ago = (ms: number) => new Date(now.getTime() - ms);
 const reasons = (s: ReturnType<typeof status>) => evaluateProblems(s, now).map((p) => p.reason);
 
 describe("evaluateProblems", () => {
+  test("a site that is down is a problem, also without repo data (spec 005)", () => {
+    const down = { state: "down" as const, at: now };
+    for (const availability of ["ok", "no-repo", "unavailable"] as const) {
+      expect(evaluateProblems(status({ availability, uptime: down }), now)).toEqual([
+        { projectId: "one", reason: "site-down", key: "one/site-down" },
+      ]);
+    }
+  });
+
+  test("up, no-domain and not-available give no site-down problem", () => {
+    for (const state of ["up", "no-domain", "not-available"] as const) {
+      expect(reasons(status({ uptime: { state, at: now } }))).toEqual([]);
+    }
+  });
+
+  test("site-down comes with the repo problems of an ok row", () => {
+    expect(reasons(status({ ci: "failed", uptime: { state: "down", at: now } }))).toEqual([
+      "site-down",
+      "ci-failed",
+    ]);
+  });
+
   test("no problems for a healthy project", () => {
     expect(reasons(status())).toEqual([]);
   });

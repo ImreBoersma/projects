@@ -1,13 +1,15 @@
 # Contract: status page content
 
+Spec 005 changes this contract: see `specs/005-uptime-checks/contracts/page.md` (column "Site", problem `site-down`).
+
 One public page at the GitHub Pages URL of `projects`. Text uses ASD-STE100.
 
 ## Header
 
 - Title: "Project status".
 - "Last update: <YYYY-MM-DD HH:MM> UTC" (FR-013).
-- Warning, shown by an inline script when the update is more than 48 hours old:
-  "Warning: this data is more than 48 hours old."
+- Warning, shown by an inline script when the update is more than 3 hours old (changed by spec 005,
+  was 48 hours): "Warning: this data is more than 3 hours old."
 
 ## Table: one row for each non-archived project
 

@@ -6,9 +6,18 @@ export interface Project {
   repo: string | null;
   status: ProjectState;
   stakeholder?: string | null;
+  domain?: string | null;
 }
 
-export type Reason = "ci-failed" | "deploy-failed" | "renovate-stale" | "inactive";
+export type UptimeState = "up" | "down" | "no-domain" | "not-available";
+
+// `at` is the time of the check; it is null for `no-domain` (spec 005).
+export interface Uptime {
+  state: UptimeState;
+  at: Date | null;
+}
+
+export type Reason = "ci-failed" | "deploy-failed" | "renovate-stale" | "inactive" | "site-down";
 
 export interface Problem {
   projectId: string;
@@ -28,6 +37,7 @@ export interface ProjectStatus {
   ci: "passed" | "failed" | "unknown";
   deploy: Deploy;
   problems: Problem[];
+  uptime: Uptime;
 }
 
 export interface StatusPage {

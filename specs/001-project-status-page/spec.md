@@ -94,7 +94,7 @@ this problem.
 
 1. **Given** a completed update, **When** the Maintainer opens the page, **Then** the page shows the
    date and time of that update.
-2. **Given** that the last update is more than 48 hours old, **When** the Maintainer opens the page,
+2. **Given** that the last update is more than 3 hours old (changed by spec 005, was 48 hours), **When** the Maintainer opens the page,
    **Then** the page shows a warning that the data is old.
 
 ---
@@ -172,7 +172,7 @@ Make sure that the issue closes.
   that SC-004 is true when GitHub starts a scheduled run late.
 - **FR-012**: The Maintainer MUST be able to start an update manually.
 - **FR-013**: The system MUST show the date and time of the last update. It MUST show a warning when
-  the last update is more than 48 hours old.
+  the last update is more than 3 hours old (changed by spec 005, was 48 hours).
 - **FR-014**: If the update cannot get data for one project, the system MUST show the other
   projects.
 - **FR-015**: If the catalog contains an error, the system MUST keep the last correct page and the

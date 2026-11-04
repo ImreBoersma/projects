@@ -32,7 +32,37 @@ describe("parseCatalog", () => {
       repo: "ImreBoersma/one",
       status: "active",
       stakeholder: null,
+      domain: null,
     });
+  });
+
+  test("accepts a host name as domain", () => {
+    for (const domain of [
+      "imreboersma.nl",
+      "scales-imreboersma.web.app",
+      "harmonieorkestbrummen.nl",
+    ]) {
+      expect(
+        parseCatalog(entry(`id: a\nname: A\nstatus: active\ndomain: ${domain}`))[0].domain,
+      ).toBe(domain);
+    }
+    expect(parseCatalog(entry("id: a\nname: A\nstatus: active\ndomain:"))[0].domain).toBeNull();
+  });
+
+  test("rejects a domain that is not a host name", () => {
+    for (const domain of [
+      "https://pretband.nl",
+      "pretband.nl/",
+      "pretband.nl:443",
+      "Pretband.nl",
+      "localhost",
+    ]) {
+      expect(() =>
+        parseCatalog(entry(`id: a\nname: A\nstatus: active\ndomain: "${domain}"`)),
+      ).toThrow(
+        "Catalog error in entry 0, field `domain`: must be a host name, for example example.org, or empty.",
+      );
+    }
   });
 
   test("reads the stakeholder name", () => {

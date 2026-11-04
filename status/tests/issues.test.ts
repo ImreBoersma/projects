@@ -14,8 +14,12 @@ const issue = (number: number, key: string): OpenIssue => ({
   number,
   body: `<!-- status-problem: ${key} -->\nText`,
 });
-const plan = (problems: Problem[], open: OpenIssue[], unavailable: string[] = []) =>
-  planIssueActions(problems, open, new Set(unavailable), projects, today);
+const plan = (
+  problems: Problem[],
+  open: OpenIssue[],
+  unavailable: string[] = [],
+  uptimeNotAvailable = false,
+) => planIssueActions(problems, open, new Set(unavailable), uptimeNotAvailable, projects, today);
 
 describe("parseMarker", () => {
   test("reads the key from line 1", () => {
@@ -69,5 +73,33 @@ describe("planIssueActions", () => {
 
   test("an issue without a marker is ignored", () => {
     expect(plan([], [{ number: 9, body: "Manual issue" }])).toEqual({ open: [], close: [] });
+  });
+});
+
+describe("planIssueActions for site-down (spec 005)", () => {
+  test("a site that is down opens one issue", () => {
+    expect(plan([problem("site-down")], []).open.map((a) => a.title)).toEqual([
+      "One: The site does not respond correctly.",
+    ]);
+  });
+
+  test("a site that stays down opens no second issue", () => {
+    expect(plan([problem("site-down")], [issue(7, "one/site-down")])).toEqual({
+      open: [],
+      close: [],
+    });
+  });
+
+  test("a site that is up again closes the issue", () => {
+    expect(plan([], [issue(7, "one/site-down")]).close.map((c) => c.number)).toEqual([7]);
+  });
+
+  test("the repo data rule does not keep a site-down issue", () => {
+    expect(plan([], [issue(7, "one/site-down")], ["one"]).close.map((c) => c.number)).toEqual([7]);
+  });
+
+  test("when the check is not available, site-down issues stay and other issues follow their rules", () => {
+    const actions = plan([], [issue(7, "one/site-down"), issue(8, "one/ci-failed")], [], true);
+    expect(actions.close.map((c) => c.number)).toEqual([8]);
   });
 });
