@@ -9,8 +9,9 @@
 The status page generator of spec 001 gets an uptime check. Each status run sends an HTTPS GET to
 each catalog `domain` of a project that is not archived, and tries a second time after a failure.
 The page gets a column "Site". A site that is down is a problem `site-down`, with the problem and
-issue rules of spec 001. When all sites are down in one run, the result is "Check not available"
-and the issues stay as they are. The status page schedule changes from two times each day to each
+issue rules of spec 001. When 2 or more sites are all down in one run, the result is "Check not
+available" and the issues stay as they are. The stale warning of the page changes from 48 hours to
+3 hours. The status page schedule changes from two times each day to each
 hour.
 
 ## Technical Context

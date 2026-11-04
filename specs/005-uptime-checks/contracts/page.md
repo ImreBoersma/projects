@@ -18,6 +18,11 @@ keep "No repo" or "Data not available" in the other data columns.
 
 The cell never shows site content, an HTTP status or an error text (FR-011).
 
+## Stale warning
+
+The warning of the header shows when the update is more than **3 hours** old (spec 001 used 48
+hours). Text: "Warning: this data is more than 3 hours old."
+
 ## New problem text
 
 | reason | Text |

@@ -31,7 +31,8 @@ approximately 1 hour plus the delay of the scheduler. That is within 2 hours (SC
 
 **Risk**: GitHub disables scheduled workflows of a public repo after 60 days without activity in
 the repo. Renovate PRs and merges in `projects` make activity each week (spec 003). If the schedule
-stops, the stale-data warning of the page shows after 48 hours (spec 001).
+stops, the stale-data warning of the page shows after 3 hours (contracts/page.md; spec 001 used 48
+hours).
 
 ## 3. What is "Up" (FR-003, edge cases)
 

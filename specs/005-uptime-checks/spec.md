@@ -16,6 +16,13 @@ blackbox-exporter for this. Principle VI: the HomeLab monitoring monitors only t
 
 - Q: How frequently must the system check the sites? → A: Each hour.
 
+### Session 2026-11-04
+
+- Q: Does the all-down rule (FR-008) apply with only 1 domain? → A: No. With 1 domain, a site that
+  is down is the most probable cause (research.md §5).
+- Q: When does the page warn that its data is old? → A: After 3 hours, not 48 hours, because the
+  page now updates each hour. This changes FR-013 and US2 AC2 of spec 001.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See if each site is up (Priority: P1)
@@ -109,7 +116,7 @@ the page shows "Up" and that no issue opens.
 - **FR-006**: The status page MUST show the result and the time of the last check for each project.
 - **FR-007**: A "Down" result MUST be a problem with the reason `site-down`, with the problem rules,
   sort order and issue rules of spec 001.
-- **FR-008**: If all sites are "Down" in one check, the system MUST show "Check not available" and
+- **FR-008**: If the catalog has 2 or more domains and all sites are "Down" in one check, the system MUST show "Check not available" and
   MUST NOT open or close issues for this reason.
 - **FR-009**: The catalog validation MUST reject a `domain` that is not a host name.
 - **FR-010**: The check MUST NOT use the HomeLab or a service on the HomeLab (Principle VI).
