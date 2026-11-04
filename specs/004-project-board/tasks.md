@@ -166,3 +166,8 @@ Three PRs in three repos, no shared files.
    public.
 
 Stop at each checkpoint and validate before the next phase.
+
+## Phase 7: Convergence
+
+- [ ] T038 Update the documents that still say the built-in auto-add brings `pretband-backend` issues: `specs/004-project-board/plan.md` (Summary and the Constitution Check row "Repos of other owners"), `specs/004-project-board/contracts/board.md` (row "Auto-add to project": state off), `specs/004-project-board/contracts/caller.md` and `specs/004-project-board/quickstart.md` §5. The sync adds these issues in each status run (research.md §1, T018) per plan: other-owner decision (contradicts)
+- [ ] T039 Move the event read of `status/src/board/add.ts` into a pure function `readEvent(event, repo)` in `status/src/board/project.ts` that returns the issue node id, body, repo and author. Add tests in `status/tests/board.test.ts` for `opened`, for `transferred` (issue and repo from `changes.new_issue` and `changes.new_repository`), and for an issue opened by `renovate[bot]` per Edge case "an issue moves to a different repo" (partial)
