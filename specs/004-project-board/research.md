@@ -146,3 +146,16 @@ a different project, the Maintainer changes the value by hand.
 
 **Decision**: views are made by hand in the web UI. The API has no mutation to make views.
 contracts/board.md lists the views and filters, so that the board can be made again.
+
+## 10. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| Board | 2026-11-03 | User project 4 "Projects", public since 2026-11-04. |
+| Option ids (§4, T016) | 2026-11-03 | The sync removed the unused option "Test". All 8 items kept their Project values. |
+| Other owner (§1, T018) | 2026-11-03 | The user board accepts `pretband-backend` issues, and the org permits classic PATs. The built-in auto-add did not add #42 within 3 minutes; the sync adds these issues. |
+| Token scope (§3, T024) | 2026-11-03 | `BOARD_TOKEN` with only `project` added scales-exercises#382 in 18 seconds. |
+| Item closed (§6) | 2026-11-03 | On by default. scales-exercises#382 and pretband-backend#42 got Status Done. |
+| Not in the catalog (T025) | 2026-11-03 | projects#8 stayed off the board. |
+| Roadmap without login (§5, T033) | 2026-11-04 | Logged out, view 3 gave HTTP 200 and showed scales-exercises#3. The sync set Roadmap No on the private Reperatie-Formulier#117 (run 41808260612), and the page did not contain it. |
+| Views not saved | 2026-11-04 | The first public version of the views had no filters, because a filter change in the web UI stays local until "Save". Check the views with the API after each change. |

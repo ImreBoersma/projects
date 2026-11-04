@@ -116,8 +116,8 @@ public items and no private or `status-problem` items.
 
 - [X] T030 [P] [US3] In `status/tests/board.test.ts`, add tests for the pure function `planRoadmap(items)` of `status/src/board/project.ts`: an item with Roadmap Yes from a private repo gets No; an item with Roadmap Yes and the label `status-problem` gets No; an item with Roadmap Yes from a public repo without that label does not change; an item without a Roadmap value does not change.
 - [X] T031 [US3] Implement `planRoadmap()` and call it in `status/src/board/sync.ts` after `planItems()`. Log `Remove from the roadmap: <repo>#<number>` (no title). Make T030 pass. Run `bun test` and `bun run lint` in `status/`. Make this change in a PR to `main`. Done in the same PR as US1 and US2 (#7), not in a separate PR: `sync.ts` was new, so there was no conflict.
-- [ ] T032 [US3] Manual (Maintainer), in the web UI: make the view "Roadmap" of `specs/004-project-board/contracts/board.md` with the filter `roadmap:Yes -label:status-problem is:issue`, grouped by Project, with only the fields Title, Project and Status. Set the visibility of the board to Public (Settings, Danger zone). Record M and the roadmap link in `specs/004-project-board/contracts/board.md`, section "Links".
-- [ ] T033 [US3] Validate quickstart.md §6: set Roadmap Yes on one item of a public repo and on one item of a private repo; run `board-sync.yml`; make sure that the private item has Roadmap No; open the roadmap link in a private browser window without a login; make sure that the view shows only the public item, with Title, Project and Status (SC-003, SC-004). If the view asks for a login, record it in `specs/004-project-board/research.md` §5 and stop for a decision of the Maintainer.
+- [X] T032 [US3] Manual (Maintainer), in the web UI: make the view "Roadmap" of `specs/004-project-board/contracts/board.md` with the filter `roadmap:Yes -label:status-problem is:issue`, grouped by Project, with only the fields Title, Project and Status. Set the visibility of the board to Public (Settings, Danger zone). Record M and the roadmap link in `specs/004-project-board/contracts/board.md`, section "Links". Done 2026-11-04 by the Maintainer: view 3, public board. The first save had no filters; the API check found it and the Maintainer saved the views again.
+- [X] T033 [US3] Validate quickstart.md §6: set Roadmap Yes on one item of a public repo and on one item of a private repo; run `board-sync.yml`; make sure that the private item has Roadmap No; open the roadmap link in a private browser window without a login; make sure that the view shows only the public item, with Title, Project and Status (SC-003, SC-004). If the view asks for a login, record it in `specs/004-project-board/research.md` §5 and stop for a decision of the Maintainer. Done 2026-11-04: see research.md §10. The test values were removed: #117 closed, scales-exercises#3 back to Roadmap No.
 
 **Checkpoint**: stakeholders open the roadmap without a GitHub account.
 
@@ -131,9 +131,9 @@ public items and no private or `status-problem` items.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T034 [P] Add the validation results to `specs/004-project-board/research.md` as §10: board number, the result of T016 (option ids), T018 (other owner), T024 (token scope) and T033 (roadmap without login), with dates.
-- [ ] T035 [P] In `PLAN.md`, mark feature 004 as done, add the roadmap link for stakeholders, and add the token renewal date 2027-11-03 for `BOARD_TOKEN` and `BOARD_SYNC_TOKEN`.
-- [ ] T036 Final check: run `bun test` and `bun run lint` in `status/`, and actionlint on `.github/workflows/`. Make sure that the board has the open issues of all 6 own catalog repos and `pretband-backend`, and that each item has a Project value.
+- [X] T034 [P] Add the validation results to `specs/004-project-board/research.md` as §10: board number, the result of T016 (option ids), T018 (other owner), T024 (token scope) and T033 (roadmap without login), with dates. Done.
+- [X] T035 [P] In `PLAN.md`, mark feature 004 as done, add the roadmap link for stakeholders, and add the token renewal date 2027-11-03 for `BOARD_TOKEN` and `BOARD_SYNC_TOKEN`. Done.
+- [X] T036 Final check: run `bun test` and `bun run lint` in `status/`, and actionlint on `.github/workflows/`. Make sure that the board has the open issues of all 6 own catalog repos and `pretband-backend`, and that each item has a Project value. Done 2026-11-04: 64 tests pass, Biome and actionlint pass. All 6 items on the board have a Project value. Beter-dan-de-MIDI, boek-de-bus, personal-website and HomeLab have no open issues except the Renovate dashboards, so they have no items yet.
 
 ---
 

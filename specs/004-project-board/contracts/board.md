@@ -31,5 +31,8 @@ Stakeholder, assignees or labels (Principle VII).
 
 Board: `https://github.com/users/ImreBoersma/projects/4` (N = 4, made on 2026-11-03).
 
-The roadmap link for stakeholders is `https://github.com/users/ImreBoersma/projects/4/views/<M>`.
-Record M here and in PLAN.md after T032. The status page can link to it later.
+The roadmap link for stakeholders is `https://github.com/users/ImreBoersma/projects/4/views/3`
+(M = 3, made on 2026-11-04). It is also in PLAN.md. The status page can link to it later.
+
+The view "By Project" is named with a capital P on the board. The view "Roadmap" stores the filter
+as `roadmap:yes -label:status-problem is:issue` (GitHub writes the value in lower case).
