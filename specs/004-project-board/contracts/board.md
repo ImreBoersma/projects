@@ -24,7 +24,7 @@ Stakeholder, assignees or labels (Principle VII).
 |---|---|---|
 | Item closed | on | Status = Done |
 | Pull request merged | on | Status = Done |
-| Auto-add to project | on | repo `harmonieorkest-brummen/pretband-backend`, filter `is:issue` |
+| Auto-add to project | off | it did not add `pretband-backend` issues (research.md §1); the sync adds them |
 | Item added to project | off | the add job sets the fields |
 
 ## Links

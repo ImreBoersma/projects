@@ -60,9 +60,10 @@ BOARD_URL=https://github.com/users/ImreBoersma/projects/<N> BOARD_SYNC_TOKEN=$(g
 
 ## 5. Other owner (FR-010)
 
-Open an issue in `harmonieorkest-brummen/pretband-backend`, or use an open one. Expected: the
-built-in auto-add puts it on the board, and the next sync sets Project "Pretband backend". If it
-fails, record the error in research.md §1 and use the fallback of the spec.
+Open an issue in `harmonieorkest-brummen/pretband-backend`, or use an open one. Run
+`board-sync.yml`. Expected: the issue is on the board with Project "Pretband backend" and Roadmap
+No. If the sync cannot read the repo, record the error in research.md §1 and use the fallback of
+the spec.
 
 ## 6. Roadmap without a login (US3)
 

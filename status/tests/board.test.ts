@@ -8,6 +8,7 @@ import {
   planItems,
   planOptions,
   planRoadmap,
+  readEvent,
 } from "../src/board/project";
 import type { Project } from "../src/types";
 
@@ -168,5 +169,38 @@ describe("planAdd", () => {
       setProject: false,
       setRoadmap: false,
     });
+  });
+});
+
+describe("readEvent", () => {
+  const issue = { node_id: "I_old", body: "Body", user: { login: "ImreBoersma" } };
+
+  test("reads an opened issue", () => {
+    expect(readEvent({ action: "opened", issue }, "ImreBoersma/boek-de-bus")).toEqual({
+      nodeId: "I_old",
+      body: "Body",
+      repo: "ImreBoersma/boek-de-bus",
+      author: "ImreBoersma",
+    });
+  });
+
+  test("reads the new issue and repo of a transfer", () => {
+    const event = {
+      action: "transferred",
+      issue,
+      changes: {
+        new_issue: { node_id: "I_new", body: "Body" },
+        new_repository: { full_name: "ImreBoersma/scales-exercises" },
+      },
+    };
+    expect(readEvent(event, "ImreBoersma/boek-de-bus")).toMatchObject({
+      nodeId: "I_new",
+      repo: "ImreBoersma/scales-exercises",
+    });
+  });
+
+  test("gives the author, so that Renovate issues can be skipped", () => {
+    const event = { action: "opened", issue: { ...issue, user: { login: "renovate[bot]" } } };
+    expect(isRenovate(readEvent(event, "ImreBoersma/boek-de-bus").author)).toBe(true);
   });
 });

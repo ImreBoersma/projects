@@ -3,31 +3,20 @@ import { parseArgs } from "node:util";
 import { parseCatalog } from "../catalog";
 import { field, optionId, required } from "./env";
 import { addItem, readBoard, readItemValues, setOption } from "./graphql";
-import { findEntry, isRenovate, planAdd } from "./project";
+import { findEntry, type IssueEvent, isRenovate, planAdd, readEvent } from "./project";
 
 const { values: args } = parseArgs({
   options: { catalog: { type: "string", default: "../projects.yaml" } },
 });
 
-interface IssueEvent {
-  action: string;
-  issue: { node_id: string; body: string | null; user: { login: string } | null };
-  changes?: {
-    new_issue: { node_id: string; body: string | null };
-    new_repository: { full_name: string };
-  };
-}
-
 try {
   const url = required("BOARD_URL");
   const token = required("BOARD_TOKEN");
   const event = (await Bun.file(required("GITHUB_EVENT_PATH")).json()) as IssueEvent;
-  // A transfer runs in the old repo. The issue is then in the new repo.
-  const moved = event.action === "transferred" ? event.changes : undefined;
-  const issue = moved?.new_issue ?? event.issue;
-  const repo = moved?.new_repository.full_name ?? required("GITHUB_REPOSITORY");
+  const issue = readEvent(event, required("GITHUB_REPOSITORY"));
+  const repo = issue.repo;
 
-  if (isRenovate(event.issue.user?.login ?? null)) {
+  if (isRenovate(issue.author)) {
     console.log(`Opened by Renovate: ${repo}. Not added.`);
     process.exit(0);
   }
@@ -41,7 +30,7 @@ try {
 
   const board = await readBoard(url, token);
   const projectOption = optionId(board, "Project", entry.name);
-  const itemId = await addItem(board.id, issue.node_id, token);
+  const itemId = await addItem(board.id, issue.nodeId, token);
   const plan = planAdd(await readItemValues(itemId, token));
   if (plan.setProject) {
     await setOption(board.id, itemId, field(board, "Project").id, projectOption, token);
