@@ -9,8 +9,8 @@
 One public user-level GitHub Project "Projects" with the fields Project, Priority, Status,
 Stakeholder and Roadmap. A new shared workflow `add-to-board.yml` adds each new issue of a catalog
 repo to the board and sets Project from the catalog. Each own repo calls it from a small caller.
-`pretband-backend` uses the one built-in auto-add workflow of the board, because this repo does not
-change repos of other owners. A sync script in `projects` keeps the Project and
+`pretband-backend` gets no caller, because this repo does not change repos of other owners. The
+sync adds its issues, as for the private repos (research.md §1). A sync script in `projects` keeps the Project and
 Stakeholder options equal to the catalog, adds `status-problem` issues, sets Project on items that do not have it, and removes
 private and `status-problem` items from the roadmap. The Roadmap view filters on `roadmap:Yes`.
 
@@ -55,7 +55,7 @@ settings of `harmonieorkest-brummen` repos.
 | IX. Spec Kit only for application code | Pass | The add and sync scripts are application code. The board is configuration. |
 | X. ASD-STE100 | Pass | Field, option and view names use STE. |
 | Development Workflow: test on a real repo | Pass | quickstart.md §3. |
-| Repos of other owners | Pass | `pretband-backend` uses the built-in auto-add of the board. No change in that repo. |
+| Repos of other owners | Pass | The sync adds the `pretband-backend` issues. No change in that repo. |
 
 Re-check after Phase 1: no violations. One risk to accept: `BOARD_SYNC_TOKEN` has `repo` scope.
 It is only in `projects` (research.md §3).

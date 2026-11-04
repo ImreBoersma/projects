@@ -97,3 +97,25 @@ export function planRoadmap(items: BoardItem[]): BoardItem[] {
 export function planAdd(values: { project: string | null; roadmap: string | null }) {
   return { setProject: values.project === null, setRoadmap: values.roadmap === null };
 }
+
+export interface IssueEvent {
+  action: string;
+  issue: { node_id: string; body: string | null; user: { login: string } | null };
+  changes?: {
+    new_issue: { node_id: string; body: string | null };
+    new_repository: { full_name: string };
+  };
+}
+
+// The issue of an `issues` event. A transfer runs in the old repo, so the issue and the repo
+// come from `changes` (research.md §8).
+export function readEvent(event: IssueEvent, repo: string) {
+  const moved = event.action === "transferred" ? event.changes : undefined;
+  const issue = moved?.new_issue ?? event.issue;
+  return {
+    nodeId: issue.node_id,
+    body: issue.body,
+    repo: moved?.new_repository.full_name ?? repo,
+    author: event.issue.user?.login ?? null,
+  };
+}
