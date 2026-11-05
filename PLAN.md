@@ -28,6 +28,9 @@ roadmap.
 - Spec 008: each status run checks the own catalog repos against the shared setup (rules R1 to R9,
   repair steps in `docs/conformance.md`). Token `CONFORMANCE_READ_TOKEN` (fine-grained, read
   only).
+- Spec 009: the status page shows the days until each TLS certificate expires and the next
+  renewal of the catalog field `renewal`. Issues 14 days (certificate) and 30 days (renewal) before
+  the date. The `.nl` registry gives no expiry date: add the domain dates to the catalog.
 - Tokens: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` have no expiry date. Make new classic PATs with the
   same scopes only when a token is revoked or leaks (spec 004, research.md §3).
 
@@ -45,7 +48,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 006 | hob.nl in git with a deploy workflow | 002 |
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
-| 009 | Renewals and certificate expiry (specified) | 005 |
+| 009 | Renewals and certificate expiry (done) | 005 |
 | 010 | Status history without a database | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish | 007 |
