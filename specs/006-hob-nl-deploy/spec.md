@@ -42,8 +42,8 @@ and that it does not contain `wp-config.php`, the WordPress core or uploads.
 
 **Acceptance Scenarios**:
 
-1. **Given** the new repo, **When** the Maintainer clones it, **Then** it contains the active theme
-   and the custom plugins of hob.nl.
+1. **Given** the new repo, **When** the Maintainer clones it, **Then** it contains the `hob-*`
+   must-use plugins of hob.nl.
 2. **Given** the new repo and its full history, **When** the Maintainer searches it, **Then** it does
    not contain `wp-config.php`, passwords, keys, the WordPress core, third-party plugins or uploads.
 
@@ -65,8 +65,8 @@ change and that the status page shows the deploy.
 
 1. **Given** a push to `main`, **When** the deploy runs, **Then** the changed files are on the
    hosting and the site shows the change.
-2. **Given** a file that the Maintainer removed from the theme in git, **When** the deploy runs,
-   **Then** the file is removed from the theme folder on the hosting.
+2. **Given** a `hob-*` file that the Maintainer removed in git, **When** the deploy runs, **Then**
+   the file is removed from `mu-plugins` on the hosting, and the files of GoDaddy stay.
 3. **Given** a deploy, **When** it runs, **Then** it does not change, add or remove files that are not
    `hob-*` files in `mu-plugins`.
 4. **Given** a failed deploy, **When** the status page updates, **Then** it shows "Failed" for the
