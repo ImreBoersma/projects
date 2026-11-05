@@ -28,6 +28,8 @@ projects:
     domain: imreboersma.nl
     stakeholder:
     renewal:
+      - name: Domain
+        date: 2027-09-05
   - id: reperatie-formulier
     name: Reperatie-Formulier
     repo: ImreBoersma/Reperatie-Formulier
@@ -64,6 +66,8 @@ projects:
     domain: pretband.nl
     stakeholder: Harmonieorkest Brummen
     renewal:
+      - name: Domain
+        date: 2027-02-01
   - id: hob-nl
     name: hob.nl
     repo:
@@ -73,6 +77,8 @@ projects:
     domain: harmonieorkestbrummen.nl
     stakeholder: HOB
     renewal:
+      - name: Domain
+        date: 2027-05-01
   - id: homelab
     name: HomeLab
     repo: ImreBoersma/HomeLab
@@ -93,15 +99,6 @@ projects:
     renewal:
   - id: lower-management
     name: Lower Management
-    repo:
-    status: active
-    stack:
-    host:
-    domain:
-    stakeholder:
-    renewal:
-  - id: agent-native
-    name: agent-native
     repo:
     status: active
     stack:
