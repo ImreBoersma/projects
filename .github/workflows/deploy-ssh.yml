@@ -56,6 +56,7 @@ jobs:
       PATTERN: ${{ inputs.pattern }}
       HEALTH_URLS: ${{ inputs.health-urls }}
       BEFORE: ${{ github.event.before }}
+      MARKER: .deploy-last-good-${{ github.event.repository.name }}
     steps:
       - name: Get the repo with its history
         uses: actions/checkout@v7
@@ -106,7 +107,13 @@ jobs:
           done
           exit $failed
           SCRIPT
-          chmod +x "$RUNNER_TEMP/sync.sh" "$RUNNER_TEMP/check.sh"
+          cat > "$RUNNER_TEMP/remote.sh" <<'SCRIPT'
+          # Usage: remote.sh <command>. Runs one command on the server.
+          set -euo pipefail
+          sshpass -e ssh -o UserKnownHostsFile="$RUNNER_TEMP/known_hosts" -o StrictHostKeyChecking=yes \
+            -o PubkeyAuthentication=no "$SSH_USER@$SSH_HOST" "$1"
+          SCRIPT
+          chmod +x "$RUNNER_TEMP/sync.sh" "$RUNNER_TEMP/check.sh" "$RUNNER_TEMP/remote.sh"
 
       - name: Show the changes (dry run)
         run: '"$RUNNER_TEMP/sync.sh" "$SOURCE" --dry-run'
@@ -120,12 +127,22 @@ jobs:
         continue-on-error: true
         run: '"$RUNNER_TEMP/check.sh"'
 
-      - name: Put back the previous version
+      # The marker holds the last commit that passed the check on the server. A restore goes back to
+      # that commit, not to the commit before: a broken commit can stay on main after a restore.
+      - name: Record the working version
+        if: steps.check.outcome == 'success' || inputs.health-urls == ''
+        run: '"$RUNNER_TEMP/remote.sh" "echo $GITHUB_SHA > $MARKER"'
+
+      - name: Put back the last working version
         if: steps.check.outcome == 'failure'
         run: |
-          previous="$BEFORE"
-          if [ -z "$previous" ] || [ "$previous" = 0000000000000000000000000000000000000000 ]; then
-            previous=$(git rev-parse HEAD~1)
+          previous=$("$RUNNER_TEMP/remote.sh" "cat $MARKER 2>/dev/null" || true)
+          if ! git cat-file -e "${previous}^{commit}" 2>/dev/null; then
+            previous="$BEFORE"
+            if [ -z "$previous" ] || [ "$previous" = 0000000000000000000000000000000000000000 ]; then
+              previous=$(git rev-parse HEAD~1)
+            fi
+            echo "No marker of a working version on the server. Use the commit before."
           fi
           echo "The check failed. Put back the files of $previous."
           git worktree add -q "$RUNNER_TEMP/previous" "$previous"

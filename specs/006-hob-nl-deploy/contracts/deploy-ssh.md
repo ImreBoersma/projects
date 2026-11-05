@@ -34,13 +34,20 @@ File: `.github/workflows/deploy-ssh.yml` in `ImreBoersma/projects`. Trigger: `wo
 8. When `health-urls` is set: request each URL (timeout 20 seconds, follow redirects, 2 tries 10
    seconds apart). A URL fails on HTTP 5xx, no answer, or a body that contains
    `There has been a critical error on this website`.
-9. When a URL fails: check out the previous commit (`github.event.before` on a push, else
-   `HEAD~1`), run step 7 with its files, request the URLs again, log the result, and stop the job
-   with an error, so that the deployment record shows "failure".
-10. Each other error stops the job, so the deployment record shows "failure".
+9. When the check passes (or there is no check): write the commit id to the marker file
+   `~/.deploy-last-good-<repo name>` on the server (in the home folder, outside the site).
+10. When a URL fails: put back the files of the commit in the marker file, the last version that
+   passed the check. Without a marker, use the previous commit (`github.event.before` on a push,
+   else `HEAD~1`). Request the URLs again, log the result, and stop the job with an error, so that
+   the deployment record shows "failure".
+11. Each other error stops the job, so the deployment record shows "failure".
 
 The checkout uses `fetch-depth: 2` (or the full history for a push of more than one commit), so
-that the previous commit is available for step 9.
+that the commit of the marker is available for step 10.
 
 The workflow uses `rsync -rl --checksum` and never `--delete-excluded`, `-a`, `-t` or `--force`: files outside `pattern` on the
 server stay as they are.
+
+After a failed deploy, the broken commit is still on `main`. Revert it or repair it in git before
+the next push. The next push then deploys a working version again; until then, a new push on top
+of the broken commit also fails the check and goes back to the marker version.
