@@ -94,7 +94,7 @@ merge them in one PR.
 
 - [X] T018 [P] In `specs/001-project-status-page/contracts/catalog.md`, add a line under the title: "Spec 008 adds the field `exceptions`: see `specs/008-repo-conformance/contracts/catalog.md`".
 - [X] T019 Run `bun test`, `bun run lint`, `bunx tsc --noEmit -p .` and actionlint. Run quickstart.md §3 once more on the real repos. Make sure that the run takes less than 30 seconds more than before. Done: 137 tests, lint, tsc and actionlint pass; the check adds about 5 seconds.
-- [ ] T020 Push the branch and open the PR into `main`. CI must pass.
+- [X] T020 Push the branch and open the PR into `main`. CI must pass. Done 2026-11-05: #12; run 42020587608 passed, with the fine-grained token and no "check not available".
 - [ ] T021 Ask the Maintainer to merge the PR, because a merge to `main` deploys the page.
 - [ ] T022 After the merge, open the live page. Make sure that the conformance results are the same as in the local run, and that the log of the status run shows no `not-available`.
 - [ ] T023 [P] In `PLAN.md`, mark spec 008 as done in the feature table and the Done list.

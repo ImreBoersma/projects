@@ -36,8 +36,9 @@ token gives no write access.
 query, which does not need it. Use `BOARD_SYNC_TOKEN` (classic, `repo`). Rejected: it has write
 access; FR-010 asks for read only.
 
-**Not confirmed**: that "Administration: read" is sufficient for both settings endpoints with a
-fine-grained token. quickstart.md §2 tests it.
+**Confirmed 2026-11-05**: PR run 42020587608 with `CONFORMANCE_READ_TOKEN` gave the same results as
+the local run (5 pass, HomeLab R7) and no "check not available". The read-only permissions are
+sufficient.
 
 ## 3. When the check runs (FR-008)
 
