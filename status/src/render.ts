@@ -1,4 +1,5 @@
 import { RULES } from "./conformance/rules";
+import { dayText } from "./expiry/expiry";
 import { rowLinks } from "./links";
 import { PROBLEM_TEXT } from "./problems";
 import type { ProjectStatus, StatusPage } from "./types";
@@ -10,6 +11,7 @@ const COLUMNS = [
   "Project",
   "Problems",
   "Site",
+  "Expiry",
   "Last commit",
   "Open PRs",
   "Renovate PRs",
@@ -66,13 +68,26 @@ function ruleList(detail: string[]): string {
     .join(", ");
 }
 
+// Spec 009, contracts/page.md: the certificate and the renewal with the fewest days.
+function expiryCell(s: ProjectStatus): string {
+  const { certificate, renewals, registryNotKnown } = s.expiry;
+  const lines: string[] = [];
+  if (certificate === "not-known") lines.push("Certificate: not known");
+  else if (certificate)
+    lines.push(`Certificate: ${dayText(certificate.days)}${certificate.days < 0 ? " ago" : ""}`);
+  const next = [...renewals].sort((a, b) => a.days - b.days)[0];
+  if (next) lines.push(`${next.name}: ${dayText(next.days)}${next.days < 0 ? " ago" : ""}`);
+  if (registryNotKnown) lines.push("Domain: not known");
+  return lines.map(html).join("<br>");
+}
+
 const link = (text: string, url: string | null) =>
   url ? `<a href="${html(url)}">${html(text)}</a>` : html(text);
 
 function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
   const links = rowLinks(s, issues);
   const problemLines = s.problems.map((p) => {
-    const text = link(PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null);
+    const text = link(p.text ?? PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null);
     return p.detail?.length ? `${text}<br><small>${ruleList(p.detail)}</small>` : text;
   });
   if (s.conformanceNotAvailable.length) {
@@ -86,6 +101,7 @@ function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
     `${link(s.project.name, links.project)} <small>${s.project.status}</small>`,
     problems,
     link(site(s), links.site),
+    expiryCell(s),
     html(lastCommit),
     html(openPrs),
     link(renovate, links.renovate),

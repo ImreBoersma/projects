@@ -81,6 +81,33 @@ describe("parseCatalog", () => {
     expect(() => e("exceptions: R2")).toThrow("field `exceptions`");
   });
 
+  test("reads renewals (spec 009)", () => {
+    const e = (text: string) => parseCatalog(entry(`id: a\nname: A\nstatus: active\n${text}`));
+    expect(
+      e(
+        "renewal:\n  - name: Domain\n    date: 2027-03-01\n  - name: Hosting\n    date: 2027-01-15",
+      )[0].renewals,
+    ).toEqual([
+      { name: "Domain", date: "2027-03-01" },
+      { name: "Hosting", date: "2027-01-15" },
+    ]);
+    expect(e("renewal:")[0].renewals).toBeUndefined();
+    const err = "Catalog error in entry 0, field `renewal`: ";
+    expect(() => e("renewal: Domain")).toThrow(`${err}must be a list of items with name and date.`);
+    expect(() => e("renewal:\n  - date: 2027-03-01")).toThrow(`${err}item 0 needs a name`);
+    expect(() => e(`renewal:\n  - name: ${"x".repeat(41)}\n    date: 2027-03-01`)).toThrow(
+      "at most 40",
+    );
+    for (const date of ["2027-13-01", "2027-02-30", "1-3-2027"]) {
+      expect(() => e(`renewal:\n  - name: Domain\n    date: "${date}"`)).toThrow(
+        `${err}item 0 needs a date as YYYY-MM-DD.`,
+      );
+    }
+    expect(() =>
+      e("renewal:\n  - name: Domain\n    date: 2027-03-01\n  - name: domain\n    date: 2027-04-01"),
+    ).toThrow(`${err}the name domain is used two times.`);
+  });
+
   test("reads the stakeholder name", () => {
     const projects = parseCatalog(
       entry("id: a\nname: A\nstatus: active\nstakeholder: Harmonieorkest Brummen"),

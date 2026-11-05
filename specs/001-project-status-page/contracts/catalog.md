@@ -4,6 +4,8 @@ Spec 005 changes this contract: see `specs/005-uptime-checks/contracts/catalog.m
 
 Spec 008 adds the field `exceptions`: see `specs/008-repo-conformance/contracts/catalog.md`.
 
+Spec 009 changes the field `renewal`: see `specs/009-renewal-expiry/contracts/catalog.md`.
+
 ```yaml
 projects:
   - id: beter-dan-de-midi          # required, unique, a-z0-9-

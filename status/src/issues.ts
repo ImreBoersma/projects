@@ -22,6 +22,28 @@ export function parseMarker(body: string | null): string | null {
 // Text follows contracts/issue.md. It contains no text from the project repo (FR-009e).
 const DOCS = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
 
+// Spec 009, contracts/page.md "Issue": steps for each reason.
+function steps(problem: Problem): string[] {
+  if (problem.reason === "cert-expiring") {
+    return [
+      "Open the host of the site.",
+      "Find why the automatic renewal of the certificate failed.",
+      "Renew the certificate.",
+    ];
+  }
+  if (problem.reason === "renewal-due" && problem.source === "registry") {
+    return [
+      "Renew the domain at the registrar.",
+      "The next update reads the new date from the registry.",
+    ];
+  }
+  if (problem.reason === "renewal-due") {
+    const name = problem.text?.match(/^Renewal of (.+?) (is|was) due/)?.[1] ?? "it";
+    return [`Renew ${name}.`, "Enter the next date in `projects.yaml`, field `renewal`."];
+  }
+  return ["Open the repo of the project.", "Find the cause.", "Repair the cause."];
+}
+
 export function issueContent(problem: Problem, project: Project, today: string) {
   if (problem.reason === "not-conformant") {
     const rules = (problem.detail ?? []).map((name) => {
@@ -43,15 +65,15 @@ The next update closes this issue when all rules pass.
     };
   }
   return {
-    title: `${project.name}: ${PROBLEM_TEXT[problem.reason]}`,
+    title: `${project.name}: ${problem.text ?? PROBLEM_TEXT[problem.reason]}`,
     body: `<!-- status-problem: ${problem.key} -->
 The status update found this problem on ${today}.
 
 Do these steps:
 
-1. Open the repo of the project.
-2. Find the cause.
-3. Repair the cause.
+${steps(problem)
+  .map((step, i) => `${i + 1}. ${step}`)
+  .join("\n")}
 
 The next update closes this issue when the problem stops.
 `,
@@ -64,6 +86,7 @@ export function planIssueActions(
   unavailableIds: Set<string>,
   uptimeNotAvailable: boolean,
   setupUnavailableIds: Set<string>,
+  keepKeys: Set<string>,
   projects: Map<string, Project>,
   today: string,
 ): IssueActions {
@@ -77,6 +100,8 @@ export function planIssueActions(
   // on the setup check (spec 008); other issues on the repo data.
   const keep = (key: string) => {
     const id = key.split("/")[0];
+    // Spec 009: a value that is not known in this run keeps its issue open.
+    if (keepKeys.has(key)) return true;
     if (key.endsWith("/site-down")) return uptimeNotAvailable;
     if (key.endsWith("/not-conformant")) return setupUnavailableIds.has(id);
     return unavailableIds.has(id);

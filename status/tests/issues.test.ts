@@ -20,6 +20,7 @@ const plan = (
   unavailable: string[] = [],
   uptimeNotAvailable = false,
   setupUnavailable: string[] = [],
+  keep: string[] = [],
 ) =>
   planIssueActions(
     problems,
@@ -27,6 +28,7 @@ const plan = (
     new Set(unavailable),
     uptimeNotAvailable,
     new Set(setupUnavailable),
+    new Set(keep),
     projects,
     today,
   );
@@ -143,5 +145,45 @@ describe("not-conformant issues (spec 008)", () => {
 
   test("stays open when the setup check of the repo is not available", () => {
     expect(plan([], [issue(9, "one/not-conformant")], [], false, ["one"]).close).toEqual([]);
+  });
+});
+
+describe("expiry issues (spec 009)", () => {
+  const cert: Problem = {
+    projectId: "one",
+    reason: "cert-expiring",
+    key: "one/cert-expiring",
+    text: "The TLS certificate expires in 10 days.",
+  };
+  const renewal = (source: "catalog" | "registry"): Problem => ({
+    projectId: "one",
+    reason: "renewal-due",
+    key: "one/renewal-due/hosting",
+    text: "Renewal of Hosting is due in 20 days.",
+    source,
+  });
+
+  test("the title uses the text with the days, and the body has the steps", () => {
+    const c = issueContent(cert, project, today);
+    expect(c.title).toBe("One: The TLS certificate expires in 10 days.");
+    expect(c.body).toContain("2. Find why the automatic renewal of the certificate failed.");
+    expect(issueContent(renewal("catalog"), project, today).body).toContain(
+      "1. Renew Hosting.\n2. Enter the next date in `projects.yaml`, field `renewal`.",
+    );
+    expect(issueContent(renewal("registry"), project, today).body).toContain(
+      "1. Renew the domain at the registrar.",
+    );
+  });
+
+  test("the key with the renewal name is read back from the marker", () => {
+    expect(parseMarker(issueContent(renewal("catalog"), project, today).body)).toBe(
+      "one/renewal-due/hosting",
+    );
+  });
+
+  test("an issue stays open when its value is not known; else it closes", () => {
+    const open = [issue(4, "one/cert-expiring")];
+    expect(plan([], open, [], false, [], ["one/cert-expiring"]).close).toEqual([]);
+    expect(plan([], open).close.map((c) => c.number)).toEqual([4]);
   });
 });

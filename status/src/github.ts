@@ -53,6 +53,7 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     commitOid: null,
     renovateApp: null,
     conformanceNotAvailable: [],
+    expiry: { certificate: null, renewals: [], registryNotKnown: false },
   };
 }
 
