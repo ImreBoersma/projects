@@ -29,6 +29,25 @@ approximately 1 hour plus the delay of the scheduler. That is within 2 hours (SC
   within approximately 1 hour, not 13 hours. SC-001 of spec 004 stays true.
 - Actions minutes are free in a public repo.
 
+**Result 2026-11-05**: the GitHub schedule is not reliable for this repo. After the change to
+`17 * * * *` at 09:47 UTC, the slots of 10:17, 11:17 and 12:17 had no run. Before, the runs of
+`0 5,17 * * *` started 5 to 8 hours late (for example 12:34 and 22:10). GitHub gives no guarantee
+for scheduled runs, and it delays or drops them first.
+
+**Decision 2026-11-05 (Maintainer)**: start the run from outside GitHub, and watch it.
+
+- cron-job.org sends `POST /repos/ImreBoersma/projects/actions/workflows/status-page.yml/dispatches`
+  with `{"ref":"main"}` at minute 17 of each hour. Its token is a fine-grained PAT for
+  `ImreBoersma/projects` only, with Actions read and write. It is stored only in cron-job.org.
+- The GitHub `schedule` stays as a backup. A second run waits in the concurrency group.
+- The last step of job `issues` pings healthchecks.io (secret `STATUS_HEALTHCHECK_URL`). The
+  check has the cron `17 * * * *`, UTC, grace 60 minutes. A missing ping (no trigger, a revoked
+  token, a failed run) gives an alert.
+
+**Exception to Principle I**: cron-job.org and healthchecks.io are not GitHub. They keep no
+project data: cron-job.org only starts a run, and healthchecks.io only receives a ping. If the
+token leaks, a person can only start or stop workflows of `projects`.
+
 **Risk**: GitHub disables scheduled workflows of a public repo after 60 days without activity in
 the repo. Renovate PRs and merges in `projects` make activity each week (spec 003). If the schedule
 stops, the stale-data warning of the page shows after 3 hours (contracts/page.md; spec 001 used 48
