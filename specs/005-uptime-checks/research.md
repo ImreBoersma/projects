@@ -37,11 +37,12 @@ for scheduled runs, and it delays or drops them first.
 **Decision 2026-11-05 (Maintainer)**: start the run from outside GitHub, and watch it.
 
 - cron-job.org sends `POST /repos/ImreBoersma/projects/actions/workflows/status-page.yml/dispatches`
-  with `{"ref":"main"}` at minute 17 of each hour. Its token is a fine-grained PAT for
+  with `{"ref":"main"}` at minute 0 of each hour. Its token is a fine-grained PAT for
   `ImreBoersma/projects` only, with Actions read and write. It is stored only in cron-job.org.
-- The GitHub `schedule` stays as a backup. A second run waits in the concurrency group.
+- The GitHub `schedule` (`17 * * * *`) stays as a backup, 17 minutes after the trigger. A second
+  run waits in the concurrency group.
 - The last step of job `issues` pings healthchecks.io (secret `STATUS_HEALTHCHECK_URL`). The
-  check has the cron `17 * * * *`, UTC, grace 60 minutes. A missing ping (no trigger, a revoked
+  check has the cron `0 * * * *`, UTC, grace 60 minutes. A missing ping (no trigger, a revoked
   token, a failed run) gives an alert.
 
 **Exception to Principle I**: cron-job.org and healthchecks.io are not GitHub. They keep no
