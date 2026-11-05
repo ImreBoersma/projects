@@ -107,9 +107,9 @@ problems in 2 projects. 10 projects without a problem."
 - [X] T018 [P] In `specs/001-project-status-page/contracts/page.md`, add one line under the title: "Spec 007 changes this contract: see `specs/007-status-page-links/contracts/page.md`".
 - [X] T019 Run quickstart.md §2 and §5 on the real catalog. Make sure that the page is less than 50 KB and that it loads no file from another site (`grep -E 'src=|href="http' ` shows only GitHub and catalog domain links). Run `bun test`, `bun run lint`, `bunx tsc --noEmit -p .` and actionlint. Done 2026-11-05: the page is 8212 bytes; it links only to GitHub and the 4 catalog domains and loads no other file; 108 tests, lint, tsc and actionlint pass.
 - [ ] T020 Push the branch and open the PR into `main`. CI must pass.
-- [ ] T021 Ask the Maintainer to merge the PR, because a merge to `main` deploys the page.
-- [ ] T022 After the merge, validate quickstart.md §6 on the live page, also on a phone. Make sure that the summary line shows without scroll at 360 and at 1100 pixels wide (SC-004).
-- [ ] T023 [P] In `PLAN.md`, add spec 007 to the feature table and to the Done list.
+- [X] T021 Ask the Maintainer to merge the PR, because a merge to `main` deploys the page. Done 2026-11-05: the Maintainer merged #11.
+- [X] T022 After the merge, validate quickstart.md §6 on the live page, also on a phone. Make sure that the summary line shows without scroll at 360 and at 1100 pixels wide (SC-004). Done 2026-11-05: push run passed (build, issues, deploy); the live page has the summary "No problems. 12 projects. 4 of 4 sites are up.", both header links, 25 links and the card CSS. The summary is the third line under the title, so it shows without scroll at both widths (checked in Chrome at 360 and 1100 pixels before the merge).
+- [X] T023 [P] In `PLAN.md`, add spec 007 to the feature table and to the Done list. Done.
 
 ---
 
