@@ -140,7 +140,8 @@ the page shows "Up" and that no issue opens.
 
 - The check runs in GitHub Actions in the public `projects` repo. Scheduled runs can start some
   minutes late. This is sufficient for sites of orchestras and small clients.
-- This feature does not measure response time or calculate an uptime percentage.
+- This feature does not measure response time or calculate an uptime percentage. Spec 010 adds the
+  uptime percentage of 30 days from the stored results.
 - Certificate expiry warnings before the expiry date are not in the scope of this feature.
 - The HomeLab keeps its own monitoring for HomeLab services only (Principle VI).
 - The domains in the catalog are public. They are not private data.

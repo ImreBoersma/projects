@@ -1,5 +1,7 @@
 # Contract: status page content
 
+Spec 010 changes this contract: see `specs/010-status-history/contracts/page.md` ("since", uptime and bar, repair time).
+
 Spec 007 changes this contract: see `specs/007-status-page-links/contracts/page.md` (links, summary line, card layout, header links).
 
 Spec 005 changes this contract: see `specs/005-uptime-checks/contracts/page.md` (column "Site", problem `site-down`).

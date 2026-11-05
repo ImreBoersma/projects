@@ -54,6 +54,7 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     renovateApp: null,
     conformanceNotAvailable: [],
     expiry: { certificate: null, renewals: [], registryNotKnown: false },
+    history: { since: {}, sinceIsHistoryStart: [], uptime: null },
   };
 }
 

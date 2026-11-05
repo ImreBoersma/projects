@@ -7,6 +7,8 @@ import { checkRepo } from "./conformance/rules";
 import { certificateProblem, daysUntil, mergeRenewals, renewalProblems } from "./expiry/expiry";
 import { readBootstrap, readCertificate, readRegistryDate } from "./expiry/read";
 import { fetchStatuses } from "./github";
+import { repairTime, since, uptime as uptimeOf } from "./history/stats";
+import { readHistory, resultLine } from "./history/store";
 import {
   closeIssue,
   ensureLabel,
@@ -34,6 +36,9 @@ const { values: args } = parseArgs({
     out: { type: "string", default: "../_site" },
     mode: { type: "string", default: "page" },
     "dry-run": { type: "boolean", default: false },
+    // Spec 010: folder with the day files of the branch `data`, and the file for the new line.
+    history: { type: "string" },
+    "history-out": { type: "string" },
   },
 });
 
@@ -143,12 +148,47 @@ async function checkConformance(): Promise<Set<string>> {
   return unavailable;
 }
 
+// Spec 010: the result of this run, added to the stored results.
+const current = {
+  time: now.toISOString(),
+  projects: Object.fromEntries(
+    statuses.map((s) => [
+      s.project.id,
+      { site: s.uptime.state, problems: s.problems.map((p) => p.key) },
+    ]),
+  ),
+};
+const stored = args.history ? await readHistory(args.history, now) : { results: [], start: null };
+const results = [...stored.results, current];
+for (const s of statuses) {
+  for (const p of s.problems) {
+    const found = since(results, s.project.id, p.key);
+    if (!found) continue;
+    s.history.since[p.key] = found.time;
+    if (found.atHistoryStart) s.history.sinceIsHistoryStart.push(p.key);
+  }
+  if (s.project.domain) {
+    s.history.uptime = uptimeOf(results, s.project.id, now);
+    s.history.uptimeEnd = now.toISOString().slice(0, 10);
+  }
+}
+
 if (args.mode === "page") {
+  if (args["history-out"]) {
+    await Bun.write(args["history-out"], resultLine(current));
+    console.log(`Wrote the result line to ${args["history-out"]}.`);
+  }
   const issues = await issueNumbers();
   await mkdir(args.out, { recursive: true });
   await Bun.write(
     join(args.out, "index.html"),
-    renderPage({ generatedAt: now, rows: sortRows(statuses), issues }),
+    renderPage({
+      generatedAt: now,
+      rows: sortRows(statuses),
+      issues,
+      historyStart: stored.start ?? now.toISOString().slice(0, 10),
+      repair: repairTime(results, now),
+    }),
   );
   console.log(`Wrote ${join(args.out, "index.html")} with ${statuses.length} projects.`);
 } else {
