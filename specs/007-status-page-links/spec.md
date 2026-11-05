@@ -23,14 +23,14 @@ PRs, or the issue of the problem.
 or the issue by hand. That is the most frequent action after a look at the page.
 
 **Independent Test**: make a test row with a failed CI run. Open the page. Click the CI cell. Make
-sure that the list of workflow runs of that repo opens.
+sure that the checks of the last commit of that repo open.
 
 **Acceptance Scenarios**:
 
 1. **Given** a project with a repo, **When** the Maintainer clicks the project name, **Then** the repo
    opens.
 2. **Given** a project with a CI result, **When** the Maintainer clicks the CI cell, **Then** the
-   workflow runs of the default branch of that repo open.
+   checks of the last commit on the default branch of that repo open.
 3. **Given** a project with a deploy, **When** the Maintainer clicks the deploy cell, **Then** the
    deployments of that repo open.
 4. **Given** a project with open Renovate PRs, **When** the Maintainer clicks the Renovate cell,
@@ -117,8 +117,8 @@ opens.
 
 - **FR-001**: The project name MUST link to the repo, or to the site when the project has no repo
   but has a domain.
-- **FR-002**: The CI cell MUST link to the workflow runs of the default branch of the repo, when the
-  CI result is not "Unknown".
+- **FR-002**: The CI cell MUST link to the checks of the last commit on the default branch of the
+  repo, when the CI result is not "Unknown".
 - **FR-003**: The deploy cell MUST link to the deployments of the repo, when a deploy is known.
 - **FR-004**: The Renovate cell MUST link to the open PRs of Renovate in the repo, when the number
   is more than 0.
@@ -131,8 +131,8 @@ opens.
 - **FR-008**: On a screen that is 600 pixels wide or less, the page MUST show each project as a
   card, without horizontal scroll.
 - **FR-009**: The header MUST link to the public Roadmap view and to the project board.
-- **FR-010**: Links MUST contain only the catalog repo, the catalog domain, issue numbers and fixed
-  GitHub paths. The page MUST NOT show commit messages, PR titles, branch names or user names
+- **FR-010**: Links MUST contain only the catalog repo, the catalog domain, the id of the last
+  commit, the login of the Renovate app, issue numbers and fixed GitHub paths. The page MUST NOT show commit messages, PR titles, branch names or user names
   (FR-018 of spec 001).
 - **FR-011**: The page MUST NOT load scripts, fonts or styles from other sites.
 - **FR-012**: Each link MUST be visible as a link without colour (for example an underline), and
