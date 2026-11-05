@@ -1,0 +1,131 @@
+# Shared deploy over SSH with rsync. Contract: specs/006-hob-nl-deploy/contracts/deploy-ssh.md
+# It copies only the top-level items that match `pattern`; other files on the server do not change.
+name: deploy-ssh
+
+on:
+  workflow_call:
+    inputs:
+      known-hosts:
+        description: The host key line of the server (public).
+        type: string
+        required: true
+      source:
+        description: Folder in the caller repo.
+        type: string
+        default: .
+      target:
+        description: Folder on the server, relative to the home folder of the user.
+        type: string
+        required: true
+      pattern:
+        description: Top-level name pattern to copy, for example hob-*.
+        type: string
+        required: true
+      php-lint:
+        description: Check the PHP syntax before the copy.
+        type: boolean
+        default: true
+      health-urls:
+        description: URLs to check after the copy, separated by spaces. Empty means no check.
+        type: string
+        default: ""
+    secrets:
+      ssh-host:
+        required: true
+      ssh-user:
+        required: true
+      ssh-password:
+        required: true
+
+jobs:
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: production
+    concurrency:
+      group: deploy-${{ github.repository }}
+      cancel-in-progress: false
+    env:
+      SSHPASS: ${{ secrets.ssh-password }}
+      SSH_HOST: ${{ secrets.ssh-host }}
+      SSH_USER: ${{ secrets.ssh-user }}
+      SOURCE: ${{ inputs.source }}
+      TARGET: ${{ inputs.target }}
+      PATTERN: ${{ inputs.pattern }}
+      HEALTH_URLS: ${{ inputs.health-urls }}
+      BEFORE: ${{ github.event.before }}
+    steps:
+      - name: Get the repo with its history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check the PHP syntax
+        if: inputs.php-lint
+        run: |
+          status=0
+          while IFS= read -r -d '' file; do
+            php -l "$file" >/dev/null || { echo "Syntax error: $file"; status=1; }
+          done < <(find "$SOURCE" -name '*.php' -print0)
+          exit $status
+
+      - name: Prepare the SSH connection
+        env:
+          KNOWN_HOSTS: ${{ inputs.known-hosts }}
+        run: |
+          sudo apt-get install -y -q sshpass >/dev/null
+          printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/known_hosts"
+          cat > "$RUNNER_TEMP/sync.sh" <<'SCRIPT'
+          # Usage: sync.sh <folder> [--dry-run]. Only items that match PATTERN; never other files.
+          set -euo pipefail
+          rsync -rlt --delete --checksum --itemize-changes ${2:-} \
+            --include="/$PATTERN" --include="/$PATTERN/***" --exclude='*' \
+            -e "sshpass -e ssh -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no" \
+            "$1/" "$SSH_USER@$SSH_HOST:$TARGET/"
+          SCRIPT
+          cat > "$RUNNER_TEMP/check.sh" <<'SCRIPT'
+          # Exit 1 when a URL gives HTTP 5xx, no answer, or the WordPress critical error page.
+          set -uo pipefail
+          failed=0
+          for url in $HEALTH_URLS; do
+            sep='?'; case "$url" in *\?*) sep='&';; esac
+            ok=0
+            for try in 1 2; do
+              code=$(curl -sL -m 20 -o "$RUNNER_TEMP/body" -w '%{http_code}' "$url${sep}deploy=$GITHUB_RUN_ID" || echo 000)
+              if [ "$code" -ge 200 ] && [ "$code" -lt 500 ] && ! grep -q 'There has been a critical error on this website' "$RUNNER_TEMP/body"; then
+                ok=1; break
+              fi
+              sleep 10
+            done
+            if [ $ok = 1 ]; then echo "Check passed: $url (HTTP $code)"; else echo "Check failed: $url (HTTP $code)"; failed=1; fi
+          done
+          exit $failed
+          SCRIPT
+          chmod +x "$RUNNER_TEMP/sync.sh" "$RUNNER_TEMP/check.sh"
+
+      - name: Show the changes (dry run)
+        run: '"$RUNNER_TEMP/sync.sh" "$SOURCE" --dry-run'
+
+      - name: Copy the files
+        run: '"$RUNNER_TEMP/sync.sh" "$SOURCE"'
+
+      - name: Check the site
+        id: check
+        if: inputs.health-urls != ''
+        continue-on-error: true
+        run: '"$RUNNER_TEMP/check.sh"'
+
+      - name: Put back the previous version
+        if: steps.check.outcome == 'failure'
+        run: |
+          previous="$BEFORE"
+          if [ -z "$previous" ] || [ "$previous" = 0000000000000000000000000000000000000000 ]; then
+            previous=$(git rev-parse HEAD~1)
+          fi
+          echo "The check failed. Put back the files of $previous."
+          git worktree add -q "$RUNNER_TEMP/previous" "$previous"
+          "$RUNNER_TEMP/sync.sh" "$RUNNER_TEMP/previous/$SOURCE"
+          "$RUNNER_TEMP/check.sh" && echo "The site works with the previous version." || echo "The site also fails with the previous version."
+          exit 1
