@@ -11,6 +11,18 @@ file per day on a separate branch `data` of `projects`. The status page shows th
 percentage and a 30-day bar per site, how long each problem has been open, and the average time
 to repair. 90 days on the page; git keeps older days. A missing run is a gap, not downtime."
 
+## Clarifications
+
+### Session 2026-11-05
+
+- Q: Which problems count for the average time to repair? → A: Only faults: `site-down`,
+  `ci-failed`, `deploy-failed` and `cert-expiring`. Reminders and maintenance signals
+  (`renovate-stale`, `inactive`, `not-conformant`, `renewal-due`) do not count; they still show
+  "since" (US2).
+- Q: Are the average time to repair and the "since" times on the public page, or only the uptime?
+  → A: All on the public page: uptime, bars, "since" and the average time to repair. The problems
+  are already public on the page and in the issues; a second private page is not necessary.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Each update is kept (Priority: P1)
@@ -84,7 +96,8 @@ Make sure that the percentage is correct and that only that day has the "down" m
 
 ### User Story 4 - See the average time to repair (Priority: P3)
 
-The page shows, for the last 90 days, the average time from the start of a problem to its end.
+The page shows, for the last 90 days, the average time from the start of a fault to its end. A
+fault is a problem `site-down`, `ci-failed`, `deploy-failed` or `cert-expiring`.
 
 **Why this priority**: the Maintainer sees if problems are repaired fast. It is useful, but not
 necessary for daily work.
@@ -94,10 +107,12 @@ necessary for daily work.
 
 **Acceptance Scenarios**:
 
-1. **Given** closed problems in the last 90 days, **When** the page is made, **Then** the page shows
+1. **Given** closed faults in the last 90 days, **When** the page is made, **Then** the page shows
    their average duration and their number.
-2. **Given** no closed problems, **When** the page is made, **Then** the page shows "No repaired
-   problems in the last 90 days".
+2. **Given** a closed `inactive` problem of 20 days and a closed `ci-failed` fault of 2 hours,
+   **When** the page is made, **Then** the average is 2 hours.
+3. **Given** no closed faults, **When** the page is made, **Then** the page shows "No repaired
+   faults in the last 90 days".
 
 ---
 
@@ -134,8 +149,9 @@ necessary for daily work.
 - **FR-006**: For each project with a domain, the page MUST show the uptime percentage of the last
   30 days and a bar of 30 days (US3). Days without "Up" or "Down" checks MUST NOT change the
   percentage.
-- **FR-007**: The page MUST show the average time to repair of the problems that closed in the last
-  90 days, and their number (US4).
+- **FR-007**: The page MUST show the average time to repair of the faults that closed in the last
+  90 days, and their number (US4). Faults are the problems `site-down`, `ci-failed`,
+  `deploy-failed` and `cert-expiring`; other problems do not count.
 - **FR-008**: The stored results MUST NOT contain text from repos, names of persons, tokens or
   site content (spec 001 FR-018). They contain only states, problem keys and times.
 - **FR-009**: An update that cannot store its result MUST still publish the page, and MUST then
@@ -182,6 +198,6 @@ necessary for daily work.
 |---|---|
 | I. GitHub for all project work | The history is a branch of `projects`; no other service. |
 | III. No secrets or private data | The history has only states, problem keys and times. |
-| VII. Read-only views for stakeholders | The uptime of each site is on the public page. |
+| VII. Read-only views for stakeholders | The uptime, the bars, the "since" times and the average time to repair are on the public page (clarification 2026-11-05). They contain no cost, credentials or private notes. |
 | VIII. Keep the work small | No database or service that runs all the time. |
 | X. ASD-STE100 | Page text uses STE. |
