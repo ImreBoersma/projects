@@ -41,6 +41,10 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 005 | Uptime checks on the status page (done) | 001 |
 | 006 | hob.nl in git with a deploy workflow | 002 |
 | 007 | Status page links and layout (done) | 001, 005 |
+| 008 | Repo conformance check (specified) | 002, 003, 004 |
+| 009 | Renewals and certificate expiry | 005 |
+| 010 | Status history without a database | 007 |
+| 011 | New-project template and onboarding | 008 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -82,6 +86,43 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - Put `wp-content/themes` and the custom plugins in the repo.
 - Do not put `wp-config.php` or the WordPress core in git (Principle III).
 - Deploy with SSH and rsync from a workflow on push to `main`.
+
+### 007. Status page links and layout
+
+- Each cell links to its source: repo, checks of the last commit, deployments, Renovate PRs, the
+  problem issue, the site.
+- A summary line, a card layout on a phone, and links to the roadmap and the board.
+
+### 008. Repo conformance check
+
+- Check each own catalog repo each day against the shared setup: CI and board callers on `@main`,
+  caller permissions, Renovate preset, no Dependabot updates, issues on, security alerts,
+  default branch `main`, secret and variable names.
+- A repo that fails a rule is a problem, with one issue for each repo. Exceptions are in the
+  catalog. Spec: `specs/008-repo-conformance/`.
+
+### 009. Renewals and certificate expiry
+
+- Read the `renewal` field of the catalog. Also read the expiry date of the TLS certificate and of
+  the domain registration (RDAP) of each `domain`.
+- Show the days that remain on the status page. Open an issue 30 days before each date.
+- Reason: an expired domain or hosting contract stops a client site for days. The uptime check
+  finds it only after the stop.
+
+### 010. Status history without a database
+
+- Each update reads the last `status.json` from the published page, adds its result, keeps 90
+  days, and publishes it again. No commits to the repo.
+- Show the uptime percentage and a bar of 30 days for each site, and how long a problem is open.
+- This changes the decision of spec 005 that there is no uptime percentage.
+
+### 011. New-project template and onboarding
+
+- A template repo with the CI caller, the board caller, `renovate.json` and the Biome config.
+- A command that makes the repo from the template, sets the settings of spec 008, opens the
+  catalog PR, and shows the table of secrets and variables to set.
+- Reason: a new project now needs changes in 4 to 5 repos. Spec 008 finds the deviations; this
+  spec prevents them.
 
 ## Ongoing (no spec)
 
