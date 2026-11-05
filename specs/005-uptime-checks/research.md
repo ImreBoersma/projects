@@ -132,4 +132,5 @@ the same rule keeps the logs short.
 | Issues dry run (T015) | 2026-11-04 | Only `Open: Test down: The site does not respond correctly.` |
 | Run time (T019) | 2026-11-04 | 2 seconds with 4 sites up; 6 seconds with 1 site down (the second attempt waits 5 seconds). |
 | Live page after the merge | 2026-11-05 | Push run 42005338902 passed (build, issues, deploy). The live page has the column "Site", the 4 sites show "Up 09:48", and the warning uses 3 hours. |
+| Hourly runs (T027) | 2026-11-05 | cron-job.org started 3 runs in a row at 13:00:45, 14:00:44 and 15:00:44 UTC (runs 42031978655, 42040895187, 42050604751), each less than 1 minute after the hour; all passed. The runs of 14:00 and 15:00 pinged healthchecks.io (the ping step came at about 13:05). The GitHub `schedule` at minute 17 gave no run at 13:17 and 14:17, so the external trigger is necessary. |
 | Check from GitHub runners | 2026-11-04 | PR run 41815750803: the 4 sites were "Up". The hosts do not block the data-centre addresses of GitHub or the `User-Agent` of the check. Check this again when a site behind bot protection (for example Cloudflare or a WordPress security plugin) is added. |
