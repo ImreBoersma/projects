@@ -120,5 +120,6 @@ request adds a query string with the run id, so that the cache is not used.
 | Change, new file, removed file (T010) | 2026-11-05 | Runs 908d2c1/9a60482: `<fcsT hob-admin.php`, `<f+++ hob-test.txt`, then `*deleting hob-test.txt`. No GoDaddy item. 28 seconds from push to end of the job (SC-003: max. 5 minutes). |
 | Syntax error (T011) | 2026-11-05 | Run 42048333742: `php -l` found the error; dry run and copy were skipped. The revert deploy (42048394803) listed no change, so the server never had the error. |
 | Restore (T012) | 2026-11-05 | Run 42048588236: the test URL gave HTTP 500; the files of the previous commit went back; all 3 URLs then gave HTTP 200; the job failed. Revert deploy 42048831580 passed with no change. |
+| Restore point (T022) | 2026-11-05 | The restore went back to "the commit before", so a push on top of a broken commit would put broken code back. Changed: the deploy writes the commit of each passed check to `~/.deploy-last-good-hob-nl` on the server, and a restore uses that commit. Test: run 42049206496 wrote the marker (f9e4e47); broken commit A (42049295603) and commit B on top of A (42049466570) both restored f9e4e47, not A. After the revert of A and B, run 42049864063 passed and wrote the marker again. |
 | Theme and plugin editor (T015) | 2026-11-05 | See §7: `DISALLOW_FILE_EDIT` is set in `hob-admin.php`. |
 
