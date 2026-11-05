@@ -52,6 +52,7 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     uptime: { state: "no-domain", at: null },
     commitOid: null,
     renovateApp: null,
+    conformanceNotAvailable: [],
   };
 }
 

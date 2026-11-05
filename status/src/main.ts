@@ -2,6 +2,8 @@ import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { parseCatalog, visibleProjects } from "./catalog";
+import { readFacts } from "./conformance/read";
+import { checkRepo } from "./conformance/rules";
 import { fetchStatuses } from "./github";
 import {
   closeIssue,
@@ -11,7 +13,7 @@ import {
   parseMarker,
   planIssueActions,
 } from "./issues";
-import { evaluateProblems, sortRows } from "./problems";
+import { conformanceProblem, evaluateProblems, sortRows } from "./problems";
 import { renderPage } from "./render";
 import type { Project } from "./types";
 import { checkAll } from "./uptime";
@@ -54,9 +56,41 @@ for (const p of projects) {
   const u = uptime.get(p.id);
   if (p.domain && u) console.log(`Site ${p.domain}: ${LOG_TEXT[u.state]}`);
 }
+const unavailableSetup = await checkConformance();
 for (const s of statuses) {
   s.uptime = uptime.get(s.project.id) ?? s.uptime;
-  s.problems = evaluateProblems(s, now);
+  s.problems = [...evaluateProblems(s, now), ...s.problems];
+}
+
+// Spec 008: check each own repo against the shared setup. Returns the ids of the projects whose
+// repo could not be read, so that their conformance issues stay open.
+async function checkConformance(): Promise<Set<string>> {
+  const unavailable = new Set<string>();
+  const token = process.env.CONFORMANCE_READ_TOKEN;
+  if (!token) {
+    console.log("Conformance check not available: no token.");
+    return unavailable;
+  }
+  const own = statuses.filter((s) => s.project.repo?.startsWith("ImreBoersma/"));
+  await Promise.all(
+    own.map(async (s) => {
+      const repo = s.project.repo as string;
+      const facts = await readFacts(repo, token);
+      const results = facts === "not-available" ? null : checkRepo(facts, s.project.exceptions);
+      const notAvailable = results
+        ? results.filter((r) => r.state === "not-available").map((r) => r.rule)
+        : ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"];
+      s.conformanceNotAvailable = notAvailable;
+      if (notAvailable.length === 9) unavailable.add(s.project.id);
+      const problem = results ? conformanceProblem(s.project.id, results) : null;
+      if (problem) s.problems = [problem];
+      const failed = problem?.detail?.map((d) => d.split(" ")[0]).join(", ");
+      const parts = [failed ?? "pass"];
+      if (notAvailable.length) parts.push(`check not available: ${notAvailable.join(", ")}`);
+      console.log(`Conformance ${repo}: ${parts.join("; ")}`);
+    }),
+  );
+  return unavailable;
 }
 
 if (args.mode === "page") {
@@ -100,6 +134,7 @@ async function reconcileIssues() {
     await listOpenIssues(repo, token),
     new Set(statuses.filter((s) => s.availability === "unavailable").map((s) => s.project.id)),
     [...uptime.values()].some((u) => u.state === "not-available"),
+    unavailableSetup,
     new Map(projects.map((p) => [p.id, p])),
     now.toISOString().slice(0, 10),
   );

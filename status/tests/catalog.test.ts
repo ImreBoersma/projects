@@ -65,6 +65,22 @@ describe("parseCatalog", () => {
     }
   });
 
+  test("reads exceptions (spec 008)", () => {
+    const e = (text: string) => parseCatalog(entry(`id: a\nname: A\nstatus: active\n${text}`));
+    expect(e("exceptions:\n  R2: The repo is private.")[0].exceptions).toEqual({
+      R2: "The repo is private.",
+    });
+    expect(e("")[0].exceptions).toBeUndefined();
+    expect(() => e("exceptions:\n  R10: Reason.")).toThrow(
+      "Catalog error in entry 0, field `exceptions`: R10 is not a rule. Use R1 to R9.",
+    );
+    expect(() => e("exceptions:\n  x: Reason.")).toThrow("x is not a rule. Use R1 to R9.");
+    expect(() => e('exceptions:\n  R2: ""')).toThrow(
+      "Catalog error in entry 0, field `exceptions`: give a reason for R2.",
+    );
+    expect(() => e("exceptions: R2")).toThrow("field `exceptions`");
+  });
+
   test("reads the stakeholder name", () => {
     const projects = parseCatalog(
       entry("id: a\nname: A\nstatus: active\nstakeholder: Harmonieorkest Brummen"),

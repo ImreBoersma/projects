@@ -36,8 +36,9 @@ token gives no write access.
 query, which does not need it. Use `BOARD_SYNC_TOKEN` (classic, `repo`). Rejected: it has write
 access; FR-010 asks for read only.
 
-**Not confirmed**: that "Administration: read" is sufficient for both settings endpoints with a
-fine-grained token. quickstart.md §2 tests it.
+**Confirmed 2026-11-05**: PR run 42020587608 with `CONFORMANCE_READ_TOKEN` gave the same results as
+the local run (5 pass, HomeLab R7) and no "check not available". The read-only permissions are
+sufficient.
 
 ## 3. When the check runs (FR-008)
 
@@ -104,3 +105,12 @@ Each one gets a fixture test.
 **Decision**: `projects` is not checked. It is not in the catalog (Principle II), and its own CI
 already checks its workflows (actionlint) and its Renovate config (`lint-renovate.yml`). Decided by
 the Maintainer on 2026-11-05.
+
+## 10. Exceptions
+
+**Result 2026-11-05**: no exception is necessary. The first local run (with the `gh` token of the
+Maintainer) gave `pass` for Reperatie-Formulier, boek-de-bus, scales-exercises, Beter-dan-de-MIDI
+and personal-website, and `R7` for HomeLab. HomeLab has vulnerability alerts off
+(`vulnerability-alerts` gives 404). That is a real deviation, not a wrong rule: spec 003 asked for
+alerts on in all repos. The run took 5 seconds.
+

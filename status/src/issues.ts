@@ -1,3 +1,4 @@
+import { RULES } from "./conformance/rules";
 import { PROBLEM_TEXT } from "./problems";
 import type { Problem, Project } from "./types";
 
@@ -19,7 +20,28 @@ export function parseMarker(body: string | null): string | null {
 }
 
 // Text follows contracts/issue.md. It contains no text from the project repo (FR-009e).
+const DOCS = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
+
 export function issueContent(problem: Problem, project: Project, today: string) {
+  if (problem.reason === "not-conformant") {
+    const rules = (problem.detail ?? []).map((name) => {
+      const rule = RULES.find((r) => name.startsWith(`${r.id} `));
+      return `- ${name}: ${DOCS}#${rule?.anchor ?? ""}`;
+    });
+    return {
+      title: `${project.name}: ${PROBLEM_TEXT[problem.reason]}`,
+      body: `<!-- status-problem: ${problem.key} -->
+The status update found this problem on ${today}.
+
+These rules fail:
+
+${rules.join("\n")}
+
+Do the repair steps of each rule. The status page shows the current list.
+The next update closes this issue when all rules pass.
+`,
+    };
+  }
   return {
     title: `${project.name}: ${PROBLEM_TEXT[problem.reason]}`,
     body: `<!-- status-problem: ${problem.key} -->
@@ -41,6 +63,7 @@ export function planIssueActions(
   openIssues: OpenIssue[],
   unavailableIds: Set<string>,
   uptimeNotAvailable: boolean,
+  setupUnavailableIds: Set<string>,
   projects: Map<string, Project>,
   today: string,
 ): IssueActions {
@@ -50,9 +73,14 @@ export function planIssueActions(
     if (key) openKeys.set(key, issue.number);
   }
   const found = new Set(problems.map((p) => p.key));
-  // A site-down issue depends only on the site check (spec 005, FR-008); other issues on the repo data.
-  const keep = (key: string) =>
-    key.endsWith("/site-down") ? uptimeNotAvailable : unavailableIds.has(key.split("/")[0]);
+  // A site-down issue depends only on the site check (spec 005, FR-008), a not-conformant issue only
+  // on the setup check (spec 008); other issues on the repo data.
+  const keep = (key: string) => {
+    const id = key.split("/")[0];
+    if (key.endsWith("/site-down")) return uptimeNotAvailable;
+    if (key.endsWith("/not-conformant")) return setupUnavailableIds.has(id);
+    return unavailableIds.has(id);
+  };
   return {
     open: problems
       .filter((p) => !openKeys.has(p.key))
