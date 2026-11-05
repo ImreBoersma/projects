@@ -77,6 +77,7 @@ a { color: var(--link); text-decoration: underline; text-decoration-color: var(-
 a:hover { text-decoration-color: currentColor; }
 a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 2px; }
 .nt { font-size: 0.75em; margin-left: 2px; color: var(--muted); }
+.sr, .nt { user-select: none; }
 .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .total { padding: 24px; border-radius: 12px; margin-bottom: 40px; }
@@ -95,7 +96,7 @@ section { margin-bottom: 40px; }
 h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--muted); margin: 0 0 4px; }
 .count { font-weight: 400; margin-left: 4px; }
-.projects, .problems, .facts { list-style: none; padding: 0; }
+.projects, .problems { list-style: none; padding: 0; }
 .projects { margin: 0; }
 .project { padding: 16px 0; border-top: 1px solid var(--line); }
 .project:first-child { border-top: 0; }
@@ -110,15 +111,18 @@ h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacin
 .problems > li > a { color: var(--bad-fg); }
 .since, .rules { color: var(--muted); font-size: 14px; }
 .rules a { color: var(--muted); }
-.facts { margin: 4px 0 0 20px; display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 14px;
-  color: var(--muted); }
-.facts a { color: var(--muted); }
+.facts { margin: 8px 0 0 20px; font-size: 14px; color: var(--muted); }
+.facts div { display: grid; grid-template-columns: 56px 1fr; gap: 12px; }
+.facts div + div { margin-top: 2px; }
+.facts dt { font-size: 13px; color: var(--muted); opacity: 0.8; }
+.facts dd { margin: 0; color: var(--fg); }
+.sep { color: var(--line-strong); }
 .badge { display: inline-block; padding: 0 8px; border-radius: 999px; font-weight: 500; }
 .badge.warn { color: var(--warn-fg); background: var(--warn-bg); }
 .badge.bad { color: var(--bad-fg); background: var(--bad-bg); }
 .badge.unknown { color: var(--unknown-fg); background: var(--unknown-bg); }
 a:has(> .badge) { text-decoration: none; }
-.bar { display: inline-flex; gap: 1px; vertical-align: middle; margin-left: 4px; }
+.bar { display: inline-flex; gap: 1px; vertical-align: middle; margin-left: 6px; }
 .mark { display: inline-block; width: 3px; height: 12px; border-radius: 1px; background: var(--mark-none); }
 .mark.up { background: var(--mark-up); }
 .mark.down { background: var(--mark-down); }

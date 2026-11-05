@@ -23,9 +23,12 @@ the links and the forbidden content of those contracts stay.
 
 Design revision 2026-11-05: each section is an `<h2>` with the number of projects and a list
 `<ul class="projects">`; each project is `<li class="project <kind>">` with a dot, the name (link),
-the problems (`<ul class="problems">`) and the facts (`<ul class="facts">`). The facts, in this
-order, only when they have a value: site state and uptime, CI, deploy, last commit, open PRs,
-Renovate PRs, certificate, next renewal, "not known" dates, setup check not available. Good states
+the problems (`<ul class="problems">`) and the facts (`<dl class="facts">`), in labelled groups,
+each group one line: **Site** (state, uptime and bar), **Code** (CI, deploy, last commit, open
+PRs, Renovate PRs, setup check not available; or "No repo" / "Data not available"), **Expiry**
+(certificate, next renewal, "not known" dates). A fact or a group with no value does not show.
+Items in a group have a text separator ` · ` (`aria-hidden`), so that a copy of the page keeps
+it. Screen-reader text and new-tab marks cannot be selected, so a copy does not contain them. Good states
 are plain text; other states are badges.
 
 Up to three sections, in this order:

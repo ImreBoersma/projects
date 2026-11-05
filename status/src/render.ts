@@ -67,11 +67,11 @@ function sinceText(s: ProjectStatus, key: string, now: Date): string {
   return ` <span class="since">Started ${timeTag(time, now)}${orBefore}</span>`;
 }
 
-// Spec 010: 30 marks, old to new.
+// Spec 010: the uptime of 30 days and 30 marks, old to new.
 const MARK_TEXT = { up: "up", down: "down", "no-data": "no data" };
-function uptimeBar(s: ProjectStatus): string {
+function uptime(s: ProjectStatus): string[] {
   const u = s.history.uptime;
-  if (!u) return "";
+  if (!u) return [];
   const first = Date.parse(`${s.history.uptimeEnd ?? ""}T00:00:00Z`);
   const marks = u.days
     .map((d, i) => {
@@ -83,31 +83,35 @@ function uptimeBar(s: ProjectStatus): string {
     .join("");
   const down = u.days.filter((d) => d === "down").length;
   const none = u.days.filter((d) => d === "no-data").length;
-  const percent = u.percent === null ? "no data" : `${u.percent.toFixed(1)}%`;
-  return ` · ${percent} in 30 days <span class="bar" role="img" aria-label="Uptime of the last 30 days: ${count(down, "day")} down, ${count(none, "day")} without data">${marks}</span>`;
+  const percent = u.percent === null ? "No data" : `${u.percent.toFixed(1)}%`;
+  return [
+    `${percent} in 30 days <span class="bar" role="img" aria-label="Uptime of the last 30 days: ${count(down, "day")} down, ${count(none, "day")} without data">${marks}</span>`,
+  ];
 }
 
-// The facts of a project, in one wrapping line. Facts with no value are not shown.
-function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>): string[] {
-  const out: string[] = [];
+// The facts of a project, in labelled groups (Site, Code, Expiry). Facts with no value are not
+// shown; a group without facts is not shown.
+function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) {
+  const site: string[] = [];
   const { state, at } = s.uptime;
   if (state === "up" || state === "down") {
-    const text = state === "up" ? "Site up" : "Site down";
     const checked = at
-      ? ` <span class="sr">(checked ${at.toISOString().slice(11, 16)} UTC)</span>`
+      ? `<span class="sr"> (checked ${at.toISOString().slice(11, 16)} UTC)</span>`
       : "";
-    out.push(
-      `${link(badge(state === "up" ? "good" : "bad", text), links.site)}${checked}${uptimeBar(s)}`,
+    site.push(
+      `${link(badge(state === "up" ? "good" : "bad", state === "up" ? "Up" : "Down"), links.site)}${checked}`,
     );
+    site.push(...uptime(s));
   } else if (state === "not-available") {
-    out.push(link(badge("unknown", "Site check not available"), links.site));
+    site.push(link(badge("unknown", "Check not available"), links.site));
   }
 
-  if (s.availability === "no-repo") out.push("No repo");
-  else if (s.availability === "unavailable") out.push(badge("unknown", "Repo data not available"));
+  const code: string[] = [];
+  if (s.availability === "no-repo") code.push("No repo");
+  else if (s.availability === "unavailable") code.push(badge("unknown", "Data not available"));
   else {
     if (s.ci !== "unknown") {
-      out.push(link(badge(ciKind(s.ci), s.ci === "passed" ? "CI passed" : "CI failed"), links.ci));
+      code.push(link(badge(ciKind(s.ci), s.ci === "passed" ? "CI passed" : "CI failed"), links.ci));
     }
     if (s.deploy !== "unknown") {
       const d = s.deploy;
@@ -117,42 +121,50 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>):
           : d.result === "failed"
             ? "Deploy failed"
             : "Deploying";
-      out.push(
+      code.push(
         `${link(badge(deployKind(d), text), links.deploy)} ${timeTag(d.at.toISOString(), now)}`,
       );
     }
-    if (s.lastCommitAt) out.push(`Last commit ${timeTag(s.lastCommitAt.toISOString(), now)}`);
-    if (s.openPrCount > 0) out.push(count(s.openPrCount, "open PR"));
+    if (s.lastCommitAt) code.push(`Last commit ${timeTag(s.lastCommitAt.toISOString(), now)}`);
+    if (s.openPrCount > 0) code.push(count(s.openPrCount, "open PR"));
     if (s.renovatePrCount > 0) {
       const oldest = s.oldestRenovatePrAt
         ? `, oldest ${timeTag(s.oldestRenovatePrAt.toISOString(), now)}`
         : "";
-      out.push(`${link(count(s.renovatePrCount, "Renovate PR"), links.renovate)}${oldest}`);
+      code.push(`${link(count(s.renovatePrCount, "Renovate PR"), links.renovate)}${oldest}`);
     }
   }
+  if (s.conformanceNotAvailable.length) {
+    code.push(`Setup check not available: ${html(s.conformanceNotAvailable.join(", "))}`);
+  }
 
+  const expiry: string[] = [];
   const { certificate, renewals, registryNotKnown } = s.expiry;
-  if (certificate === "not-known") out.push("Certificate date not known");
+  if (certificate === "not-known") expiry.push("Certificate date not known");
   else if (certificate) {
-    const word = certificate.days < 0 ? "expired" : "expires";
-    out.push(
-      badge(
-        certificateKind(certificate.days),
-        `Certificate ${word} ${timeTag(certificate.date, now)}`,
-      ),
+    const word = certificate.days < 0 ? "Certificate expired" : "Certificate";
+    expiry.push(
+      badge(certificateKind(certificate.days), `${word} ${timeTag(certificate.date, now)}`),
     );
   }
   const next = [...renewals].sort((a, b) => a.days - b.days)[0];
   if (next) {
     const due = next.days < 0 ? "renewal was due" : "renewal";
-    out.push(badge(renewalKind(next.days), `${html(next.name)} ${due} ${timeTag(next.date, now)}`));
+    expiry.push(
+      badge(renewalKind(next.days), `${html(next.name)} ${due} ${timeTag(next.date, now)}`),
+    );
   }
-  if (registryNotKnown) out.push("Domain date not known");
-  if (s.conformanceNotAvailable.length) {
-    out.push(`Setup check not available: ${html(s.conformanceNotAvailable.join(", "))}`);
-  }
-  return out;
+  if (registryNotKnown) expiry.push("Domain date not known");
+
+  return [
+    { label: "Site", items: site },
+    { label: "Code", items: code },
+    { label: "Expiry", items: expiry },
+  ].filter((g) => g.items.length > 0);
 }
+
+// The separator is text, so that a copy of the page keeps it.
+const SEP = '<span class="sep" aria-hidden="true"> · </span>';
 
 const DOT_TEXT = {
   good: "Correct",
@@ -171,11 +183,11 @@ function project(s: ProjectStatus, now: Date, issues: Map<string, number>): stri
   const tag =
     s.project.status === "active" ? "" : ` <span class="tag">${html(s.project.status)}</span>`;
   const list = facts(s, now, links)
-    .map((f) => `<li>${f}</li>`)
+    .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
     .join("");
   return `<li class="project ${kind}">
 <p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>${link(html(s.project.name), links.project)}${tag}</p>
-${problems.length ? `<ul class="problems">${problems.join("")}</ul>\n` : ""}${list ? `<ul class="facts">${list}</ul>` : ""}
+${problems.length ? `<ul class="problems">${problems.join("")}</ul>\n` : ""}${list ? `<dl class="facts">${list}</dl>` : ""}
 </li>`;
 }
 

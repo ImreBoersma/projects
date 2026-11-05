@@ -117,6 +117,10 @@ calm-design rules:
   titles in small muted capitals with a count, thin lines between projects only.
 - Warm neutral colours; links in the text colour with a light underline (still underlined,
   spec 007 FR-012); the new-tab mark is muted.
+- Second pass (Maintainer: "a lot of information without separation"): the facts are in three
+  labelled lines (Site, Code, Expiry) with ` · ` between the items (grouping by proximity and
+  labels). Screen-reader text is not selectable, so a copy has no "(opens in a new tab)" and no
+  duplicate times.
 
 **Contrast**: `style.test.ts` checks 18 pairs, also the text and muted colours on the tinted
 backgrounds of the top block. All are 4.5 or more in both schemes.

@@ -14,7 +14,11 @@ const A = (url: string) => `<a href="${url}" target="_blank" rel="noopener noref
 const NT =
   '<span class="nt" aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>';
 // The facts line of the first project.
-const facts = (s: ProjectStatus) => render([s]).match(/<ul class="facts">(.*?)<\/ul>/)?.[1] ?? "";
+const facts = (s: ProjectStatus) => render([s]).match(/<dl class="facts">(.*?)<\/dl>/)?.[1] ?? "";
+// The items of one labelled group (Site, Code, Expiry) of the first project.
+const SEP = '<span class="sep" aria-hidden="true"> · </span>';
+const group = (s: ProjectStatus, label: string) =>
+  (facts(s).match(new RegExp(`<dt>${label}</dt><dd>(.*?)</dd>`))?.[1] ?? "").split(SEP);
 const ci = (id = "one") => ({
   projectId: id,
   reason: "ci-failed" as const,
@@ -41,50 +45,53 @@ describe("renderPage", () => {
     expect(html).toContain('<section class="total correct">');
   });
 
-  test("shows the facts of a row, and leaves out facts with no value", () => {
-    const line = facts(
+  test("shows the facts in groups, and leaves out facts with no value", () => {
+    const code = group(
       status({
         openPrCount: 3,
         renovatePrCount: 2,
         oldestRenovatePrAt: new Date("2026-10-08T00:00:00Z"),
         deploy: { at: new Date("2026-10-27T11:00:00Z"), result: "succeeded" },
       }),
+      "Code",
     );
-    expect(line).toContain("<li>CI passed</li>");
-    expect(line).toContain(
-      `Deployed${NT} <time datetime="2026-10-27T11:00:00.000Z" data-rel title="2026-10-27 11:00 UTC">18 hours ago</time>`,
+    expect(code[0]).toBe("CI passed");
+    expect(code[1]).toStartWith(
+      `${A("https://github.com/ImreBoersma/one/deployments")}Deployed${NT} <time datetime="2026-10-27T11:00:00.000Z" data-rel title="2026-10-27 11:00 UTC">18 hours ago</time>`,
     );
-    expect(line).toContain(
-      '<li>Last commit <time datetime="2026-10-27T00:00:00.000Z" data-rel title="2026-10-27 00:00 UTC">29 hours ago</time>',
+    expect(code[2]).toStartWith(
+      'Last commit <time datetime="2026-10-27T00:00:00.000Z" data-rel title="2026-10-27 00:00 UTC">29 hours ago</time>',
     );
-    expect(line).toContain("<li>3 open PRs</li>");
-    expect(line).toContain("2 Renovate PRs");
-    expect(line).toContain(">20 days ago</time>");
+    expect(code[3]).toBe("3 open PRs");
+    expect(code[4]).toStartWith("2 Renovate PRs, oldest <time");
+    expect(code[4]).toContain(">20 days ago</time>");
     const quiet = facts(status({ ci: "unknown" }));
-    expect(quiet).not.toContain("CI");
+    expect(quiet).toStartWith("<div><dt>Code</dt><dd>Last commit");
+    expect(quiet).not.toContain("<dt>Site</dt>");
+    expect(quiet).not.toContain("<dt>Expiry</dt>");
     expect(quiet).not.toContain("open PR");
-    expect(quiet).not.toContain("Renovate");
-    expect(quiet).not.toContain("Site");
   });
 
   test("shows the site state; colour only when it is not good", () => {
     const at = new Date("2026-11-04T10:17:42Z");
-    expect(facts(status({ uptime: { state: "up", at } }))).toContain(
-      '<li>Site up <span class="sr">(checked 10:17 UTC)</span>',
+    expect(group(status({ uptime: { state: "up", at } }), "Site")).toEqual([
+      'Up<span class="sr"> (checked 10:17 UTC)</span>',
+    ]);
+    expect(group(status({ uptime: { state: "down", at } }), "Site")[0]).toStartWith(
+      '<span class="badge bad">Down</span>',
     );
-    expect(facts(status({ uptime: { state: "down", at } }))).toContain(
-      '<span class="badge bad">Site down</span>',
-    );
-    expect(facts(status({ uptime: { state: "not-available", at } }))).toContain(
-      '<span class="badge unknown">Site check not available</span>',
-    );
+    expect(group(status({ uptime: { state: "not-available", at } }), "Site")).toEqual([
+      '<span class="badge unknown">Check not available</span>',
+    ]);
   });
 
   test("no-repo and unavailable rows show one fact", () => {
-    expect(facts(status({ availability: "no-repo" }))).toBe("<li>No repo</li>");
-    expect(facts(status({ availability: "unavailable" }))).toBe(
-      '<li><span class="badge unknown">Repo data not available</span></li>',
+    expect(facts(status({ availability: "no-repo" }))).toBe(
+      "<div><dt>Code</dt><dd>No repo</dd></div>",
     );
+    expect(group(status({ availability: "unavailable" }), "Code")).toEqual([
+      '<span class="badge unknown">Data not available</span>',
+    ]);
   });
 
   test("escapes the project name", () => {
@@ -165,7 +172,7 @@ describe("renderPage", () => {
     expect(html).toContain(
       `${A("https://github.com/ImreBoersma/projects/issues/12")}The last CI run failed.${NT}`,
     );
-    expect(html).toContain(`${A("https://one.example/")}Site up${NT}`);
+    expect(html).toContain(`${A("https://one.example/")}Up${NT}`);
   });
 
   test("facts without a source have no link", () => {
@@ -258,61 +265,52 @@ describe("conformance on the page (spec 008)", () => {
 
   test("shows a fact, not a problem, when rules could not be read", () => {
     const html = render([status({ conformanceNotAvailable: ["R7", "R9"] })]);
-    expect(html).toContain("<li>Setup check not available: R7, R9</li>");
+    expect(html).toContain("Setup check not available: R7, R9</dd>");
     expect(html).toContain('<li class="project unknown">');
   });
 });
 
 describe("expiry on the page (spec 009)", () => {
-  const expiry = (e: ProjectStatus["expiry"]) => facts(status({ expiry: e }));
-
   test("shows the certificate and the renewal with the fewest days", () => {
     const renewals = [
       { name: "Hosting", date: "2027-01-01", days: 57, source: "catalog" as const },
       { name: "Domain", date: "2027-03-01", days: 120, source: "registry" as const },
     ];
-    const line = expiry({
+    const expiry = (e: ProjectStatus["expiry"]) => group(status({ expiry: e }), "Expiry");
+    const both = expiry({
       certificate: { date: "2026-12-19", days: 44 },
       renewals,
       registryNotKnown: false,
     });
-    expect(line).toContain(
-      '<li>Certificate expires <time datetime="2026-12-19" data-rel title="2026-12-19">in 52 days</time>',
+    expect(both[0]).toStartWith(
+      'Certificate <time datetime="2026-12-19" data-rel title="2026-12-19">in 52 days</time>',
     );
-    expect(line).toContain(
-      '<li><span class="badge warn">Hosting renewal <time datetime="2027-01-01"',
+    expect(both[1]).toStartWith(
+      '<span class="badge warn">Hosting renewal <time datetime="2027-01-01"',
     );
-    expect(line).not.toContain("Domain");
-    expect(expiry({ certificate: "not-known", renewals: [], registryNotKnown: true })).toEndWith(
-      "<li>Certificate date not known</li><li>Domain date not known</li>",
-    );
-    expect(expiry({ certificate: null, renewals: [], registryNotKnown: false })).not.toContain(
-      "Certificate",
-    );
+    expect(both).toHaveLength(2);
+    expect(expiry({ certificate: "not-known", renewals: [], registryNotKnown: true })).toEqual([
+      "Certificate date not known",
+      "Domain date not known",
+    ]);
+    expect(facts(status())).not.toContain("<dt>Expiry</dt>");
   });
 
   test("a date at or below the limit is bad, and the past says so", () => {
     const past = { name: "Hosting", date: "2026-10-27", days: -1, source: "catalog" as const };
-    const line = expiry({
+    const expiry = {
       certificate: { date: "2026-11-17", days: 20 },
       renewals: [past],
       registryNotKnown: false,
-    });
-    expect(line).toContain('<span class="badge warn">Certificate expires <time');
-    expect(line).toContain(">in 20 days</time>");
-    expect(line).toContain('<span class="badge bad">Hosting renewal was due <time');
-    expect(line).toContain(">1 day ago</time>");
-    expect(
-      render([
-        status({
-          expiry: {
-            certificate: { date: "2026-11-17", days: 20 },
-            renewals: [],
-            registryNotKnown: false,
-          },
-        }),
-      ]),
-    ).toContain('<li class="project warn">');
+    };
+    const items = group(status({ expiry }), "Expiry");
+    expect(items[0]).toStartWith('<span class="badge warn">Certificate <time');
+    expect(items[0]).toContain(">in 20 days</time>");
+    expect(items[1]).toStartWith('<span class="badge bad">Hosting renewal was due <time');
+    expect(items[1]).toContain(">1 day ago</time>");
+    expect(render([status({ expiry: { ...expiry, renewals: [] } })])).toContain(
+      '<li class="project warn">',
+    );
   });
 });
 
@@ -355,7 +353,7 @@ describe("history on the page (spec 010)", () => {
         },
       }),
     ]);
-    expect(html).toContain(' · 95.8% in 30 days <span class="bar"');
+    expect(html).toContain(`${SEP}95.8% in 30 days <span class="bar"`);
     expect(html.match(/<i class="mark /g)).toHaveLength(30);
     expect(html).toContain('<i class="mark down" title="2026-10-27 down"></i>');
     expect(html).toContain('<i class="mark no-data" title="2026-10-28 no data"></i>');
@@ -376,7 +374,7 @@ describe("history on the page (spec 010)", () => {
         },
       }),
     ]);
-    expect(noData).toContain("no data in 30 days");
+    expect(noData).toContain("No data in 30 days");
     expect(render([status()])).not.toContain('class="bar"');
   });
 
@@ -422,8 +420,8 @@ describe("spec 012: total state, sections, times, new tabs", () => {
         deploy: { at: generatedAt, result: "failed" },
       }),
     ]);
-    expect(html).toContain('<span class="badge bad">Site down</span>');
-    expect(html).toContain("<li>CI passed</li>");
+    expect(html).toContain('<span class="badge bad">Down</span>');
+    expect(html).toContain(`<dd>CI passed${SEP}`);
     expect(html).not.toContain("badge good");
     expect(html).toContain('<span class="badge bad">Deploy failed</span>');
     expect(html).toContain(".badge.warn { color: var(--warn-fg);");
