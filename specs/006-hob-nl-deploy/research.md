@@ -41,7 +41,7 @@ and the status page shows the failed deploy.
 **Decision**:
 
 ```sh
-rsync -rlt --delete --checksum --itemize-changes \
+rsync -rl --delete --checksum --itemize-changes \
   --include='/hob-*' --include='/hob-*/***' --exclude='*' \
   mu-plugins/ "$USER@$HOST:html/wp-content/mu-plugins/"
 ```
@@ -49,7 +49,10 @@ rsync -rlt --delete --checksum --itemize-changes \
 - `--exclude='*'` after the two includes: rsync sends only `hob-*` items.
 - rsync never removes an excluded file with `--delete` (no `--delete-excluded`), so the GoDaddy
   files (`gd-system-plugin*`, `object-cache-pro*`, `vendor/`) cannot be removed or changed.
-- `-rlt` and not `-a`: no owner, group or permissions are sent; the server keeps them.
+- `-rl` and not `-a` or `-rlt`: no owner, group, permissions or times are sent. The first deploy
+  with `-rlt` failed with code 23 ("failed to set times" on the `mu-plugins` folder, owner `root`),
+  and each checkout gives the files new times, so `-t` listed each file as changed. With
+  `--checksum`, only a change of the content is copied (research.md §9).
 - A first run with `--dry-run` writes the list of changes to the log; the real run follows only
   when the dry run passed.
 
@@ -85,9 +88,9 @@ deploy fails with a host key error; update the input after a check of the new ke
 
 ## 7. Theme editor (FR-008)
 
-**Decision**: check `DISALLOW_FILE_EDIT` in `wp-config.php` with `wp config get` over SSH. If it is
-not `true`, the Maintainer sets it (`wp config set DISALLOW_FILE_EDIT true --raw`). This is a
-setting on the server, not in git.
+**Result 2026-11-05**: already done, and in git. `hob-admin.php` (section 14) sets
+`define( 'DISALLOW_FILE_EDIT', true )` when it is not defined, on purpose in the must-use plugin and
+not in `wp-config.php`, because GoDaddy manages that file. No change on the server is necessary.
 
 ## 8. Check after the deploy (FR-013, clarification 2026-11-05)
 
@@ -107,4 +110,16 @@ give a challenge page). T009 checks it before a restore can happen by mistake.
 
 **Limits**: the check sees errors on these 2 pages only. Cloudflare can cache the home page; the
 request adds a query string with the run id, so that the cache is not used.
+
+## 9. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| History scan (T005) | 2026-11-05 | `git log -p --all`: only text about `wp-config.php` in the manuals and the README, and the WordPress function `the_password_form`. No secret. |
+| First deploy (T009) | 2026-11-05 | Run 42047408467 failed with rsync code 23: "failed to set times" on `mu-plugins/.` (owner `root`). The content was the same; GoDaddy files were not touched. Fixed with `rsync -rl` (no times). Run 42047855629: passed, no item listed (git and server the same), both checks HTTP 200, deployment `production` with status `success`. |
+| Change, new file, removed file (T010) | 2026-11-05 | Runs 908d2c1/9a60482: `<fcsT hob-admin.php`, `<f+++ hob-test.txt`, then `*deleting hob-test.txt`. No GoDaddy item. 28 seconds from push to end of the job (SC-003: max. 5 minutes). |
+| Syntax error (T011) | 2026-11-05 | Run 42048333742: `php -l` found the error; dry run and copy were skipped. The revert deploy (42048394803) listed no change, so the server never had the error. |
+| Restore (T012) | 2026-11-05 | Run 42048588236: the test URL gave HTTP 500; the files of the previous commit went back; all 3 URLs then gave HTTP 200; the job failed. Revert deploy 42048831580 passed with no change. |
+| Restore point (T022) | 2026-11-05 | The restore went back to "the commit before", so a push on top of a broken commit would put broken code back. Changed: the deploy writes the commit of each passed check to `~/.deploy-last-good-hob-nl` on the server, and a restore uses that commit. Test: run 42049206496 wrote the marker (f9e4e47); broken commit A (42049295603) and commit B on top of A (42049466570) both restored f9e4e47, not A. After the revert of A and B, run 42049864063 passed and wrote the marker again. |
+| Theme and plugin editor (T015) | 2026-11-05 | See §7: `DISALLOW_FILE_EDIT` is set in `hob-admin.php`. |
 
