@@ -64,6 +64,12 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish (done) | 007 |
+| 013 | Expiry of tokens and secrets | 009 |
+| 014 | Free-tier usage warnings | 005 |
+| 015 | Changes in all repos at once (campaigns) | 008 |
+| 016 | Version drift between projects | 008 |
+| 017 | Delivery numbers for each project | 010 |
+| 018 | Archive suggestions for old projects | 010 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -165,6 +171,56 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
   mark, and the text "opens in a new tab" for screen readers (WCAG).
 - The same static page: no external fonts, scripts or styles (spec 007 FR-011), light and dark
   colour schemes, the card layout of spec 007 on a phone.
+
+### 013. Expiry of tokens and secrets
+
+- Each token, secret or password with an expiry date goes in the catalog with its name, the place
+  where it is set (repo, kind), and the date. No values.
+- The renewal rules of spec 009 apply: an issue 30 days before the date, a badge on the status
+  page.
+- Reason: `pretband-backend` showed "Data not available" for weeks because a token was missing.
+  `STATUS_READ_TOKEN_HOB` expires on 2027-11-06.
+
+### 014. Free-tier usage warnings
+
+- Each status run reads the usage of the free tiers: GitHub Actions minutes of private repos,
+  Vercel Hobby (bandwidth, build minutes), Firebase Spark quotas.
+- At 80% of a limit: a problem with an issue. On the page: the usage of each service.
+- Reason: Principle VIII (€0 each month). Now the first sign of a limit is a failed deploy or a
+  bill.
+- Open question for the spec: which usage APIs work with a read-only token on the free plans.
+
+### 015. Changes in all repos at once (campaigns)
+
+- One command opens the same change as a PR in each catalog repo (for example "Node 22 to 24",
+  a new shared workflow version), with one label for the campaign.
+- The status page shows each open campaign: the number of PRs merged, open and failed.
+- Reason: changes for all repos (presets, shared CI, conformance repairs) are now done by hand,
+  one repo at a time.
+
+### 016. Version drift between projects
+
+- Each status run reads the versions of Node, Bun, Next.js, React, TypeScript and Biome in each
+  repo (`package.json`, `.nvmrc`, `packageManager`).
+- The page shows one table of versions; a repo that is one major version or more behind the
+  newest repo is marked.
+- Reason: Renovate keeps each repo current in its own range, but it does not show when the
+  projects drift apart. Works well with spec 015 (a campaign repairs the drift).
+
+### 017. Delivery numbers for each project
+
+- From GitHub data and the history of spec 010: deploys each month, time from PR open to merge,
+  age of Renovate PRs when merged, time to repair (already in spec 010).
+- Shown for 90 days, for each project and in total. No problems or issues from these numbers.
+- Reason: feedback on where the maintenance time goes. Lowest priority of 013 to 018.
+
+### 018. Archive suggestions for old projects
+
+- A project with no commit, no deploy and no open work for 12 months gets a suggestion on the
+  page: "Archive?" with a link to a checklist.
+- The checklist: archive the repo, keep or stop the domain and the hosting, set the catalog
+  status to `archived`, remove it from the board.
+- Reason: fewer projects means less maintenance (Principle VIII).
 
 ## Ongoing (no spec)
 
