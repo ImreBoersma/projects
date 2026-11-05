@@ -31,13 +31,13 @@ a workflow on push to `main`."
 
 ### User Story 1 - The custom code of hob.nl is in git (Priority: P1)
 
-The theme and the custom plugins of hob.nl are in a git repo. The Maintainer sees each change and
+The custom must-use plugins (`hob-*`) of hob.nl are in a git repo. The Maintainer sees each change and
 can go back to an earlier version. Now the only copy is on the hosting and on one computer.
 
 **Why this priority**: without git, a mistake on the server cannot be undone, and the code is lost
 if the hosting account is lost.
 
-**Independent Test**: clone the repo. Make sure that it contains the theme and the custom plugins
+**Independent Test**: clone the repo. Make sure that it contains the `hob-*` must-use plugins
 and that it does not contain `wp-config.php`, the WordPress core or uploads.
 
 **Acceptance Scenarios**:
@@ -51,14 +51,14 @@ and that it does not contain `wp-config.php`, the WordPress core or uploads.
 
 ### User Story 2 - A push to `main` deploys the change (Priority: P1)
 
-The Maintainer pushes a change to `main`. A shared deploy workflow (spec 002) copies the theme and
-the custom plugins to the hosting. It makes a production deployment record, so that the status page
+The Maintainer pushes a change to `main`. A shared deploy workflow (spec 002) copies the `hob-*` must-use
+plugins to the hosting. It makes a production deployment record, so that the status page
 shows the last deploy of hob.nl.
 
 **Why this priority**: Principle V requires that each project deploys through the shared workflow.
 Now the Maintainer copies files by hand.
 
-**Independent Test**: change a text in the theme. Push to `main`. Make sure that the site shows the
+**Independent Test**: change a text in `hob-admin.php`. Push to `main`. Make sure that the site shows the
 change and that the status page shows the deploy.
 
 **Acceptance Scenarios**:
@@ -152,7 +152,7 @@ that the row of hob.nl shows the last commit and the last deploy.
 
 - The WordPress hosting gives SSH access. If it does not, the deploy method changes (for example
   SFTP) and this spec must be updated.
-- The current theme and custom plugins on the hosting are the correct version. The first commit
+- The current `hob-*` files on the hosting are the correct version. The first commit
   takes them from the hosting.
 - Database content, pages and posts are not in the scope of this feature. Editors continue to
   change them in the WordPress admin.
