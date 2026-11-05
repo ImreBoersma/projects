@@ -44,3 +44,8 @@ One public page at the GitHub Pages URL of `projects`. Text uses ASD-STE100.
 
 Commit messages, PR titles, branch names, user names, tokens, cost, stakeholder names. A test in
 `render.test.ts` MUST make sure that fixture values for these fields do not occur in the output.
+
+## Pointer
+
+Spec 012 changes the look and the order of this page: see
+[specs/012-status-page-polish/contracts/page.md](../../012-status-page-polish/contracts/page.md).

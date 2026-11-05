@@ -24,7 +24,9 @@ light and dark schemes, and the phone card layout of spec 007."
 - Q: Where does a project without a problem but with "Data not available" go? → A: In a third
   section, "Check not available", between "Projects with problems" and "Other projects".
 - Q: Do state badges get a fourth kind, "warning"? → A: Yes. Four kinds: good, warning, bad,
-  unknown. Warning is for expiry and renewal dates in the warning period of spec 009.
+  unknown. Warning is for expiry and renewal dates close to the problem limit of spec 009.
+  Correction during the plan: spec 009 has no warning period, so FR-004 sets one (more than the
+  limit, at most two times the limit).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -71,7 +73,7 @@ each value is a badge with its text, and that Down and Failed use the problem co
    "Down" in the problem colour, with the time of the check next to it.
 2. **Given** a CI result "Passed", **When** the page opens, **Then** the CI cell shows a badge
    "Passed" in the correct colour.
-3. **Given** a certificate in the warning period of spec 009, **When** the page opens, **Then** the
+3. **Given** a certificate that expires in 20 days (warning period of FR-004), **When** the page opens, **Then** the
    expiry cell shows a badge in the warning colour with the date and the relative time.
 4. **Given** a value "Unknown" or "Data not available", **When** the page opens, **Then** the cell
    shows a grey badge with that text.
@@ -176,8 +178,10 @@ tab" for the link.
   only in colour.
 - **FR-004**: The states Up, Down, Passed, Failed, Succeeded, Unknown and "Data not available"
   MUST show as a badge with the text of the state. Expiry and renewal dates MUST also show as a
-  badge. There are four kinds: good (correct colour), warning (warning colour, for a date in the
-  warning period of spec 009), bad (problem colour) and unknown (grey).
+  badge. There are four kinds: good (correct colour), warning (warning colour), bad (problem
+  colour) and unknown (grey). A date is bad at or below the problem limit of spec 009 (certificate
+  14 days, renewal 30 days). A date is a warning above that limit and at or below two times the
+  limit (certificate 15 to 28 days, renewal 31 to 60 days).
 - **FR-005**: The page MUST show the projects in three sections, in this order: "Projects with
   problems"; "Check not available" (0 problems, and one or more values "Data not available");
   "Other projects". In each section, the catalog
@@ -195,8 +199,8 @@ tab" for the link.
   contrast ratio of 4.5:1 or more in both schemes (WCAG 2.1 AA). Colour MUST NOT be the only signal
   of a state.
 - **FR-010**: The page MUST NOT load scripts, fonts or styles from other sites (spec 007 FR-011).
-  The only script is the script of FR-006, in the page itself. All content and links MUST work
-  without it.
+  Scripts MUST be in the page itself: the stale check of spec 001 and the script of FR-006. All
+  content and links MUST work without scripts.
 - **FR-011**: On a screen 600 pixels wide or less, the page MUST keep the card layout of spec 007
   without horizontal scroll.
 - **FR-012**: The links of spec 007, the content rules of spec 001 (FR-018) and the history

@@ -60,7 +60,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 009 | Renewals and certificate expiry (done) | 005 |
 | 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
-| 012 | Status page visual polish (specified) | 007 |
+| 012 | Status page visual polish (planned) | 007 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -175,3 +175,9 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - **Static host**: Cloudflare Pages or Vercel. Before you put HOB or orchestra work on Vercel,
   read the commercial-use terms of Vercel Hobby (Principle VIII). No spec needs this decision now.
   Decide when you move the first static app.
+- **Status page as an app**: the status page is expected to become an app (filters, views for one
+  stakeholder, data that changes in the browser). Until then it stays a static page with no UI
+  library (spec 012 research.md §1). Start the app when one of these is necessary: a view for one
+  stakeholder, filters or search, or a write action. Then use the stack of the other projects
+  (for example Next.js with shadcn/ui), use the view model of `status/src/view.ts` again, and
+  publish the data as JSON from the status run. The content rules of spec 001 FR-018 stay.
