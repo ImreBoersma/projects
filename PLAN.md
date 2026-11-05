@@ -45,7 +45,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 006 | hob.nl in git with a deploy workflow | 002 |
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
-| 009 | Renewals and certificate expiry | 005 |
+| 009 | Renewals and certificate expiry (specified) | 005 |
 | 010 | Status history without a database | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish | 007 |
