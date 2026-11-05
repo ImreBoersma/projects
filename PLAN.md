@@ -155,6 +155,9 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - Relative times next to dates ("3 days ago"), with the exact date in a tooltip.
 - A small favicon and a page title with the number of problems, so that a browser tab shows the
   state.
+- Each link opens in a new tab (`target="_blank"` with `rel="noopener noreferrer"`), also the
+  header links to the roadmap and the board. Each such link shows that it opens a new tab: a small
+  mark, and the text "opens in a new tab" for screen readers (WCAG).
 - The same static page: no external fonts, scripts or styles (spec 007 FR-011), light and dark
   colour schemes, the card layout of spec 007 on a phone.
 
