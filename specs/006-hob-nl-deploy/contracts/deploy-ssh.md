@@ -42,5 +42,5 @@ File: `.github/workflows/deploy-ssh.yml` in `ImreBoersma/projects`. Trigger: `wo
 The checkout uses `fetch-depth: 2` (or the full history for a push of more than one commit), so
 that the previous commit is available for step 9.
 
-The workflow never uses `--delete-excluded`, `-a`, or `--force`: files outside `pattern` on the
+The workflow uses `rsync -rl --checksum` and never `--delete-excluded`, `-a`, `-t` or `--force`: files outside `pattern` on the
 server stay as they are.

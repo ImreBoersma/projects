@@ -41,7 +41,7 @@ and the status page shows the failed deploy.
 **Decision**:
 
 ```sh
-rsync -rlt --delete --checksum --itemize-changes \
+rsync -rl --delete --checksum --itemize-changes \
   --include='/hob-*' --include='/hob-*/***' --exclude='*' \
   mu-plugins/ "$USER@$HOST:html/wp-content/mu-plugins/"
 ```
@@ -49,7 +49,10 @@ rsync -rlt --delete --checksum --itemize-changes \
 - `--exclude='*'` after the two includes: rsync sends only `hob-*` items.
 - rsync never removes an excluded file with `--delete` (no `--delete-excluded`), so the GoDaddy
   files (`gd-system-plugin*`, `object-cache-pro*`, `vendor/`) cannot be removed or changed.
-- `-rlt` and not `-a`: no owner, group or permissions are sent; the server keeps them.
+- `-rl` and not `-a` or `-rlt`: no owner, group, permissions or times are sent. The first deploy
+  with `-rlt` failed with code 23 ("failed to set times" on the `mu-plugins` folder, owner `root`),
+  and each checkout gives the files new times, so `-t` listed each file as changed. With
+  `--checksum`, only a change of the content is copied (research.md §9).
 - A first run with `--dry-run` writes the list of changes to the log; the real run follows only
   when the dry run passed.
 
