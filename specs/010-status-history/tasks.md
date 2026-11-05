@@ -106,9 +106,9 @@ merge them in one PR. The branch `data` is made by the first run after the merge
 - [X] T018 [P] In `specs/005-uptime-checks/spec.md` Assumptions, change "This feature does not measure response time or calculate an uptime percentage." to say that spec 010 adds the percentage. In `specs/001-project-status-page/contracts/page.md`, add a pointer line to `specs/010-status-history/contracts/page.md`.
 - [X] T019 Validate quickstart.md §1 and §2 with a fixture history folder in the scratchpad. Make sure that the page is less than 100 KB (SC-005) and that the stored line contains only the fields of the data model (FR-008). Done 2026-11-05: research.md §7.
 - [X] T020 Push the branch and open the PR into `main`. CI must pass. The PR run does not store a result (job `history` does not run for a pull request). Done 2026-11-05: #17.
-- [ ] T021 Ask the Maintainer to merge the PR.
-- [ ] T022 After the merge, validate quickstart.md §3 and §4: the branch `data` exists with `README.md`; after 3 runs the day file has 3 lines; `git log origin/main` has no commits from the history; the page says `History from <today>.` Record the results in `specs/010-status-history/research.md` §7.
-- [ ] T023 [P] In `PLAN.md`, mark spec 010 as done in the feature table and the Done list.
+- [X] T021 Ask the Maintainer to merge the PR. Done 2026-11-05: the Maintainer merged #17.
+- [X] T022 After the merge, validate quickstart.md §3 and §4: the branch `data` exists with `README.md`; after 3 runs the day file has 3 lines; `git log origin/main` has no commits from the history; the page says `History from <today>.` Record the results in `specs/010-status-history/research.md` §7. Done 2026-11-05: research.md §7.
+- [X] T023 [P] In `PLAN.md`, mark spec 010 as done in the feature table and the Done list. Done.
 
 ---
 

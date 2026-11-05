@@ -34,6 +34,9 @@ roadmap.
 - Spec 006: the custom code of harmonieorkestbrummen.nl (the `hob-*` must-use plugins) is in
   `harmonieorkest-brummen/hob-nl`. A push to `main` deploys it through `deploy-ssh.yml`, with a PHP
   check, a site check and a restore of the last working version.
+- Spec 010: each status run stores its result on the branch `data`
+  (`history/YYYY-MM-DD.ndjson`). The page shows since when each problem is open, the uptime of 30
+  days with a bar, and the average time to repair. History from 2026-11-05.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -55,7 +58,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry (done) | 005 |
-| 010 | Status history on a data branch (planned) | 007 |
+| 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish | 007 |
 
