@@ -62,9 +62,14 @@ export interface ProjectStatus {
   // Spec 008: ids of the conformance rules that could not be read.
   conformanceNotAvailable: string[];
   expiry: Expiry;
+  // Spec 010: values from the stored results.
+  history: ProjectHistory;
 }
 
 export interface StatusPage {
+  // Spec 010: date of the first stored result, and the repair time of 90 days.
+  historyStart?: string | null;
+  repair?: { averageMs: number; count: number } | null;
   generatedAt: Date;
   rows: ProjectStatus[];
   // Marker key `<project id>/<reason>` to the number of the open status-problem issue.
@@ -104,4 +109,19 @@ export interface Expiry {
   certificate: { date: string; days: number } | "not-known" | null;
   renewals: Renewal[];
   registryNotKnown: boolean;
+}
+
+// Spec 010, data-model.md.
+export type SiteState = "up" | "down" | "no-domain" | "not-available";
+export interface HistoryResult {
+  time: string;
+  projects: Record<string, { site: SiteState; problems: string[] }>;
+}
+export type DayMark = "up" | "down" | "no-data";
+export interface ProjectHistory {
+  since: Record<string, string>;
+  sinceIsHistoryStart: string[];
+  uptime: { percent: number | null; days: DayMark[] } | null;
+  // Date (UTC) of the last day of the bar.
+  uptimeEnd?: string;
 }

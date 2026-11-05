@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { mapRepo } from "../src/github";
-import { renderPage, summary } from "../src/render";
+import { renderPage, repairText, summary } from "../src/render";
 import type { ProjectStatus } from "../src/types";
 import fixture from "./fixtures/graphql-response.json";
 import { status } from "./helpers";
@@ -312,5 +312,102 @@ describe("expiry on the page (spec 009)", () => {
       }),
     ]);
     expect(html).toContain("The TLS certificate expires in 10 days.");
+  });
+});
+
+describe("history on the page (spec 010)", () => {
+  const ci = { projectId: "one", reason: "ci-failed" as const, key: "one/ci-failed" };
+  const withSince = (time: string, atStart = false) =>
+    render([
+      status({
+        problems: [ci],
+        history: {
+          since: { "one/ci-failed": time },
+          sinceIsHistoryStart: atStart ? ["one/ci-failed"] : [],
+          uptime: null,
+        },
+      }),
+    ]);
+
+  test("shows since when a problem is open", () => {
+    expect(withSince("2026-10-28T04:00:00Z")).toContain("<small>(since 04:00)</small>");
+    expect(withSince("2026-10-26T04:00:00Z")).toContain(
+      "<small>(since 2026-10-26, 2 days)</small>",
+    );
+    expect(withSince("2026-10-27T04:00:00Z")).toContain("(since 2026-10-27, 1 day)");
+    expect(withSince("2026-10-28T04:00:00Z", true)).toContain("(since 2026-10-28 or before)");
+    expect(render([status({ problems: [ci] })])).not.toContain("(since");
+  });
+
+  test("shows the uptime and a bar of 30 marks for a site", () => {
+    const days = [...Array(28).fill("up"), "down", "no-data"];
+    const html = render([
+      status({
+        project: { id: "one", name: "One", repo: null, status: "active", domain: "one.example" },
+        availability: "no-repo",
+        uptime: { state: "up", at: generatedAt },
+        history: {
+          since: {},
+          sinceIsHistoryStart: [],
+          uptime: { percent: 95.8, days },
+          uptimeEnd: "2026-10-28",
+        },
+      }),
+    ]);
+    expect(html).toContain("<small>95.8% (30 days)</small>");
+    expect(html.match(/<i class="mark /g)).toHaveLength(30);
+    expect(html).toContain('<i class="mark down" title="2026-10-27 down"></i>');
+    expect(html).toContain('<i class="mark no-data" title="2026-10-28 no data"></i>');
+    expect(html).toContain(
+      'aria-label="Uptime of the last 30 days: 1 day down, 1 day without data"',
+    );
+    expect(html.match(/--mark-down: #/g)).toHaveLength(2);
+  });
+
+  test("shows no data, and nothing for a project without a domain", () => {
+    const noData = render([
+      status({
+        history: {
+          since: {},
+          sinceIsHistoryStart: [],
+          uptime: { percent: null, days: Array(30).fill("no-data") },
+        },
+      }),
+    ]);
+    expect(noData).toContain("No data (30 days)");
+    expect(render([status()])).not.toContain('class="bar"');
+  });
+});
+
+describe("repairText (spec 010)", () => {
+  test("uses hours, minutes or days", () => {
+    expect(repairText({ averageMs: 4 * 3600_000, count: 2 })).toBe(
+      "Average time to repair: 4 hours (2 faults, 90 days).",
+    );
+    expect(repairText({ averageMs: 30 * 60_000, count: 1 })).toBe(
+      "Average time to repair: 30 minutes (1 fault, 90 days).",
+    );
+    expect(repairText({ averageMs: 72 * 3600_000, count: 3 })).toBe(
+      "Average time to repair: 3 days (3 faults, 90 days).",
+    );
+    expect(repairText({ averageMs: 1.5 * 3600_000, count: 2 })).toBe(
+      "Average time to repair: 1.5 hours (2 faults, 90 days).",
+    );
+    expect(repairText({ averageMs: 3600_000, count: 1 })).toBe(
+      "Average time to repair: 1 hour (1 fault, 90 days).",
+    );
+    expect(repairText(null)).toBe("No repaired faults in the last 90 days.");
+  });
+
+  test("the page shows the repair time and the start of the history", () => {
+    const html = renderPage({
+      generatedAt,
+      rows: [],
+      issues: new Map(),
+      repair: null,
+      historyStart: "2026-11-05",
+    });
+    expect(html).toContain("No repaired faults in the last 90 days.");
+    expect(html).toContain("History from 2026-11-05.");
   });
 });

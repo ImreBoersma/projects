@@ -68,3 +68,11 @@ project, not the results. 30 marks × 11 projects stays below 10 KB of HTML.
 
 **Decision**: each result has an ISO time in UTC from the runner. Results are sorted by time. A
 result more than 10 minutes in the future is ignored with a log line (spec edge case).
+
+## 7. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| Write script (T007), local, `bash -e` | 2026-11-05 | Against a temporary bare repo: the first run made `data` with only `README.md` and `history/`; the second run appended a line; `main` did not change. The first version failed on the orphan branch (`git rm` without `-f`) and wrote only the date in the commit message; both fixed before the PR. |
+| Local page with a fixture history (T019) | 2026-11-05 | 3 days of fixture results: hob.nl 98.6% with 1 `down` day, the other sites 100%, "History from 2026-11-02", average repair time 1.5 hours (2 faults). Page 16 KB. The new line has only `time`, `projects`, `site` and `problems`. |
+

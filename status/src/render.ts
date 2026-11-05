@@ -81,13 +81,49 @@ function expiryCell(s: ProjectStatus): string {
   return lines.map(html).join("<br>");
 }
 
+// Spec 010, contracts/page.md: since when a problem is open.
+function sinceText(s: ProjectStatus, key: string, now: Date): string {
+  const time = s.history.since[key];
+  if (!time) return "";
+  const today = now.toISOString().slice(0, 10);
+  const orBefore = s.history.sinceIsHistoryStart.includes(key) ? " or before" : "";
+  if (time.slice(0, 10) === today && !orBefore)
+    return ` <small>(since ${time.slice(11, 16)})</small>`;
+  const days = Math.floor(
+    (Date.parse(`${today}T00:00:00Z`) - Date.parse(`${time.slice(0, 10)}T00:00:00Z`)) / DAY,
+  );
+  const age = orBefore ? orBefore : `, ${days} ${days === 1 ? "day" : "days"}`;
+  return ` <small>(since ${time.slice(0, 10)}${age})</small>`;
+}
+
+// Spec 010: uptime of 30 days and a bar of 30 marks, old to new.
+function uptimeCell(s: ProjectStatus): string {
+  const u = s.history.uptime;
+  if (!u) return "";
+  const first = Date.parse(`${s.history.uptimeEnd ?? ""}T00:00:00Z`);
+  const marks = u.days
+    .map((d, i) => {
+      const date = Number.isNaN(first)
+        ? ""
+        : new Date(first - (29 - i) * DAY).toISOString().slice(0, 10);
+      return `<i class="mark ${d}" title="${date} ${MARK_TEXT[d]}"></i>`;
+    })
+    .join("");
+  const down = u.days.filter((d) => d === "down").length;
+  const none = u.days.filter((d) => d === "no-data").length;
+  const percent = u.percent === null ? "No data" : `${u.percent.toFixed(1)}%`;
+  return `<br><small>${percent} (30 days)</small><br><span class="bar" role="img" aria-label="Uptime of the last 30 days: ${count(down, "day")} down, ${count(none, "day")} without data">${marks}</span>`;
+}
+
+const MARK_TEXT = { up: "up", down: "down", "no-data": "no data" };
+
 const link = (text: string, url: string | null) =>
   url ? `<a href="${html(url)}">${html(text)}</a>` : html(text);
 
 function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
   const links = rowLinks(s, issues);
   const problemLines = s.problems.map((p) => {
-    const text = link(p.text ?? PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null);
+    const text = `${link(p.text ?? PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null)}${sinceText(s, p.key, now)}`;
     return p.detail?.length ? `${text}<br><small>${ruleList(p.detail)}</small>` : text;
   });
   if (s.conformanceNotAvailable.length) {
@@ -100,7 +136,7 @@ function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
   const values = [
     `${link(s.project.name, links.project)} <small>${s.project.status}</small>`,
     problems,
-    link(site(s), links.site),
+    `${link(site(s), links.site)}${uptimeCell(s)}`,
     expiryCell(s),
     html(lastCommit),
     html(openPrs),
@@ -113,6 +149,21 @@ function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
 }
 
 const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+// Spec 010, contracts/page.md "Summary line": the average time to repair of the faults.
+export function repairText(repair: { averageMs: number; count: number } | null): string {
+  if (!repair) return "No repaired faults in the last 90 days.";
+  const hours = repair.averageMs / 3_600_000;
+  const value =
+    hours < 1
+      ? `${Math.round(hours * 60)} minutes`
+      : hours > 48
+        ? `${Math.round(hours / 24)} days`
+        : hours < 10
+          ? `${Number(hours.toFixed(1))} ${hours === 1 ? "hour" : "hours"}`
+          : `${Math.round(hours)} hours`;
+  return `Average time to repair: ${value} (${count(repair.count, "fault")}, 90 days).`;
+}
 
 // FR-007, contracts/page.md "Summary line".
 export function summary(rows: ProjectStatus[]): string {
@@ -144,10 +195,10 @@ export function renderPage(page: StatusPage): string {
 <title>Project status</title>
 <style>
 :root { --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #ddd; --problem: #fdecea; --warn: #b3261e;
-  --link: #0b57d0; }
+  --link: #0b57d0; --mark-up: #1e8e3e; --mark-down: #d93025; --mark-none: #c8c8c8; }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #161616; --fg: #eee; --muted: #999; --line: #333; --problem: #3a1d1b; --warn: #f2b8b5;
-    --link: #8ab4f8; }
+    --link: #8ab4f8; --mark-up: #81c995; --mark-down: #f28b82; --mark-none: #5f5f5f; }
 }
 body { margin: 0 auto; padding: 16px; max-width: 1100px; background: var(--bg); color: var(--fg);
   font: 15px/1.4 system-ui, sans-serif; }
@@ -161,6 +212,10 @@ tr.problem td:first-child { font-weight: 600; }
 a { color: var(--link); text-decoration: underline; }
 a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 .summary { font-weight: 600; }
+.bar { display: inline-flex; gap: 1px; flex-wrap: wrap; max-width: 100%; }
+.mark { display: inline-block; width: 5px; height: 12px; border-radius: 1px; background: var(--mark-none); }
+.mark.up { background: var(--mark-up); }
+.mark.down { background: var(--mark-down); }
 /* Spec 007: cards on a phone, without horizontal scroll. */
 @media (max-width: 600px) {
   .wrap { overflow-x: visible; }
@@ -178,7 +233,8 @@ a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 <p><a href="${ROADMAP}">Roadmap</a> · <a href="${BOARD}">Project board</a></p>
 <p class="meta">Last update: <time datetime="${iso}">${shown}</time> UTC</p>
 <p id="stale" hidden>Warning: this data is more than 3 hours old.</p>
-<p class="summary">${html(summary(page.rows))}</p>
+<p class="summary">${html(summary(page.rows))} ${html(repairText(page.repair ?? null))}</p>
+${page.historyStart ? `<p class="meta"><small>History from ${page.historyStart}.</small></p>` : ""}
 <div class="wrap">
 <table>
 <thead><tr>${COLUMNS.map((c) => `<th>${c}</th>`).join("")}</tr></thead>

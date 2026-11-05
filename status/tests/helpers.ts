@@ -16,6 +16,7 @@ export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
     renovateApp: null,
     conformanceNotAvailable: [],
     expiry: { certificate: null, renewals: [], registryNotKnown: false },
+    history: { since: {}, sinceIsHistoryStart: [], uptime: null },
     ...overrides,
   };
 }

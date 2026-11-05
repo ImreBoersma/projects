@@ -36,7 +36,16 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run lint
       - run: bun test
-      - run: bun run start --mode page
+      # Spec 010: the stored results of the branch `data`. Without the branch (first run) the page
+      # starts without history.
+      - name: Get the stored results
+        run: |
+          if git fetch --depth=1 origin data:refs/remotes/origin/data && git worktree add --detach ../_data origin/data; then
+            echo "History: $(ls ../_data/history 2>/dev/null | wc -l) day files."
+          else
+            echo "History: no branch data yet."
+          fi
+      - run: bun run start --mode page --history ../_data/history --history-out ../_history/line.ndjson
         env:
           STATUS_READ_TOKEN: ${{ secrets.STATUS_READ_TOKEN }}
           STATUS_READ_TOKEN_HOB: ${{ secrets.STATUS_READ_TOKEN_HOB }}
@@ -46,6 +55,68 @@ jobs:
         with:
           name: build
           path: _site
+      - uses: actions/upload-artifact@v7
+        if: github.event_name != 'pull_request'
+        with:
+          name: history
+          path: _history
+          if-no-files-found: error
+
+  # Spec 010: append the result of this run to the branch `data`. Separate from deploy, so that a
+  # failed push does not stop the page (FR-009). A push with GITHUB_TOKEN starts no workflow, and no
+  # trigger of this workflow reacts to the branch `data`.
+  history:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Outside the work tree: `git rm -rf .` and `git reset --hard` must not remove it.
+      - uses: actions/download-artifact@v8
+        with:
+          name: history
+          path: ${{ runner.temp }}/history
+      - name: Append the result to the branch data
+        run: |
+          line="$RUNNER_TEMP/history/line.ndjson"
+          [ -s "$line" ] || { echo "No result line."; exit 1; }
+          time=$(head -c 200 "$line" | grep -o '"time":"[^"]*' | cut -d'"' -f4)
+          day=${time%%T*}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git rev-parse --verify -q origin/data >/dev/null; then
+            git checkout -q -B data origin/data
+          else
+            git checkout -q --orphan data
+            git rm -rqf .
+            {
+              echo "# Status history"
+              echo
+              echo "This branch holds the results of the status page runs (spec 010 of this repo)."
+              echo "Each file history/YYYY-MM-DD.ndjson has one line for each run. Do not merge this branch."
+            } > README.md
+          fi
+          append() {
+            mkdir -p history
+            cat "$line" >> "history/$day.ndjson"
+            git add README.md "history/$day.ndjson" 2>/dev/null || git add "history/$day.ndjson"
+            git commit -q -m "chore: add the status result of $time"
+          }
+          append
+          if ! git push -q origin data; then
+            echo "The push failed. Get the branch again and try one more time."
+            git fetch -q origin data
+            git reset -q --hard origin/data
+            append
+            git push -q origin data
+          fi
 
   deploy:
     needs: build
