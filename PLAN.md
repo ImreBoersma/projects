@@ -25,6 +25,9 @@ roadmap.
   is down. The page runs each hour and warns when its data is more than 3 hours old.
 - Spec 007: each cell of the status page links to its source; a summary line; cards on a phone;
   links to the roadmap and the board.
+- Spec 008: each status run checks the own catalog repos against the shared setup (rules R1 to R9,
+  repair steps in `docs/conformance.md`). Token `CONFORMANCE_READ_TOKEN` (fine-grained, read
+  only).
 - Tokens: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` have no expiry date. Make new classic PATs with the
   same scopes only when a token is revoked or leaks (spec 004, research.md §3).
 
@@ -41,7 +44,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 005 | Uptime checks on the status page (done) | 001 |
 | 006 | hob.nl in git with a deploy workflow | 002 |
 | 007 | Status page links and layout (done) | 001, 005 |
-| 008 | Repo conformance check (specified) | 002, 003, 004 |
+| 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry | 005 |
 | 010 | Status history without a database | 007 |
 | 011 | New-project template and onboarding | 008 |
