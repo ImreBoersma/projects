@@ -1,3 +1,4 @@
+import { RULES } from "./conformance/rules";
 import { rowLinks } from "./links";
 import { PROBLEM_TEXT } from "./problems";
 import type { ProjectStatus, StatusPage } from "./types";
@@ -53,14 +54,33 @@ function site(s: ProjectStatus): string {
   return `${UPTIME_TEXT[state]} ${(at as Date).toISOString().slice(11, 16)}`;
 }
 
+const DOCS = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
+
+// Spec 008: the failed rules under the problem text, each a link to its repair steps.
+function ruleList(detail: string[]): string {
+  return detail
+    .map((name) => {
+      const rule = RULES.find((r) => name.startsWith(`${r.id} `));
+      return rule ? `<a href="${DOCS}#${rule.anchor}">${html(name)}</a>` : html(name);
+    })
+    .join(", ");
+}
+
 const link = (text: string, url: string | null) =>
   url ? `<a href="${html(url)}">${html(text)}</a>` : html(text);
 
 function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
   const links = rowLinks(s, issues);
-  const problems = s.problems
-    .map((p) => link(PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null))
-    .join("<br>");
+  const problemLines = s.problems.map((p) => {
+    const text = link(PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null);
+    return p.detail?.length ? `${text}<br><small>${ruleList(p.detail)}</small>` : text;
+  });
+  if (s.conformanceNotAvailable.length) {
+    problemLines.push(
+      `<small>Setup check not available: ${html(s.conformanceNotAvailable.join(", "))}</small>`,
+    );
+  }
+  const problems = problemLines.join("<br>");
   const [lastCommit, openPrs, renovate, ci, deploy] = cells(s, now);
   const values = [
     `${link(s.project.name, links.project)} <small>${s.project.status}</small>`,

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { evaluateProblems, sortRows } from "../src/problems";
+import { conformanceProblem, evaluateProblems, sortRows } from "../src/problems";
 import { status } from "./helpers";
 
 const now = new Date("2026-10-28T00:00:00Z");
@@ -93,5 +93,29 @@ describe("sortRows", () => {
       row("Charlie", true),
     ]);
     expect(sorted.map((s) => s.project.name)).toEqual(["Charlie", "Delta", "Alpha", "Bravo"]);
+  });
+});
+
+describe("conformanceProblem (spec 008)", () => {
+  const r = (rule: string, state: "pass" | "fail" | "not-applicable" | "not-available") => ({
+    rule,
+    state,
+  });
+  test("gives one problem with the failed rules in rule order", () => {
+    expect(conformanceProblem("one", [r("R6", "fail"), r("R4", "fail"), r("R1", "pass")])).toEqual({
+      projectId: "one",
+      reason: "not-conformant",
+      key: "one/not-conformant",
+      detail: ["R4 Renovate preset", "R6 Issues on"],
+    });
+  });
+  test("gives no problem without a failed rule", () => {
+    expect(
+      conformanceProblem("one", [
+        r("R1", "pass"),
+        r("R2", "not-applicable"),
+        r("R7", "not-available"),
+      ]),
+    ).toBeNull();
   });
 });

@@ -235,3 +235,30 @@ describe("summary", () => {
     expect(summary([status()])).toBe("No problems. 1 project.");
   });
 });
+
+describe("conformance on the page (spec 008)", () => {
+  test("shows the failed rules under the problem text, with links to the repair steps", () => {
+    const html = render([
+      status({
+        problems: [
+          {
+            projectId: "one",
+            reason: "not-conformant",
+            key: "one/not-conformant",
+            detail: ["R4 Renovate preset", "R6 Issues on"],
+          },
+        ],
+      }),
+    ]);
+    expect(html).toContain("The repo does not follow the shared setup.<br><small>");
+    expect(html).toContain(
+      '<a href="https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md#r4-renovate-preset">R4 Renovate preset</a>, <a href="https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md#r6-issues-on">R6 Issues on</a>',
+    );
+  });
+
+  test("shows a note, not a problem, when rules could not be read", () => {
+    const html = render([status({ conformanceNotAvailable: ["R7", "R9"] })]);
+    expect(html).toContain("<small>Setup check not available: R7, R9</small>");
+    expect(html).not.toContain('class="problem"');
+  });
+});

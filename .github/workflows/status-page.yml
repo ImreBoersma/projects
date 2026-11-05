@@ -40,6 +40,7 @@ jobs:
         env:
           STATUS_READ_TOKEN: ${{ secrets.STATUS_READ_TOKEN }}
           STATUS_READ_TOKEN_HOB: ${{ secrets.STATUS_READ_TOKEN_HOB }}
+          CONFORMANCE_READ_TOKEN: ${{ secrets.CONFORMANCE_READ_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v7
         with:
@@ -73,6 +74,7 @@ jobs:
         env:
           STATUS_READ_TOKEN: ${{ secrets.STATUS_READ_TOKEN }}
           STATUS_READ_TOKEN_HOB: ${{ secrets.STATUS_READ_TOKEN_HOB }}
+          CONFORMANCE_READ_TOKEN: ${{ secrets.CONFORMANCE_READ_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Adds the problem issues to the board. GITHUB_TOKEN events start no workflow (spec 004).
       - name: Sync the board

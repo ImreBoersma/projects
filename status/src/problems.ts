@@ -1,4 +1,5 @@
-import type { Problem, ProjectStatus, Reason } from "./types";
+import { RULES } from "./conformance/rules";
+import type { Problem, ProjectStatus, Reason, RuleResult } from "./types";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -8,6 +9,7 @@ export const PROBLEM_TEXT: Record<Reason, string> = {
   "renovate-stale": "A Renovate PR is open for more than 14 days.",
   inactive: "No commit for more than 90 days.",
   "site-down": "The site does not respond correctly.",
+  "not-conformant": "The repo does not follow the shared setup.",
 };
 
 export function evaluateProblems(s: ProjectStatus, now: Date): Problem[] {
@@ -39,4 +41,16 @@ export function sortRows(rows: ProjectStatus[]): ProjectStatus[] {
       Number(b.problems.length > 0) - Number(a.problems.length > 0) ||
       a.project.name.localeCompare(b.project.name),
   );
+}
+
+// Spec 008: one problem for each repo, with the names of the failed rules in rule order.
+export function conformanceProblem(projectId: string, results: RuleResult[]): Problem | null {
+  const failed = results.filter((r) => r.state === "fail").map((r) => r.rule);
+  if (failed.length === 0) return null;
+  return {
+    projectId,
+    reason: "not-conformant",
+    key: `${projectId}/not-conformant`,
+    detail: RULES.filter((r) => failed.includes(r.id)).map((r) => `${r.id} ${r.name}`),
+  };
 }

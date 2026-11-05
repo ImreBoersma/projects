@@ -14,6 +14,7 @@ export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
     uptime: { state: "no-domain", at: null },
     commitOid: null,
     renovateApp: null,
+    conformanceNotAvailable: [],
     ...overrides,
   };
 }

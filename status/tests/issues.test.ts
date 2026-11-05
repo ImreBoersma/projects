@@ -19,7 +19,17 @@ const plan = (
   open: OpenIssue[],
   unavailable: string[] = [],
   uptimeNotAvailable = false,
-) => planIssueActions(problems, open, new Set(unavailable), uptimeNotAvailable, projects, today);
+  setupUnavailable: string[] = [],
+) =>
+  planIssueActions(
+    problems,
+    open,
+    new Set(unavailable),
+    uptimeNotAvailable,
+    new Set(setupUnavailable),
+    projects,
+    today,
+  );
 
 describe("parseMarker", () => {
   test("reads the key from line 1", () => {
@@ -101,5 +111,37 @@ describe("planIssueActions for site-down (spec 005)", () => {
   test("when the check is not available, site-down issues stay and other issues follow their rules", () => {
     const actions = plan([], [issue(7, "one/site-down"), issue(8, "one/ci-failed")], [], true);
     expect(actions.close.map((c) => c.number)).toEqual([8]);
+  });
+});
+
+describe("not-conformant issues (spec 008)", () => {
+  const nc: Problem = {
+    projectId: "one",
+    reason: "not-conformant",
+    key: "one/not-conformant",
+    detail: ["R4 Renovate preset", "R6 Issues on"],
+  };
+
+  test("the issue lists the failed rules with links to the repair steps", () => {
+    const { title, body } = issueContent(nc, project, today);
+    expect(title).toBe("One: The repo does not follow the shared setup.");
+    expect(body).toStartWith("<!-- status-problem: one/not-conformant -->");
+    expect(body).toContain(
+      "- R4 Renovate preset: https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md#r4-renovate-preset",
+    );
+    expect(body).toContain(
+      "- R6 Issues on: https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md#r6-issues-on",
+    );
+    expect(body).toContain("The status page shows the current list.");
+  });
+
+  test("closes when the rules pass, also when the repo data is unavailable", () => {
+    expect(plan([], [issue(9, "one/not-conformant")], ["one"]).close.map((c) => c.number)).toEqual([
+      9,
+    ]);
+  });
+
+  test("stays open when the setup check of the repo is not available", () => {
+    expect(plan([], [issue(9, "one/not-conformant")], [], false, ["one"]).close).toEqual([]);
   });
 });
