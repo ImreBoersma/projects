@@ -110,9 +110,9 @@
 - [X] T026 Run `cd status && bun test && bun run lint && bunx tsc --noEmit -p .`. All pass; the number of tests is more than the baseline of T001.
 - [X] T027 Run quickstart.md §2 locally and check each item: title and favicon, sections, 360 px with 0 px horizontal scroll, dark scheme, scripts off, relative times after 2 minutes, new tab, page < 100 KB. Record the results in a table "Validation results" at the end of `specs/012-status-page-polish/research.md`.
 - [X] T028 Commit (`feat: polish the status page (spec 012)`), push, and open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
-- [ ] T029 Ask the Maintainer to merge the PR.
-- [ ] T030 After the merge, validate quickstart.md §3 on https://imreboersma.github.io/projects/ and add the result to the table of T027.
-- [ ] T031 [P] In `PLAN.md`, mark spec 012 as done in the feature table and the Done list.
+- [X] T029 Ask the Maintainer to merge the PR.
+- [X] T030 After the merge, validate quickstart.md §3 on https://imreboersma.github.io/projects/ and add the result to the table of T027.
+- [X] T031 [P] In `PLAN.md`, mark spec 012 as done in the feature table and the Done list.
 
 ---
 

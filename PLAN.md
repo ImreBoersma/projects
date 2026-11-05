@@ -37,6 +37,9 @@ roadmap.
 - Spec 010: each status run stores its result on the branch `data`
   (`history/YYYY-MM-DD.ndjson`). The page shows since when each problem is open, the uptime of 30
   days with a bar, and the average time to repair. History from 2026-11-05.
+- Spec 012: the status page shows the total state as one badge, in the tab title and in the
+  favicon; state badges with a colour and a text (amber: certificate 15 to 28 days, renewal 31 to
+  60 days); projects with problems first; relative times; all links open a new tab. No UI library.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -60,7 +63,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 009 | Renewals and certificate expiry (done) | 005 |
 | 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
-| 012 | Status page visual polish (planned) | 007 |
+| 012 | Status page visual polish (done) | 007 |
 
 ### 002. Shared CI and deploy workflows
 
