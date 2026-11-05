@@ -33,5 +33,5 @@
 
 - FR-003 names an SVG favicon in the Assumptions only; the requirement itself says "in the page
   itself", so it stays technology-agnostic.
-- Relative times are fixed at the time of the update (no scripts, FR-010). This is a trade-off,
-  recorded in Assumptions and Edge Cases.
+- Relative times: set at the update, then updated by a small script in the page (clarified
+  2026-11-05, FR-006 and FR-010).

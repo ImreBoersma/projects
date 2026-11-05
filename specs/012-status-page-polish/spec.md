@@ -14,6 +14,16 @@ number of problems; each link opens in a new tab with rel noopener noreferrer an
 mark plus screen-reader text; the same static page without external fonts, scripts or styles,
 light and dark schemes, and the phone card layout of spec 007."
 
+## Clarifications
+
+### Session 2026-11-05
+
+- Q: Should relative times be fixed when the page is generated, or update while the page is open?
+  → A: Fixed when generated, then updated by a small script in the page. Without the script, the
+  page still works.
+- Q: Where does a project without a problem but with "Data not available" go? → A: In a third
+  section, "Check not available", between "Projects with problems" and "Other projects".
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See the total state from the browser tab and the top of the page (Priority: P1)
@@ -68,8 +78,9 @@ each value is a badge with its text, and that Down and Failed use the problem co
 
 ### User Story 3 - See the projects with problems first (Priority: P2)
 
-The page shows two sections: "Projects with problems" first, then "Other projects". In each
-section the order of the catalog stays.
+The page shows three sections: "Projects with problems" first, then "Check not available" (no
+problem, but one or more checks have "Data not available"), then "Other projects". In each section
+the order of the catalog stays.
 
 **Why this priority**: with 11 or more rows, a problem row can be at the bottom of the table.
 
@@ -82,7 +93,9 @@ sure that this project is the first row, in the section "Projects with problems"
    these 2 projects, in catalog order, and the second section has the other projects.
 2. **Given** 0 problems, **When** the page opens, **Then** the page shows only the section of the
    other projects, without an empty problem section.
-3. **Given** a phone screen, **When** the page opens, **Then** both sections use the card layout
+3. **Given** a project without a problem but with "Data not available", **When** the page opens,
+   **Then** it shows in the section "Check not available".
+4. **Given** a phone screen, **When** the page opens, **Then** all sections use the card layout
    of spec 007.
 
 ---
@@ -138,8 +151,9 @@ tab" for the link.
 - Problems and "Data not available" at the same time: the badge shows the problems; the summary
   line still shows the rest.
 - A time in the future (for example an expiry date): the relative time uses "in <n> days".
-- The page is static, so a relative time is correct at the time of the update only. The stale
-  warning of spec 001 (more than 3 hours) stays, and the tooltip always shows the exact time.
+- The page stays open for hours in a tab: the script of FR-006 updates the relative times. When
+  scripts are off, the times of the update show, the stale warning of spec 001 (more than 3 hours)
+  stays, and the tooltip always shows the exact time.
 - A problem with an `inactive` reason only: it counts as a problem, the same as on the page now.
 - A project without a domain: no site badge, the same as now.
 - Dark colour scheme: all badges and the favicon stay readable.
@@ -159,12 +173,15 @@ tab" for the link.
 - **FR-004**: The states Up, Down, Passed, Failed, Succeeded, Unknown and "Data not available"
   MUST show as a badge with the text of the state. Good states use the correct colour, bad states
   the problem colour, unknown states grey.
-- **FR-005**: The page MUST show the projects with problems first, in a section "Projects with
-  problems", then the other projects in a section "Other projects". In each section, the catalog
+- **FR-005**: The page MUST show the projects in three sections, in this order: "Projects with
+  problems"; "Check not available" (0 problems, and one or more values "Data not available");
+  "Other projects". In each section, the catalog
   order MUST stay. A section without projects MUST NOT show.
 - **FR-006**: Each date or time on the page MUST show a relative time next to it, calculated from
   the time of the update: minutes when less than 1 hour, hours when less than 48 hours, else days.
-  The exact date and time in UTC MUST be in a tooltip and available to screen readers.
+  The exact date and time in UTC MUST be in a tooltip and available to screen readers. A small
+  script in the page MUST update the relative times each minute while the page is open. Without
+  the script, the page MUST show the relative times of the update.
 - **FR-007**: Each link MUST open in a new tab and MUST NOT give the new tab access to the status
   page (no opener, no referrer).
 - **FR-008**: Each link MUST show a small visible new-tab mark, and MUST have the text "opens in a
@@ -173,7 +190,8 @@ tab" for the link.
   contrast ratio of 4.5:1 or more in both schemes (WCAG 2.1 AA). Colour MUST NOT be the only signal
   of a state.
 - **FR-010**: The page MUST NOT load scripts, fonts or styles from other sites (spec 007 FR-011).
-  The page MUST NOT use scripts.
+  The only script is the script of FR-006, in the page itself. All content and links MUST work
+  without it.
 - **FR-011**: On a screen 600 pixels wide or less, the page MUST keep the card layout of spec 007
   without horizontal scroll.
 - **FR-012**: The links of spec 007, the content rules of spec 001 (FR-018) and the history
@@ -184,7 +202,8 @@ tab" for the link.
 - **Total state**: one of "all correct", "problems" or "check not available", with the number of
   problems. It sets the badge, the title and the favicon.
 - **State badge**: a state value with its kind (good, bad, unknown).
-- **Section**: a group of rows ("Projects with problems" or "Other projects").
+- **Section**: a group of rows ("Projects with problems", "Check not available" or "Other
+  projects").
 
 ## Success Criteria *(mandatory)*
 
@@ -203,9 +222,9 @@ tab" for the link.
 
 ## Assumptions
 
-- The page stays one static page on GitHub Pages, made by the update of spec 001, each hour. A
-  relative time can be up to 1 hour old (more when the update is late); the tooltip and the stale
-  warning cover that.
+- The page stays one static page on GitHub Pages, made by the update of spec 001, each hour. The
+  data on the page changes only with the update; the script of FR-006 changes only the relative
+  times.
 - The badge and the favicon use the same definition of a problem as the summary line of spec 007.
 - "Check not available" means that one or more projects have "Data not available" (status,
   uptime or conformance), and there are 0 problems.
@@ -221,5 +240,5 @@ tab" for the link.
 |---|---|
 | III. No secrets or private data | No new data on the page; only the look and the order change. |
 | VII. Read-only views for stakeholders | The badge, the sections and the relative times make the public page easier to read. |
-| VIII. Keep the work small | Same static page, no scripts, no new service. |
+| VIII. Keep the work small | Same static page, one small script in the page, no new service. |
 | X. ASD-STE100 | Badge text, section titles and the new-tab text use STE. |
