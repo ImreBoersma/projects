@@ -58,7 +58,7 @@ dates without time; they use whole days (`daysUntil` of spec 009), so "today", "
 **Rationale**: a heading per section works for screen readers and in the card layout without new
 CSS. One table with section rows (`<th colspan>`) breaks the card layout of spec 007.
 
-**"Check not available"** (spec Clarifications): 0 problems, and one or more of these:
+**"Check not available"** (spec FR-005): 0 problems, and one or more of these:
 `availability` is `unavailable`; the uptime state is `not-available`; `conformanceNotAvailable` is
 not empty. A certificate or a domain date that is "not known" does not count: for a platform
 subdomain this is the normal state (spec 009).
@@ -92,7 +92,7 @@ page has the attributes. The arrow is `aria-hidden`, so a screen reader does not
 
 **Decision**: an SVG favicon as a `data:` URL in `<link rel="icon">`, one for each total state,
 each with a different shape: correct = green circle with a check, problems = red square with "!",
-check not available = grey triangle with "?". The title: `(<n>) Project status` with problems,
+check not available = grey triangle with "?" (the "check not available" icon). The title: `(<n>) Project status` with problems,
 else `Project status`.
 
 **Rationale**: in the page, so no file and no request. Different shapes, so the state is clear

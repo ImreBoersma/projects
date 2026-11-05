@@ -23,8 +23,8 @@
 
 - [ ] T002 Make `status/src/view.ts` with the type `BadgeKind = "good" | "warn" | "bad" | "unknown"` and the function `relTime(isoTime: string, nowMs: number): string`. Rules (research.md §3): below 1 minute "now"; less than 1 hour "<n> minute(s) ago"; less than 48 hours "<n> hour(s) ago"; else "<n> day(s) ago"; for a time in the future the same units with "in <n> ...". For a date without a time (`YYYY-MM-DD`), use whole UTC days: "today", "1 day ago", "in 40 days". The function MUST be self-contained (no imports, no values outside its body), because T005 copies it into the page with `relTime.toString()`.
 - [ ] T003 [P] Make `status/tests/view.test.ts` with tests for `relTime`: 0 s → "now"; 25 min → "25 minutes ago"; 1 min → "1 minute ago"; 5 h → "5 hours ago"; 47 h → "47 hours ago"; 3 days → "3 days ago"; date 40 days in the future → "in 40 days"; date today → "today". Add one test that runs `new Function(\`return ${relTime.toString()}\`)()` and gets the same results (the script copy works).
-- [ ] T004 [P] Make `status/src/style.ts`: an object `TOKENS` with a `light` and a `dark` value for `bg`, `fg`, `muted`, `line`, `link`, `problemRow`, `stale`, the uptime marks of spec 010, and for each badge kind a text and a background colour (start values: research.md §5). A function `css(): string` that writes `:root { --… }`, the dark values under `@media (prefers-color-scheme: dark)`, and the rules of the current `<style>` of `status/src/render.ts` (moved, not changed), plus `.badge`, `.badge.good|warn|bad|unknown`, `.total`, `h2`, `.nt`, `.sr` (visually hidden), `.rel`. Spacing only 4/8/12/16 px, one radius (6 px), font weights 400 and 600 (research.md §1).
-- [ ] T005 [P] Make `status/tests/style.test.ts`: a WCAG 2.1 contrast function (relative luminance), and for `light` and `dark` a test that each pair has a ratio ≥ 4.5: `fg`/`bg`, `muted`/`bg`, `link`/`bg`, `fg`/`problemRow`, `link`/`problemRow`, `stale`/`bg`, and the text/background of each badge kind (FR-009, SC-004). Change a token in `status/src/style.ts` when a pair fails; record changed values in `specs/012-status-page-polish/research.md` §5.
+- [ ] T004 Make `status/src/style.ts`: an object `TOKENS` with a `light` and a `dark` value for `bg`, `fg`, `muted`, `line`, `link`, `problemRow`, `stale`, the uptime marks of spec 010, and for each badge kind a text and a background colour (start values: research.md §5). A function `css(): string` that writes `:root { --… }`, the dark values under `@media (prefers-color-scheme: dark)`, and the rules of the current `<style>` of `status/src/render.ts` (same values, new token names: `--problem` → `problemRow`, `--warn` → `stale`), plus `.badge`, `.badge.good|warn|bad|unknown`, `.total`, `h2`, `.nt`, `.sr` (visually hidden), `.rel`. Spacing only 4/8/12/16 px, one radius (6 px), font weights 400 and 600 (research.md §1).
+- [ ] T005 Make `status/tests/style.test.ts` (after T004, it imports `TOKENS`): a WCAG 2.1 contrast function (relative luminance), and for `light` and `dark` a test that each pair has a ratio ≥ 4.5: `fg`/`bg`, `muted`/`bg`, `link`/`bg`, `fg`/`problemRow`, `muted`/`problemRow`, `link`/`problemRow`, `stale`/`bg`, and the text/background of each badge kind (FR-009, SC-004). Change a token in `status/src/style.ts` when a pair fails; record changed values in `specs/012-status-page-polish/research.md` §5.
 - [ ] T006 Change `status/src/render.ts` to use `css()` of `status/src/style.ts` in place of the inline CSS. The rendered page MUST look the same as before: run `bun test` (all existing render tests pass).
 
 **Checkpoint**: tokens tested, view module ready, page unchanged.
@@ -83,9 +83,9 @@
 
 **Independent Test**: a last commit 3 days before the update shows "(3 days ago)" and the exact UTC time in the tooltip.
 
-- [ ] T020 [US4] In `status/src/render.ts`, add `timeTag(iso, text)` → `<time datetime="<iso>" data-rel title="<YYYY-MM-DD HH:MM> UTC">text</time> <small class="rel">(<relTime(iso, generatedAt)>)</small>`; for a date without a time, `title` has only the date (contracts/page.md "Times"). Use it for: last update, last commit, last deploy, the time of the site check, the oldest Renovate PR (in place of "oldest N days"), the "since" of a problem (in place of the day count of spec 010, keep " or before"), and the certificate and renewal dates in the expiry cell (show the date; `Certificate: <date> (in 40 days)`). For the expiry dates, the certificate needs its date: use `s.expiry.certificate.date` and the renewal `date`.
+- [ ] T020 [US4] In `status/src/render.ts`, add `timeTag(iso, text)` → `<time datetime="<iso>" data-rel title="<YYYY-MM-DD HH:MM> UTC">text</time> <small class="rel">(<relTime(iso, generatedAt)>)</small>`; for a date without a time, `title` has only the date (contracts/page.md "Times"). Use it for: last update, last commit, last deploy, the time of the site check, the oldest Renovate PR (in place of "oldest N days"), the "since" of a problem (in place of the day count of spec 010, keep " or before"), the "History from <date>" line of spec 010 (date only), and the certificate and renewal dates in the expiry cell (show the date; `Certificate: <date> (in 40 days)`). For the expiry dates, the certificate needs its date: use `s.expiry.certificate.date` and the renewal `date`.
 - [ ] T021 [US4] In `status/src/render.ts`, replace the inline script with one script (no `src`) that contains: the stale check of spec 001 (unchanged rule, `STALE_MS`); `relTime.toString()`; a function that sets, for each `time[data-rel]`, the text of the next `.rel` element to `(` + `relTime(datetime, Date.now())` + `)`; run at load and with `setInterval` each 60 000 ms (research.md §3).
-- [ ] T022 [US4] In `status/tests/render.test.ts`, add tests: a last commit 3 days before `generatedAt` → `(3 days ago)` and `title="… UTC"`; a certificate in 40 days → `(in 40 days)`; the page has exactly one `<script>` and it has no `src`; the script contains `function relTime`. Update existing assertions for the "since" text and the Renovate "oldest" text.
+- [ ] T022 [US4] In `status/tests/render.test.ts`, add tests: a last commit 3 days before `generatedAt` → `(3 days ago)` and `title="… UTC"`; a certificate in 40 days → `(in 40 days)`; the page has exactly one `<script>` and it has no `src`; the script contains `function relTime`. Update existing assertions for the "since" text and the Renovate "oldest" text. Add a test that a page with 20 fixture rows (each with a problem, history and expiry) is less than 100 000 bytes (SC-006).
 
 **Checkpoint**: US1–US4 work.
 
@@ -106,7 +106,7 @@
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T025 [P] Add at the end of `specs/001-project-status-page/contracts/page.md` a pointer to `specs/012-status-page-polish/contracts/page.md`, when it is not there. (Done in the plan commit a3ab484; check only.)
+- [ ] T025 [P] Add at the end of `specs/001-project-status-page/contracts/page.md` and `specs/010-status-history/contracts/page.md` a pointer to `specs/012-status-page-polish/contracts/page.md`, when it is not there (spec 001: done in a3ab484).
 - [ ] T026 Run `cd status && bun test && bun run lint && bunx tsc --noEmit -p .`. All pass; the number of tests is more than the baseline of T001.
 - [ ] T027 Run quickstart.md §2 locally and check each item: title and favicon, sections, 360 px with 0 px horizontal scroll, dark scheme, scripts off, relative times after 2 minutes, new tab, page < 100 KB. Record the results in a table "Validation results" at the end of `specs/012-status-page-polish/research.md`.
 - [ ] T028 Commit (`feat: polish the status page (spec 012)`), push, and open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
@@ -119,7 +119,7 @@
 ## Dependencies & Execution Order
 
 - **Setup (T001)** first.
-- **Foundational (T002–T006)**: T002 first; T003, T004 and T005 in parallel after T002 (T004/T005 do not need T002, but T003 does); T006 after T004.
+- **Foundational (T002–T006)**: T002 first; T003 and T004 in parallel after T002; T005 and T006 after T004.
 - **US1 (T007–T011)**: after Phase 2. T007 is `[P]` with T009.
 - **US2 (T012–T015)**, **US3 (T016–T019)**, **US4 (T020–T022)**, **US5 (T023–T024)**: each needs Phase 2 only, but all change `view.ts`, `render.ts` and `render.test.ts`, so do them one after the other in this order. The test tasks in `view.test.ts` (T007, T012, T016) change the same file: one after the other.
 - **Polish (T025–T031)**: after all stories. T030 and T031 need the merge.
@@ -128,8 +128,7 @@
 
 ```text
 status/tests/view.test.ts  (T003)
-status/src/style.ts        (T004)
-status/tests/style.test.ts (T005)
+status/src/style.ts        (T004, then T005)
 ```
 
 ## Implementation Strategy

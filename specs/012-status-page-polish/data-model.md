@@ -7,7 +7,7 @@ Nothing is stored.
 
 | Field | Type | Rule |
 |---|---|---|
-| `kind` | `"correct" \| "problems" \| "not-available"` | `problems` when the number of problems > 0; else `not-available` when one or more rows have "check not available" (research.md §4); else `correct`. |
+| `kind` | `"correct" \| "problems" \| "not-available"` | `problems` when the number of problems > 0; else `not-available` when one or more rows are "check not available" (spec FR-005); else `correct`. |
 | `problems` | number | Sum of `problems.length` of all rows (same count as the summary line of spec 007). |
 | `text` | string | `All correct`, `1 problem`, `<n> problems`, `Check not available`. |
 | `title` | string | `(<n>) Project status` when `problems` > 0, else `Project status`. |

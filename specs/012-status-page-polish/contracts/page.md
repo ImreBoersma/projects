@@ -36,8 +36,9 @@ Next to a badge, the time stays (for example `Up 15:00`, deploy date).
 
 Each time or date: `<time datetime="<ISO>" data-rel title="<YYYY-MM-DD HH:MM> UTC">` with the
 exact value, and after it `<small class="rel">(<relative>)</small>`. For dates without a time
-(expiry, renewal), `title` has only the date. Covered: last update, last commit, last deploy, site
-check, oldest Renovate PR, "since" of a problem, certificate and renewal dates.
+(expiry, renewal, history start), `title` has only the date. Covered: last update, last commit,
+last deploy, site check, oldest Renovate PR, "since" of a problem, certificate and renewal dates,
+"History from <date>". Not covered: the date in the tooltip of each uptime mark (spec FR-006).
 
 ## Links
 

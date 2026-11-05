@@ -48,8 +48,9 @@ action is necessary. A tab title and a badge give that in one look.
    "All correct", the title has no number, and the favicon is the "correct" icon.
 2. **Given** 2 problems, **When** the page opens, **Then** the badge says "2 problems", the title
    starts with "(2)", and the favicon is the "problem" icon.
-3. **Given** 0 problems but one or more projects with "Data not available", **When** the page
-   opens, **Then** the badge says "Check not available" and the favicon is the "warning" icon.
+3. **Given** 0 problems but one or more projects with a check that is not available (FR-005),
+   **When** the page opens, **Then** the badge says "Check not available" and the favicon is the
+   "check not available" icon.
 4. **Given** any state, **When** the page opens, **Then** the summary line of spec 007 and the
    history line of spec 010 stay below the badge.
 
@@ -85,7 +86,7 @@ each value is a badge with its text, and that Down and Failed use the problem co
 ### User Story 3 - See the projects with problems first (Priority: P2)
 
 The page shows three sections: "Projects with problems" first, then "Check not available" (no
-problem, but one or more checks have "Data not available"), then "Other projects". In each section
+problem, but one or more checks could not run, FR-005), then "Other projects". In each section
 the order of the catalog stays.
 
 **Why this priority**: with 11 or more rows, a problem row can be at the bottom of the table.
@@ -99,7 +100,7 @@ sure that this project is the first row, in the section "Projects with problems"
    these 2 projects, in catalog order, and the second section has the other projects.
 2. **Given** 0 problems, **When** the page opens, **Then** the page shows only the section of the
    other projects, without an empty problem section.
-3. **Given** a project without a problem but with "Data not available", **When** the page opens,
+3. **Given** a project without a problem but with a check that is not available, **When** the page opens,
    **Then** it shows in the section "Check not available".
 4. **Given** a phone screen, **When** the page opens, **Then** all sections use the card layout
    of spec 007.
@@ -176,18 +177,24 @@ tab" for the link.
 - **FR-003**: The page MUST have a favicon in the page itself (not a separate file from another
   site), with a different icon for each state of FR-001. Each icon MUST be different in shape, not
   only in colour.
-- **FR-004**: The states Up, Down, Passed, Failed, Succeeded, Unknown and "Data not available"
-  MUST show as a badge with the text of the state. Expiry and renewal dates MUST also show as a
+- **FR-004**: The states Up, Down, Passed, Failed, Succeeded, In progress, Unknown, "Data not
+  available", "No repo" and "Check not available" MUST show as a badge with the text of the state. Expiry and renewal dates MUST also show as a
   badge. There are four kinds: good (correct colour), warning (warning colour), bad (problem
   colour) and unknown (grey). A date is bad at or below the problem limit of spec 009 (certificate
   14 days, renewal 30 days). A date is a warning above that limit and at or below two times the
   limit (certificate 15 to 28 days, renewal 31 to 60 days).
 - **FR-005**: The page MUST show the projects in three sections, in this order: "Projects with
-  problems"; "Check not available" (0 problems, and one or more values "Data not available");
-  "Other projects". In each section, the catalog
+  problems"; "Check not available"; "Other projects". A project is "check not available" when it
+  has 0 problems and one or more of these: its repo data is "Data not available"; its site check
+  is not available; one or more of its setup checks (spec 008) are not available. A certificate or
+  domain date that is "not known" does not count (normal for a platform subdomain, spec 009). This
+  is the only definition; the badge, the favicon and the sections use it. In each section, the catalog
   order MUST stay. A section without projects MUST NOT show.
 - **FR-006**: Each date or time on the page MUST show a relative time next to it, calculated from
-  the time of the update: minutes when less than 1 hour, hours when less than 48 hours, else days.
+  the time of the update: "now" when less than 1 minute, minutes when less than 1 hour, hours
+  when less than 48 hours, else days. A date without a time uses whole days ("today", "in 40
+  days"). The uptime marks of spec 010 keep only their date in the tooltip (30 relative times in
+  one bar give no value).
   The exact date and time in UTC MUST be in a tooltip and available to screen readers. A small
   script in the page MUST update the relative times each minute while the page is open. Without
   the script, the page MUST show the relative times of the update.
@@ -235,8 +242,7 @@ tab" for the link.
   data on the page changes only with the update; the script of FR-006 changes only the relative
   times.
 - The badge and the favicon use the same definition of a problem as the summary line of spec 007.
-- "Check not available" means that one or more projects have "Data not available" (status,
-  uptime or conformance), and there are 0 problems.
+- "Check not available" is defined in FR-005.
 - The favicon is a small SVG in the page. Old browsers that do not show an SVG favicon show no
   favicon; the title still shows the number.
 - The text of the page stays English, in ASD-STE100.
