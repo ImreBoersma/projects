@@ -31,6 +31,12 @@ roadmap.
 - Spec 009: the status page shows the days until each TLS certificate expires and the next
   renewal of the catalog field `renewal`. Issues 14 days (certificate) and 30 days (renewal) before
   the date. The `.nl` registry gives no expiry date: add the domain dates to the catalog.
+- Spec 006: the custom code of harmonieorkestbrummen.nl (the `hob-*` must-use plugins) is in
+  `harmonieorkest-brummen/hob-nl`. A push to `main` deploys it through `deploy-ssh.yml`, with a PHP
+  check, a site check and a restore of the last working version.
+- Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
+  expires on 2027-11-06. Make a new token with the same settings before that date and set the
+  secret again (spec 006).
 - Tokens: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` have no expiry date. Make new classic PATs with the
   same scopes only when a token is revoked or leaks (spec 004, research.md §3).
 
@@ -45,7 +51,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 003 | Shared Renovate preset | 002 (automerge needs CI) |
 | 004 | Project board and public roadmap (done) | 002 (the shared workflow adds issues) |
 | 005 | Uptime checks on the status page (done) | 001 |
-| 006 | hob.nl in git with a deploy workflow (planned) | 002 |
+| 006 | hob.nl in git with a deploy workflow (done) | 002 |
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry (done) | 005 |

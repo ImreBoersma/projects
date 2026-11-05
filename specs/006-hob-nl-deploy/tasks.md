@@ -79,8 +79,8 @@ are in `harmonieorkest-brummen/hob-nl`
 
 **Independent Test**: quickstart.md §6.
 
-- [ ] T016 [P] [US3] Manual (Maintainer), FR-011: give `STATUS_READ_TOKEN_HOB` (the fine-grained token for `harmonieorkest-brummen`) read access to `hob-nl`: on GitHub, Settings, Developer settings, Fine-grained tokens, the token, Repository access: add `hob-nl` (or "All repositories"), with read access to Metadata, Contents, Pull requests and Deployments.
-- [ ] T017 [US3] In `projects.yaml`, set `repo: harmonieorkest-brummen/hob-nl` for `hob-nl`. Run the status page locally with `STATUS_READ_TOKEN_HOB` unknown (the value is only an Actions secret): make sure that the catalog loads. Push to `main` (a catalog change, no code), and make sure in the status run that the row of hob.nl shows the last commit and the last deploy, not "No repo" or "Data not available" (SC-004).
+- [X] T016 [P] [US3] Manual (Maintainer), FR-011: give `STATUS_READ_TOKEN_HOB` (the fine-grained token for `harmonieorkest-brummen`) read access to `hob-nl`: on GitHub, Settings, Developer settings, Fine-grained tokens, the token, Repository access: add `hob-nl` (or "All repositories"), with read access to Metadata, Contents, Pull requests and Deployments. Done 2026-11-05: the token did not exist; the Maintainer made `STATUS_READ_TOKEN_HOB` (owner `harmonieorkest-brummen`, all repositories, read only, until 2027-11-06).
+- [X] T017 [US3] In `projects.yaml`, set `repo: harmonieorkest-brummen/hob-nl` for `hob-nl`. Run the status page locally with `STATUS_READ_TOKEN_HOB` unknown (the value is only an Actions secret): make sure that the catalog loads. Push to `main` (a catalog change, no code), and make sure in the status run that the row of hob.nl shows the last commit and the last deploy, not "No repo" or "Data not available" (SC-004). Done 2026-11-05: run 42051500169; hob.nl shows the commit of 2026-11-05, CI Passed and the deploy "Succeeded". `pretband-backend` also shows data now, for the first time.
 
 **Checkpoint**: hob.nl is a normal row on the status page.
 
@@ -89,8 +89,8 @@ are in `harmonieorkest-brummen/hob-nl`
 ## Phase 5: Polish & Cross-Cutting Concerns
 
 - [X] T018 [P] In `specs/002-shared-workflows/contracts/workflows.md`, add a line under the title: "Spec 006 adds `deploy-ssh.yml`: see `specs/006-hob-nl-deploy/contracts/deploy-ssh.md`".
-- [ ] T019 [P] Add §9 "Validation results" to `specs/006-hob-nl-deploy/research.md`: T005, T009 to T012, T014, T015, T017, with run ids and dates.
-- [ ] T020 [P] In `PLAN.md`, mark spec 006 as done in the feature table and the Done list.
+- [X] T019 [P] Add §9 "Validation results" to `specs/006-hob-nl-deploy/research.md`: T005, T009 to T012, T014, T015, T017, with run ids and dates. Done: research.md §9.
+- [X] T020 [P] In `PLAN.md`, mark spec 006 as done in the feature table and the Done list. Done.
 
 ---
 
