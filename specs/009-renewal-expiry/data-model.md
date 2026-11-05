@@ -14,7 +14,7 @@ No stored data. Each run makes these values again.
 |---|---|---|
 | `certificate` | `{ date: string; days: number } \| "not-known" \| null` | `null` when there is no domain |
 | `renewals` | list of `{ name; date; days; source: "catalog" \| "registry" }` | catalog renewals plus the registry "Domain"; for a "Domain" in both, the earlier date |
-| `registryNotKnown` | boolean | the domain has a domain but no registry date in this run |
+| `registryNotKnown` | boolean | the project has a registered domain, the registry gives no date in this run, and the catalog has no "Domain"; `false` for a domain that is not registered (RDAP 400/404) |
 
 ## Problem (changed)
 

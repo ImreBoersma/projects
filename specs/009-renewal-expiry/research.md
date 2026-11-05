@@ -7,10 +7,14 @@ event; `scales-imreboersma.web.app` gives HTTP 400; `pretband.nl` has no `expira
 
 ## 1. Certificate date (FR-002)
 
-**Decision**: `tls.connect({ host, port: 443, servername: host })` of `node:tls`, then
-`getPeerCertificate().valid_to`. Timeout 10 seconds. Each error or timeout gives "not known".
-Do not check the certificate chain here: the uptime check of spec 005 already fails for a
-certificate that is not valid.
+**Decision**: `tls.connect({ host, port: 443, servername: host, rejectUnauthorized: false })` of
+`node:tls`, then `getPeerCertificate().valid_to`. Timeout 10 seconds. Each error or timeout gives
+"not known". The connection only reads the end date and sends no data.
+
+**Rationale for `rejectUnauthorized: false`**: tested on 2026-11-05 against `expired.badssl.com`.
+With the default, Bun stops with "certificate has expired" and the date cannot be read, so an
+expired certificate would give "not known" and no problem. With `false`, the end date is read.
+The uptime check of spec 005 still fails for a certificate that is not valid.
 
 **Alternatives**: a TLS check service. Rejected: an external service for a value that Bun can
 read in a few lines.
@@ -22,9 +26,15 @@ of the top-level domain, and request `domain/<domain>` for the exact catalog dom
 `eventDate` of the event `expiration`. No server, an error, a status that is not 200, or no
 `expiration` event gives "not known".
 
-**Rationale**: the exact domain makes the "owned domain" rule simple. A platform subdomain
-(`scales-imreboersma.web.app`) gives 400 and so "not known"; the date of `web.app` (owned by
-Google) is never used.
+**Rationale**: the exact domain makes the "owned domain" rule simple. Three results:
+
+| RDAP answer | Result | Page |
+|---|---|---|
+| 200 with an `expiration` event | the date | `Domain: <n> days` |
+| 200 without `expiration` (for example `.nl`), or an error | not known | `Domain: not known` (unless the catalog has "Domain") |
+| 400 or 404 for the exact name (a platform subdomain such as `scales-imreboersma.web.app`) | not registered | no domain line |
+
+The date of `web.app` (owned by Google) is never used.
 
 ## 3. Catalog format (FR-001)
 
