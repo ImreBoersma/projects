@@ -20,7 +20,9 @@ bad write makes the full day unreadable. SQLite on the branch. Rejected: binary,
   the last 90 days from that commit with `git show` or a worktree. When the branch does not exist,
   start with no history. Add the result of this run in memory, make the page, and write the result
   line to `_history/line.ndjson` as the artifact `history`.
-- Job `history` (new, `needs: build`, not for pull requests): check out `data` (or make it as an
+- Job `history` (new, `needs: build`, not for pull requests): download the artifact to
+  `$RUNNER_TEMP/history`, outside the work tree, so that `git rm -rf .` (new branch) and
+  `git reset --hard` (retry) cannot remove it; then check out `data` (or make it as an
   orphan branch with a README when it does not exist), append the line to the day file of the time
   of the result, commit as `github-actions[bot]`, and push. When the push fails because `data`
   changed, fetch again, append again, and push one more time.

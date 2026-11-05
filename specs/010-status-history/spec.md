@@ -186,8 +186,9 @@ necessary for daily work.
 - One day file has about 24 results with 11 projects; with only states and keys it stays small.
   The branch grows by about 1 to 2 MB each year.
 - The workflow token of `projects` can write to the branch `data`; no new token is necessary.
-- The hourly commits on `data` count as activity of the repo, so GitHub does not stop the schedule
-  of the workflow after 60 days.
+- The runs are started by an external trigger (spec 005) through `workflow_dispatch`. The rule of
+  GitHub that stops a schedule after 60 days without activity does not stop these runs, so this
+  feature does not need to make activity.
 - This feature changes the decision of spec 005 "no uptime percentage".
 - The look of the bar and the times can change with spec 012 (visual polish).
 - Results from before the start of this feature do not exist and are not made.

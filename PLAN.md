@@ -124,16 +124,15 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 
 ### 010. Status history on a data branch
 
-- Each update adds its result to one small JSON file for each day (for example
-  `history/2026-11-05.json`) on a separate branch `data` of `projects`. The branch holds only data;
+- Each update adds its result as one line to one JSON-lines file for each day (for example
+  `history/2026-11-05.ndjson`) on a separate branch `data` of `projects`. The branch holds only data;
   `main` and its history do not change.
 - Show the uptime percentage and a bar of 30 days for each site, how long a problem is open
   ("CI failing for 3 days", "Down since 14:00"), and the average time to repair.
 - Keep 90 days on the page; git keeps all older days.
 - Reason for the branch, not a database: the history stays when a deploy writes a bad page, it is
   free and in GitHub (Principle I), no service runs all the time (Principle VIII), and no new
-  token is necessary. The hourly commits also count as activity, so GitHub does not stop the
-  schedule after 60 days.
+  token is necessary.
 - This changes the decision of spec 005 that there is no uptime percentage. A missing run is a gap
   in the data, not "down".
 
