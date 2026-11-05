@@ -60,7 +60,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 009 | Renewals and certificate expiry (done) | 005 |
 | 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
-| 012 | Status page visual polish | 007 |
+| 012 | Status page visual polish (specified) | 007 |
 
 ### 002. Shared CI and deploy workflows
 
