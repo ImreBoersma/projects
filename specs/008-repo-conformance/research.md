@@ -63,7 +63,8 @@ change an open issue, so the body can become old; the page is always current.
 
 **Decision**: a rule result is `not-available` when one of its reads gives 403, 404 where 404 does
 not mean "off" or "no file", 5xx, or a network error. A `not-available` result makes no problem.
-When all rules of a repo are `not-available`, the page shows "Check not available" for that repo.
+When one or more rules of a repo are `not-available`, the page shows a grey note "Setup check not available: <rule ids>" in the Problems cell. The note is not a problem: it does not change the sort order and opens no issue. It
+makes a missing token permission visible on the page.
 For R7, 404 of `vulnerability-alerts` means "off" only when the repo read itself passed.
 
 ## 6. Exceptions (FR-003)
@@ -97,3 +98,9 @@ anchor of the heading is the link target.
 | A caller with `permissions: {}` (scales-exercises) | R3 |
 
 Each one gets a fixture test.
+
+## 9. The `projects` repo itself
+
+**Decision**: `projects` is not checked. It is not in the catalog (Principle II), and its own CI
+already checks its workflows (actionlint) and its Renovate config (`lint-renovate.yml`). Decided by
+the Maintainer on 2026-11-05.

@@ -86,7 +86,8 @@ a repair instruction.
   workflows. The Maintainer marks the rule as not applicable for that repo in the catalog, with a
   reason.
 - The check cannot read a setting of a repo, for example because the token has no access. The
-  page shows "Check not available" for that rule. It does not open an issue for it.
+  page shows the note "Setup check not available" with the ids of those rules. The note is not a
+  problem and does not open an issue.
 - A project is `archived` or has no repo. The check ignores it.
 - A new rule is added. All repos are checked against it at the next run.
 - A repo is private. The page and the issue show only rule names, never file content or setting

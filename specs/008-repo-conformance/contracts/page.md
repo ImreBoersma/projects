@@ -10,8 +10,10 @@ On the page, under the problem text, a short list of the failed rules: `R4 Renov
 Issues on`. Each rule id links to `https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md#<anchor>`.
 The problem text links to the issue (spec 007).
 
-When all rules of a repo are `not-available`, the problem cell shows no problem, and a log line
-says `Conformance <repo>: check not available`.
+When one or more rules of a repo are `not-available`, the Problems cell shows a grey note
+`Setup check not available: R7, R9` (rule ids only). The note is not a problem: the row is not
+marked, the sort order does not change, and no issue opens. The log line says
+`Conformance <repo>: check not available: R7, R9`.
 
 ## Issue
 

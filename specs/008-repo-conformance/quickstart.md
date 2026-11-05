@@ -2,11 +2,27 @@
 
 ## 1. Token
 
-Make the token of research.md §2:
+Two steps: make the token on GitHub, then store its value as a secret.
 
-| Name | Kind | Where | Scopes or permissions | Expiry |
-|---|---|---|---|---|
-| `CONFORMANCE_READ_TOKEN` | Actions secret | `ImreBoersma/projects` | fine-grained PAT, owner `ImreBoersma`, all repositories; read only: Metadata, Contents, Administration, Secrets, Variables | none |
+**Step 1: make the token.** Open <https://github.com/settings/personal-access-tokens/new>
+(Settings, Developer settings, Personal access tokens, Fine-grained tokens).
+
+| Setting | Value |
+|---|---|
+| Token name | `projects conformance read` |
+| Resource owner | `ImreBoersma` |
+| Expiration | No expiration, if GitHub offers it; else the longest option (record the renewal date in `PLAN.md`) |
+| Repository access | All repositories |
+| Repository permissions, all Read-only | Metadata, Contents, Administration, Secrets, Variables |
+| Account permissions | none |
+
+Copy the token value. GitHub shows it only one time.
+
+**Step 2: store the value as a secret.**
+
+| Name | Kind | Value | Where |
+|---|---|---|---|
+| `CONFORMANCE_READ_TOKEN` | Actions secret | the token of step 1 | repo `ImreBoersma/projects` |
 
 ```sh
 gh secret set CONFORMANCE_READ_TOKEN -R ImreBoersma/projects
