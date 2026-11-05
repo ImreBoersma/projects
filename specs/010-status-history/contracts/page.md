@@ -33,3 +33,8 @@ Under the summary, in small text: `History from <date>.`
 ## Forbidden content
 
 The rules of spec 001 stay. The history adds only numbers, dates and states.
+
+## Pointer
+
+Spec 012 changes the look and the order of this page: see
+[specs/012-status-page-polish/contracts/page.md](../../012-status-page-polish/contracts/page.md).
