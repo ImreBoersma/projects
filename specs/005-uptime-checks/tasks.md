@@ -100,10 +100,10 @@ domain and no close of a `site-down` issue.
 
 - [X] T019 Run the full local page once more on the real catalog (quickstart.md §2 without the test entry). Make sure that the 4 real sites show "Up" and that the run takes less than 1 minute more than before. Done 2026-11-04: the real catalog run took 2 seconds, with 4 sites "Up"; with one site down it took 6 seconds (the second attempt waits 5 seconds).
 - [X] T020 Push the branch and open the PR into `main`. CI (`status-page.yml` build, actionlint) must pass.
-- [ ] T021 Ask the Maintainer to merge the PR, because a merge to `main` deploys the page.
+- [X] T021 Ask the Maintainer to merge the PR, because a merge to `main` deploys the page. Done 2026-11-05: the Maintainer merged #10.
 - [ ] T022 After the merge, validate quickstart.md §5: `status-page.yml` runs each hour, and the live page shows the column "Site" with "Up" for the 4 sites. Record the start times of the first 3 scheduled runs. If a gap between two runs is more than 90 minutes, record it in research.md §10, because SC-002 allows 2 hours (C1).
 - [ ] T023 [P] Add §10 "Validation results" to `specs/005-uptime-checks/research.md`: the local run of T012 and T019, the dry run of T015, and the first scheduled runs of T022, with dates.
-- [ ] T024 [P] In `PLAN.md`, mark feature 005 as done in the Done list and in the feature table. Note that the status page now runs each hour.
+- [X] T024 [P] In `PLAN.md`, mark feature 005 as done in the Done list and in the feature table. Note that the status page now runs each hour. Done.
 
 ---
 

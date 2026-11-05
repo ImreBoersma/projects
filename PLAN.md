@@ -21,6 +21,8 @@ roadmap.
   of the public repos go to the board through the shared workflow. The sync in the status page run
   adds the issues of private repos, `pretband-backend` and problem issues. Public roadmap for
   stakeholders: <https://github.com/users/ImreBoersma/projects/4/views/3>.
+- Spec 005: the status page checks each catalog `domain` each hour and opens an issue when a site
+  is down. The page runs each hour and warns when its data is more than 3 hours old.
 - Tokens: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` have no expiry date. Make new classic PATs with the
   same scopes only when a token is revoked or leaks (spec 004, research.md §3).
 
@@ -34,7 +36,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 002 | Shared CI and deploy workflows (done) | — |
 | 003 | Shared Renovate preset | 002 (automerge needs CI) |
 | 004 | Project board and public roadmap (done) | 002 (the shared workflow adds issues) |
-| 005 | Uptime checks on the status page | 001 |
+| 005 | Uptime checks on the status page (done) | 001 |
 | 006 | hob.nl in git with a deploy workflow | 002 |
 
 ### 002. Shared CI and deploy workflows

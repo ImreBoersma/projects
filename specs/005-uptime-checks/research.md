@@ -111,4 +111,5 @@ the same rule keeps the logs short.
 | Local page (T012) | 2026-11-04 | The test domain `does-not-exist.imreboersma.nl` showed "Down" and the problem, first in the table. The 4 real sites showed "Up". `domain: https://pretband.nl` stopped the run with the catalog error. |
 | Issues dry run (T015) | 2026-11-04 | Only `Open: Test down: The site does not respond correctly.` |
 | Run time (T019) | 2026-11-04 | 2 seconds with 4 sites up; 6 seconds with 1 site down (the second attempt waits 5 seconds). |
+| Live page after the merge | 2026-11-05 | Push run 42005338902 passed (build, issues, deploy). The live page has the column "Site", the 4 sites show "Up 09:48", and the warning uses 3 hours. |
 | Check from GitHub runners | 2026-11-04 | PR run 41815750803: the 4 sites were "Up". The hosts do not block the data-centre addresses of GitHub or the `User-Agent` of the check. Check this again when a site behind bot protection (for example Cloudflare or a WordPress security plugin) is added. |
