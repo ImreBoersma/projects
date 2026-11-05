@@ -70,7 +70,7 @@ projects:
         date: 2027-02-01
   - id: hob-nl
     name: hob.nl
-    repo:
+    repo: harmonieorkest-brummen/hob-nl
     status: active
     stack: WordPress
     host: WordPress hosting
