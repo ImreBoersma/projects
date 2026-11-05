@@ -23,6 +23,8 @@ light and dark schemes, and the phone card layout of spec 007."
   page still works.
 - Q: Where does a project without a problem but with "Data not available" go? → A: In a third
   section, "Check not available", between "Projects with problems" and "Other projects".
+- Q: Do state badges get a fourth kind, "warning"? → A: Yes. Four kinds: good, warning, bad,
+  unknown. Warning is for expiry and renewal dates in the warning period of spec 009.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -69,9 +71,11 @@ each value is a badge with its text, and that Down and Failed use the problem co
    "Down" in the problem colour, with the time of the check next to it.
 2. **Given** a CI result "Passed", **When** the page opens, **Then** the CI cell shows a badge
    "Passed" in the correct colour.
-3. **Given** a value "Unknown" or "Data not available", **When** the page opens, **Then** the cell
+3. **Given** a certificate in the warning period of spec 009, **When** the page opens, **Then** the
+   expiry cell shows a badge in the warning colour with the date and the relative time.
+4. **Given** a value "Unknown" or "Data not available", **When** the page opens, **Then** the cell
    shows a grey badge with that text.
-4. **Given** the page in grey scale (no colour), **When** the Maintainer reads it, **Then** each
+5. **Given** the page in grey scale (no colour), **When** the Maintainer reads it, **Then** each
    state is still clear from its text.
 
 ---
@@ -171,8 +175,9 @@ tab" for the link.
   site), with a different icon for each state of FR-001. Each icon MUST be different in shape, not
   only in colour.
 - **FR-004**: The states Up, Down, Passed, Failed, Succeeded, Unknown and "Data not available"
-  MUST show as a badge with the text of the state. Good states use the correct colour, bad states
-  the problem colour, unknown states grey.
+  MUST show as a badge with the text of the state. Expiry and renewal dates MUST also show as a
+  badge. There are four kinds: good (correct colour), warning (warning colour, for a date in the
+  warning period of spec 009), bad (problem colour) and unknown (grey).
 - **FR-005**: The page MUST show the projects in three sections, in this order: "Projects with
   problems"; "Check not available" (0 problems, and one or more values "Data not available");
   "Other projects". In each section, the catalog
@@ -201,7 +206,7 @@ tab" for the link.
 
 - **Total state**: one of "all correct", "problems" or "check not available", with the number of
   problems. It sets the badge, the title and the favicon.
-- **State badge**: a state value with its kind (good, bad, unknown).
+- **State badge**: a state value with its kind (good, warning, bad, unknown).
 - **Section**: a group of rows ("Projects with problems", "Check not available" or "Other
   projects").
 
