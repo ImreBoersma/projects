@@ -16,6 +16,17 @@ a workflow on push to `main`."
 
 - Q: Which owner gets the repo? → A: There is no repo now. Make it with `git init` from the files on the hosting, then put it in `harmonieorkest-brummen`.
 
+### Session 2026-11-05
+
+- Q: Where is the custom code? → A: Only in `wp-content/mu-plugins`: `hob-admin.php`,
+  `hob-huisstijl.css` and the folder `hob-docs/` (5 PHP files). The theme `ketos` and the plugins
+  `kubio-pro`, `skaut-google-drive-gallery` and `display-a-meta-field-as-block` are third-party
+  code; the pages are in the database (Kubio).
+- Q: What is the hosting? → A: GoDaddy Managed WordPress, with SSH (`*.myftpupload.com`). The site
+  is in `~/html`. In `mu-plugins`, GoDaddy has its own files (owner `root`): `gd-system-plugin.php`,
+  `gd-system-plugin/`, `object-cache-pro.php`, `object-cache-pro/`, `vendor/`. The deploy must
+  never change or remove them.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - The custom code of hob.nl is in git (Priority: P1)
@@ -56,8 +67,8 @@ change and that the status page shows the deploy.
    hosting and the site shows the change.
 2. **Given** a file that the Maintainer removed from the theme in git, **When** the deploy runs,
    **Then** the file is removed from the theme folder on the hosting.
-3. **Given** a deploy, **When** it runs, **Then** it does not change, add or remove files outside
-   the theme and the custom plugin folders.
+3. **Given** a deploy, **When** it runs, **Then** it does not change, add or remove files that are not
+   `hob-*` files in `mu-plugins`.
 4. **Given** a failed deploy, **When** the status page updates, **Then** it shows "Failed" for the
    last deploy of hob.nl.
 
@@ -84,8 +95,11 @@ that the row of hob.nl shows the last commit and the last deploy.
 
 - A WordPress update or a plugin update in the admin panel changes files on the hosting. These
   files are not in git, so the deploy does not change them.
-- A person changes a theme file in the WordPress theme editor. The next deploy replaces the change.
-  The theme editor is turned off, so that the hosting and git stay the same.
+- A person changes a `hob-*` file on the hosting by SSH or SFTP. The next deploy replaces the
+  change. The `hob-*` files are only changed in git.
+- GoDaddy updates its own must-use plugins in the same folder. The deploy does not touch them.
+- A new custom file does not start with `hob-`. The deploy does not copy it. All custom files get
+  the prefix `hob-`.
 - The SSH key is not valid. The deploy fails with a message, and the site does not change.
 - The deploy stops halfway. The next deploy completes the copy. The Maintainer can start the deploy
   again manually.
@@ -96,19 +110,23 @@ that the row of hob.nl shows the last commit and the last deploy.
 
 ### Functional Requirements
 
-- **FR-001**: A git repo in `harmonieorkest-brummen` MUST contain the active theme and the custom
-  plugins of hob.nl. The first commit MUST come from the current files on the hosting.
+- **FR-001**: A git repo in `harmonieorkest-brummen` MUST contain the custom must-use plugins of
+  hob.nl: each file and folder in `wp-content/mu-plugins` whose name starts with `hob-`. The first
+  commit MUST come from the current files on the hosting.
 - **FR-002**: The repo MUST NOT contain `wp-config.php`, credentials, the WordPress core,
   third-party plugins or uploads, also not in its history (Principle III).
 - **FR-003**: The repo MUST be private.
 - **FR-004**: A push to `main` MUST start a deploy through a shared deploy workflow in `projects`
   (Principle V).
-- **FR-005**: The deploy MUST change only the theme folder and the custom plugin folders on the
-  hosting. It MUST remove files in these folders that are not in git.
+- **FR-005**: The deploy MUST change only the `hob-*` files and folders in
+  `wp-content/mu-plugins` on the hosting. It MUST remove a `hob-*` file or folder that is not in
+  git. It MUST NOT change or remove any other file, also not the files of GoDaddy in the same
+  folder.
 - **FR-006**: The deploy job MUST use `environment: production` (constitution, Development
   Workflow).
 - **FR-007**: The SSH key and the host data MUST be Actions secrets (Principle III).
-- **FR-008**: The theme file editor in the WordPress admin MUST be turned off.
+- **FR-008**: The theme and plugin file editors in the WordPress admin MUST be turned off
+  (`DISALLOW_FILE_EDIT`), if they are not already off.
 - **FR-009**: The `hob-nl` entry in `projects.yaml` MUST get the new `repo`.
 - **FR-010**: The Maintainer MUST be able to start the deploy manually.
 - **FR-011**: The status token `STATUS_READ_TOKEN_HOB` (spec 001) MUST have read access to the new
@@ -116,8 +134,9 @@ that the row of hob.nl shows the last commit and the last deploy.
 
 ### Key Entities
 
-- **hob.nl repo**: the git repo with the theme and the custom plugins.
-- **Deploy target**: the theme folder and the custom plugin folders on the WordPress hosting.
+- **hob.nl repo**: the git repo with the `hob-*` must-use plugins.
+- **Deploy target**: the `hob-*` files and folders in `~/html/wp-content/mu-plugins` on the
+  GoDaddy hosting.
 
 ## Success Criteria *(mandatory)*
 
