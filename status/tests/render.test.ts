@@ -47,7 +47,9 @@ describe("renderPage", () => {
   });
 
   test("puts the column Site after Problems", () => {
-    expect(render([status()])).toContain("<th>Problems</th><th>Site</th><th>Last commit</th>");
+    expect(render([status()])).toContain(
+      "<th>Problems</th><th>Site</th><th>Expiry</th><th>Last commit</th>",
+    );
   });
 
   test("shows the site state and the time of the check (spec 005)", () => {
@@ -58,7 +60,7 @@ describe("renderPage", () => {
     expect(cell({ state: "no-domain", at: null })).toContain("<td>No domain</td>");
     expect(cell({ state: "not-available", at })).toContain("<td>Check not available</td>");
     expect(plain([status({ availability: "no-repo", uptime: { state: "up", at } })])).toContain(
-      "<td>Up 10:17</td><td>No repo</td>",
+      "<td>Up 10:17</td><td></td><td>No repo</td>",
     );
   });
 
@@ -260,5 +262,55 @@ describe("conformance on the page (spec 008)", () => {
     const html = render([status({ conformanceNotAvailable: ["R7", "R9"] })]);
     expect(html).toContain("<small>Setup check not available: R7, R9</small>");
     expect(html).not.toContain('class="problem"');
+  });
+});
+
+describe("expiry on the page (spec 009)", () => {
+  const cell = (expiry: ProjectStatus["expiry"]) =>
+    render([status({ expiry })]).match(/<td data-label="Expiry">(.*?)<\/td>/)?.[1];
+
+  test("has the column Expiry after Site", () => {
+    expect(render([status()])).toContain("<th>Site</th><th>Expiry</th><th>Last commit</th>");
+  });
+
+  test("shows the certificate and the renewal with the fewest days", () => {
+    const renewals = [
+      { name: "Hosting", date: "2027-01-01", days: 57, source: "catalog" as const },
+      { name: "Domain", date: "2027-03-01", days: 120, source: "registry" as const },
+    ];
+    expect(
+      cell({ certificate: { date: "2026-12-19", days: 44 }, renewals, registryNotKnown: false }),
+    ).toBe("Certificate: 44 days<br>Hosting: 57 days");
+    expect(cell({ certificate: "not-known", renewals: [], registryNotKnown: true })).toBe(
+      "Certificate: not known<br>Domain: not known",
+    );
+    expect(cell({ certificate: null, renewals: [], registryNotKnown: false })).toBe("");
+  });
+
+  test("uses day for 1 and ago for the past", () => {
+    const one = { name: "Hosting", date: "2026-11-06", days: 1, source: "catalog" as const };
+    const past = { ...one, days: -1 };
+    expect(
+      cell({ certificate: { date: "x", days: 1 }, renewals: [one], registryNotKnown: false }),
+    ).toBe("Certificate: 1 day<br>Hosting: 1 day");
+    expect(cell({ certificate: null, renewals: [past], registryNotKnown: false })).toBe(
+      "Hosting: 1 day ago",
+    );
+  });
+
+  test("a problem with a text shows that text", () => {
+    const html = render([
+      status({
+        problems: [
+          {
+            projectId: "one",
+            reason: "cert-expiring",
+            key: "one/cert-expiring",
+            text: "The TLS certificate expires in 10 days.",
+          },
+        ],
+      }),
+    ]);
+    expect(html).toContain("The TLS certificate expires in 10 days.");
   });
 });

@@ -4,6 +4,8 @@ import { parseArgs } from "node:util";
 import { parseCatalog, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
 import { checkRepo } from "./conformance/rules";
+import { certificateProblem, daysUntil, mergeRenewals, renewalProblems } from "./expiry/expiry";
+import { readBootstrap, readCertificate, readRegistryDate } from "./expiry/read";
 import { fetchStatuses } from "./github";
 import {
   closeIssue,
@@ -57,9 +59,57 @@ for (const p of projects) {
   if (p.domain && u) console.log(`Site ${p.domain}: ${LOG_TEXT[u.state]}`);
 }
 const unavailableSetup = await checkConformance();
+const keepKeys = await checkExpiry();
 for (const s of statuses) {
   s.uptime = uptime.get(s.project.id) ?? s.uptime;
-  s.problems = [...evaluateProblems(s, now), ...s.problems];
+  s.problems = [
+    ...evaluateProblems(s, now),
+    ...s.problems,
+    ...[certificateProblem(s.project.id, s.expiry.certificate)].filter((p) => p !== null),
+    ...renewalProblems(s.project.id, s.expiry.renewals),
+  ];
+}
+
+// Spec 009: certificate, registry and catalog dates. Returns the issue keys to keep open,
+// because their value is not known in this run (research.md §7).
+async function checkExpiry(): Promise<Set<string>> {
+  const keep = new Set<string>();
+  const bootstrap = await readBootstrap();
+  await Promise.all(
+    statuses.map(async (s) => {
+      const { id, domain } = s.project;
+      const catalog = (s.project.renewals ?? []).map((r) => ({
+        ...r,
+        days: daysUntil(r.date, now),
+        source: "catalog" as const,
+      }));
+      const hasCatalogDomain = catalog.some((r) => r.name.toLowerCase() === "domain");
+      let registry = null;
+      if (domain) {
+        const [cert, reg] = await Promise.all([
+          readCertificate(domain, now),
+          readRegistryDate(domain, bootstrap),
+        ]);
+        s.expiry.certificate = cert;
+        if (cert === "not-known") keep.add(`${id}/cert-expiring`);
+        if (reg === "not-known" && !hasCatalogDomain) {
+          s.expiry.registryNotKnown = true;
+          keep.add(`${id}/renewal-due/domain`);
+        } else if (reg !== "not-known" && reg !== "not-registered") {
+          registry = {
+            name: "Domain",
+            date: reg,
+            days: daysUntil(reg, now),
+            source: "registry" as const,
+          };
+        }
+        const certText = cert === "not-known" ? "not known" : `${cert.days} days`;
+        console.log(`Certificate ${domain}: ${certText}; registry: ${reg}`);
+      }
+      s.expiry.renewals = mergeRenewals(catalog, registry);
+    }),
+  );
+  return keep;
 }
 
 // Spec 008: check each own repo against the shared setup. Returns the ids of the projects whose
@@ -135,6 +185,7 @@ async function reconcileIssues() {
     new Set(statuses.filter((s) => s.availability === "unavailable").map((s) => s.project.id)),
     [...uptime.values()].some((u) => u.state === "not-available"),
     unavailableSetup,
+    keepKeys,
     new Map(projects.map((p) => [p.id, p])),
     now.toISOString().slice(0, 10),
   );

@@ -18,7 +18,7 @@ export function parseCatalog(text: string): Project[] {
     const fail = (field: string, rule: string): never => {
       throw new Error(`Catalog error in entry ${i}, field \`${field}\`: ${rule}`);
     };
-    const { id, name, repo, status, stakeholder, domain, exceptions } = raw ?? {};
+    const { id, name, repo, status, stakeholder, domain, exceptions, renewal } = raw ?? {};
     if (typeof id !== "string" || !ID.test(id)) fail("id", "required, only a-z, 0-9 and -.");
     if (seen.has(id as string)) fail("id", `"${id}" is not unique.`);
     seen.add(id as string);
@@ -41,6 +41,7 @@ export function parseCatalog(text: string): Project[] {
         }
       }
     }
+    const renewals = parseRenewals(renewal, (rule) => fail("renewal", rule));
     return {
       id: id as string,
       name: name as string,
@@ -49,7 +50,32 @@ export function parseCatalog(text: string): Project[] {
       stakeholder: typeof stakeholder === "string" && stakeholder !== "" ? stakeholder : null,
       domain: (domain as string) || null,
       ...(exceptions != null ? { exceptions: exceptions as Record<string, string> } : {}),
+      ...(renewals.length ? { renewals } : {}),
     };
+  });
+}
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const realDate = (d: string) =>
+  DATE.test(d) &&
+  !Number.isNaN(Date.parse(`${d}T00:00:00Z`)) &&
+  new Date(`${d}T00:00:00Z`).toISOString().startsWith(d);
+
+// Spec 009, contracts/catalog.md: an empty field or a list of { name, date }.
+function parseRenewals(value: unknown, fail: (rule: string) => never) {
+  if (value == null || value === "") return [];
+  if (!Array.isArray(value)) fail("must be a list of items with name and date.");
+  const seen = new Set<string>();
+  return (value as Record<string, unknown>[]).map((item, n) => {
+    const { name, date } = item ?? {};
+    if (typeof name !== "string" || name.trim() === "" || name.length > 40) {
+      fail(`item ${n} needs a name of at most 40 characters.`);
+    }
+    if (typeof date !== "string" || !realDate(date)) fail(`item ${n} needs a date as YYYY-MM-DD.`);
+    const key = (name as string).toLowerCase();
+    if (seen.has(key)) fail(`the name ${name} is used two times.`);
+    seen.add(key);
+    return { name: name as string, date: date as string };
   });
 }
 

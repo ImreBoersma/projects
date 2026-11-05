@@ -10,6 +10,8 @@ export const PROBLEM_TEXT: Record<Reason, string> = {
   inactive: "No commit for more than 90 days.",
   "site-down": "The site does not respond correctly.",
   "not-conformant": "The repo does not follow the shared setup.",
+  "cert-expiring": "The TLS certificate expires soon.",
+  "renewal-due": "A renewal is due.",
 };
 
 export function evaluateProblems(s: ProjectStatus, now: Date): Problem[] {

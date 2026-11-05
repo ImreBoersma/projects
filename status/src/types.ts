@@ -9,6 +9,8 @@ export interface Project {
   domain?: string | null;
   // Spec 008: rule id (R1 to R9) to the reason why the rule does not apply.
   exceptions?: Record<string, string>;
+  // Spec 009: renewal dates from the catalog field `renewal`.
+  renewals?: { name: string; date: string }[];
 }
 
 export type UptimeState = "up" | "down" | "no-domain" | "not-available";
@@ -25,7 +27,9 @@ export type Reason =
   | "renovate-stale"
   | "inactive"
   | "site-down"
-  | "not-conformant";
+  | "not-conformant"
+  | "cert-expiring"
+  | "renewal-due";
 
 export interface Problem {
   projectId: string;
@@ -33,6 +37,10 @@ export interface Problem {
   key: string;
   // Spec 008: names of the failed rules.
   detail?: string[];
+  // Spec 009: a text with numbers, for the page and the issue title, in place of the fixed text.
+  text?: string;
+  // Spec 009: where a renewal date comes from; the issue steps differ.
+  source?: "catalog" | "registry";
 }
 
 export type Deploy = { at: Date; result: "succeeded" | "failed" | "in-progress" } | "unknown";
@@ -53,6 +61,7 @@ export interface ProjectStatus {
   renovateApp: string | null;
   // Spec 008: ids of the conformance rules that could not be read.
   conformanceNotAvailable: string[];
+  expiry: Expiry;
 }
 
 export interface StatusPage {
@@ -82,4 +91,17 @@ export type RuleState = "pass" | "fail" | "not-applicable" | "not-available";
 export interface RuleResult {
   rule: string;
   state: RuleState;
+}
+
+// Spec 009, data-model.md.
+export interface Renewal {
+  name: string;
+  date: string;
+  days: number;
+  source: "catalog" | "registry";
+}
+export interface Expiry {
+  certificate: { date: string; days: number } | "not-known" | null;
+  renewals: Renewal[];
+  registryNotKnown: boolean;
 }

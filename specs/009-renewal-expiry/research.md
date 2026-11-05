@@ -94,3 +94,12 @@ enters the next date. A registry "Domain" renewal that becomes "not known" keeps
 **Decision**: a new column "Expiry", after "Site". Cell lines: `Certificate: <n> days` (or
 `Certificate: not known`, or nothing without a domain), and `<name>: <n> days` for the renewal with
 the fewest days. Spec 012 can change the layout later.
+
+## 9. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| Real domains (T010) | 2026-11-05 | Certificates: `imreboersma.nl` 28 days, `harmonieorkestbrummen.nl` 35, `pretband.nl` 44, `scales-imreboersma.web.app` 81. Registry: the 3 `.nl` domains "not known", the `web.app` subdomain "not registered" (no domain line). No expiry problem. |
+| Test renewal (T014) | 2026-11-05 | A catalog copy with "Hosting" in 20 days gave "Renewal of Hosting is due in 20 days." and the dry run gave one `Open:` line. |
+| Run time (T019) | 2026-11-05 | The check adds about 4 seconds. |
+

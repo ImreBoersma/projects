@@ -15,6 +15,7 @@ export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
     commitOid: null,
     renovateApp: null,
     conformanceNotAvailable: [],
+    expiry: { certificate: null, renewals: [], registryNotKnown: false },
     ...overrides,
   };
 }
