@@ -3,7 +3,14 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { parseCatalog, visibleProjects } from "./catalog";
 import { fetchStatuses } from "./github";
-import { closeIssue, ensureLabel, listOpenIssues, openIssue, planIssueActions } from "./issues";
+import {
+  closeIssue,
+  ensureLabel,
+  listOpenIssues,
+  openIssue,
+  parseMarker,
+  planIssueActions,
+} from "./issues";
 import { evaluateProblems, sortRows } from "./problems";
 import { renderPage } from "./render";
 import type { Project } from "./types";
@@ -53,14 +60,32 @@ for (const s of statuses) {
 }
 
 if (args.mode === "page") {
+  const issues = await issueNumbers();
   await mkdir(args.out, { recursive: true });
   await Bun.write(
     join(args.out, "index.html"),
-    renderPage({ generatedAt: now, rows: sortRows(statuses) }),
+    renderPage({ generatedAt: now, rows: sortRows(statuses), issues }),
   );
   console.log(`Wrote ${join(args.out, "index.html")} with ${statuses.length} projects.`);
 } else {
   await reconcileIssues();
+}
+
+// Spec 007: issue numbers for the problem links. Without them, the page shows problems without links.
+async function issueNumbers(): Promise<Map<string, number>> {
+  const repo = process.env.GITHUB_REPOSITORY ?? "ImreBoersma/projects";
+  const token = process.env.GITHUB_TOKEN;
+  const numbers = new Map<string, number>();
+  try {
+    if (!token) throw new Error("GITHUB_TOKEN is not set.");
+    for (const issue of await listOpenIssues(repo, token)) {
+      const key = parseMarker(issue.body);
+      if (key) numbers.set(key, issue.number);
+    }
+  } catch {
+    console.log("Issue links not available.");
+  }
+  return numbers;
 }
 
 async function reconcileIssues() {

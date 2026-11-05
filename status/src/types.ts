@@ -38,9 +38,14 @@ export interface ProjectStatus {
   deploy: Deploy;
   problems: Problem[];
   uptime: Uptime;
+  // Spec 007: data for the links. Null when the repo has no commit or no data, or no Renovate PR.
+  commitOid: string | null;
+  renovateApp: string | null;
 }
 
 export interface StatusPage {
   generatedAt: Date;
   rows: ProjectStatus[];
+  // Marker key `<project id>/<reason>` to the number of the open status-problem issue.
+  issues: Map<string, number>;
 }

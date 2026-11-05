@@ -1,0 +1,40 @@
+// Links of the status page cells (spec 007, data-model.md "Links of a row").
+// FR-010: links use only the catalog repo and domain, the commit id, the Renovate app login,
+// issue numbers and fixed GitHub paths.
+import type { ProjectStatus, Reason } from "./types";
+
+const GITHUB = "https://github.com";
+const ISSUES = `${GITHUB}/ImreBoersma/projects/issues`;
+
+export interface RowLinks {
+  project: string | null;
+  ci: string | null;
+  deploy: string | null;
+  renovate: string | null;
+  site: string | null;
+  problems: Map<Reason, string>;
+}
+
+export function rowLinks(s: ProjectStatus, issues: Map<string, number>): RowLinks {
+  const { repo, domain } = s.project;
+  const site = domain ? `https://${domain}/` : null;
+  const repoUrl = repo ? `${GITHUB}/${repo}` : null;
+  // Data cells link only when the repo data is available.
+  const data = s.availability === "ok" ? repoUrl : null;
+  const problems = new Map<Reason, string>();
+  for (const p of s.problems) {
+    const number = issues.get(p.key);
+    if (number !== undefined) problems.set(p.reason, `${ISSUES}/${number}`);
+  }
+  return {
+    project: repoUrl ?? site,
+    ci: data && s.ci !== "unknown" && s.commitOid ? `${data}/commit/${s.commitOid}/checks` : null,
+    deploy: data && s.deploy !== "unknown" ? `${data}/deployments` : null,
+    renovate:
+      data && s.renovatePrCount > 0 && s.renovateApp
+        ? `${data}/pulls?q=${encodeURIComponent(`is:pr is:open author:app/${s.renovateApp}`).replace(/%20/g, "+")}`
+        : null,
+    site,
+    problems,
+  };
+}

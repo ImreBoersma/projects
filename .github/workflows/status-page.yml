@@ -28,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Spec 007: read the open status-problem issues for the problem links.
+      issues: read
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -38,6 +40,7 @@ jobs:
         env:
           STATUS_READ_TOKEN: ${{ secrets.STATUS_READ_TOKEN }}
           STATUS_READ_TOKEN_HOB: ${{ secrets.STATUS_READ_TOKEN_HOB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v7
         with:
           name: build

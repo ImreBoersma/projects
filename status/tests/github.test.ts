@@ -81,6 +81,27 @@ describe("mapRepo", () => {
     expect(mapRepo(node, project("x")).renovatePrCount).toBe(4);
   });
 
+  test("keeps the commit id for the CI link (spec 007)", () => {
+    expect(map("r0").commitOid).toBe("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2");
+    expect(map("r4").commitOid).toBeNull();
+  });
+
+  test("keeps the login of the Renovate app, without [bot] (spec 007)", () => {
+    const node = (login: string) => ({
+      defaultBranchRef: null,
+      pullRequests: {
+        totalCount: 1,
+        nodes: [{ createdAt: "2026-10-01T00:00:00Z", author: { login } }],
+      },
+      deployments: { nodes: [] },
+    });
+    expect(mapRepo(node("renovate[bot]"), project("x")).renovateApp).toBe("renovate");
+    expect(mapRepo(node("imreboersma-homelab-renovate"), project("x")).renovateApp).toBe(
+      "imreboersma-homelab-renovate",
+    );
+    expect(mapRepo(node("some-person"), project("x")).renovateApp).toBeNull();
+  });
+
   test("a null alias is unavailable", () => {
     expect(map("r3").availability).toBe("unavailable");
   });
@@ -109,6 +130,10 @@ describe("buildQuery", () => {
     for (const field of ["message", "title", "headRefName", "body"]) {
       expect(query).not.toMatch(new RegExp(`\\b${field}\\b`));
     }
+  });
+
+  test("requests the commit id", () => {
+    expect(buildQuery(["ImreBoersma/a"])).toContain("oid committedDate");
   });
 
   test("reads GitHub Pages deploys", () => {
