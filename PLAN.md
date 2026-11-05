@@ -55,7 +55,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry (done) | 005 |
-| 010 | Status history on a data branch | 007 |
+| 010 | Status history on a data branch (specified) | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish | 007 |
 
