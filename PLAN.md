@@ -55,7 +55,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry (done) | 005 |
-| 010 | Status history without a database | 007 |
+| 010 | Status history on a data branch | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish | 007 |
 
@@ -122,12 +122,20 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - Reason: an expired domain or hosting contract stops a client site for days. The uptime check
   finds it only after the stop.
 
-### 010. Status history without a database
+### 010. Status history on a data branch
 
-- Each update reads the last `status.json` from the published page, adds its result, keeps 90
-  days, and publishes it again. No commits to the repo.
-- Show the uptime percentage and a bar of 30 days for each site, and how long a problem is open.
-- This changes the decision of spec 005 that there is no uptime percentage.
+- Each update adds its result to one small JSON file for each day (for example
+  `history/2026-11-05.json`) on a separate branch `data` of `projects`. The branch holds only data;
+  `main` and its history do not change.
+- Show the uptime percentage and a bar of 30 days for each site, how long a problem is open
+  ("CI failing for 3 days", "Down since 14:00"), and the average time to repair.
+- Keep 90 days on the page; git keeps all older days.
+- Reason for the branch, not a database: the history stays when a deploy writes a bad page, it is
+  free and in GitHub (Principle I), no service runs all the time (Principle VIII), and no new
+  token is necessary. The hourly commits also count as activity, so GitHub does not stop the
+  schedule after 60 days.
+- This changes the decision of spec 005 that there is no uptime percentage. A missing run is a gap
+  in the data, not "down".
 
 ### 011. New-project template and onboarding
 
