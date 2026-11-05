@@ -82,3 +82,9 @@ jobs:
         env:
           BOARD_URL: https://github.com/users/ImreBoersma/projects/4
           BOARD_SYNC_TOKEN: ${{ secrets.BOARD_SYNC_TOKEN }}
+      # Spec 005: tell healthchecks.io that the hourly run passed. No ping in time gives an alert.
+      # This step runs only when all steps before it passed. Without the secret it does nothing.
+      - name: Ping the watchdog
+        run: '[ -z "$STATUS_HEALTHCHECK_URL" ] || curl -fsS -m 10 --retry 3 -o /dev/null "$STATUS_HEALTHCHECK_URL"'
+        env:
+          STATUS_HEALTHCHECK_URL: ${{ secrets.STATUS_HEALTHCHECK_URL }}
