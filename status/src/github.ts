@@ -49,6 +49,7 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     ci: "unknown",
     deploy: "unknown",
     problems: [],
+    uptime: { state: "no-domain", at: null },
   };
 }
 

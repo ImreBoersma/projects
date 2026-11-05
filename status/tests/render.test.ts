@@ -15,6 +15,7 @@ describe("renderPage", () => {
     for (const column of [
       "Project",
       "Problems",
+      "Site",
       "Last commit",
       "Open PRs",
       "Renovate PRs",
@@ -38,6 +39,22 @@ describe("renderPage", () => {
       "<td>2026-10-27</td><td>3</td><td>2 (oldest 20 days)</td><td>Passed</td>",
     );
     expect(html).toContain("<td>2026-10-27 Succeeded</td>");
+  });
+
+  test("puts the column Site after Problems", () => {
+    expect(render([status()])).toContain("<th>Problems</th><th>Site</th><th>Last commit</th>");
+  });
+
+  test("shows the site state and the time of the check (spec 005)", () => {
+    const at = new Date("2026-11-04T10:17:42Z");
+    const cell = (uptime: ProjectStatus["uptime"]) => render([status({ uptime })]);
+    expect(cell({ state: "up", at })).toContain("<td>Up 10:17</td>");
+    expect(cell({ state: "down", at })).toContain("<td>Down 10:17</td>");
+    expect(cell({ state: "no-domain", at: null })).toContain("<td>No domain</td>");
+    expect(cell({ state: "not-available", at })).toContain("<td>Check not available</td>");
+    expect(render([status({ availability: "no-repo", uptime: { state: "up", at } })])).toContain(
+      "<td>Up 10:17</td><td>No repo</td>",
+    );
   });
 
   test("no-repo and unavailable rows", () => {
@@ -70,10 +87,8 @@ describe("renderPage", () => {
   test("shows the update time and a hidden old-data warning", () => {
     const html = render([]);
     expect(html).toContain('<time datetime="2026-10-28T05:03:00.000Z">2026-10-28 05:03</time> UTC');
-    expect(html).toContain(
-      '<p id="stale" hidden>Warning: this data is more than 48 hours old.</p>',
-    );
-    expect(html).toContain(String(48 * 60 * 60 * 1000));
+    expect(html).toContain('<p id="stale" hidden>Warning: this data is more than 3 hours old.</p>');
+    expect(html).toContain(String(3 * 60 * 60 * 1000));
   });
 
   test("privacy: no text from private repos reaches the page", () => {

@@ -7,6 +7,15 @@ import { closeIssue, ensureLabel, listOpenIssues, openIssue, planIssueActions } 
 import { evaluateProblems, sortRows } from "./problems";
 import { renderPage } from "./render";
 import type { Project } from "./types";
+import { checkAll } from "./uptime";
+
+// Research.md §9: the log shows only the state, never an error text.
+const LOG_TEXT = {
+  up: "Up",
+  down: "Down",
+  "no-domain": "No domain",
+  "not-available": "Check not available",
+};
 
 const { values: args } = parseArgs({
   options: {
@@ -33,7 +42,15 @@ try {
 
 const now = new Date();
 const statuses = await fetchStatuses(projects, process.env);
-for (const s of statuses) s.problems = evaluateProblems(s, now);
+const uptime = await checkAll(projects, now);
+for (const p of projects) {
+  const u = uptime.get(p.id);
+  if (p.domain && u) console.log(`Site ${p.domain}: ${LOG_TEXT[u.state]}`);
+}
+for (const s of statuses) {
+  s.uptime = uptime.get(s.project.id) ?? s.uptime;
+  s.problems = evaluateProblems(s, now);
+}
 
 if (args.mode === "page") {
   await mkdir(args.out, { recursive: true });
@@ -57,6 +74,7 @@ async function reconcileIssues() {
     statuses.flatMap((s) => s.problems),
     await listOpenIssues(repo, token),
     new Set(statuses.filter((s) => s.availability === "unavailable").map((s) => s.project.id)),
+    [...uptime.values()].some((u) => u.state === "not-available"),
     new Map(projects.map((p) => [p.id, p])),
     now.toISOString().slice(0, 10),
   );

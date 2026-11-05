@@ -2,7 +2,8 @@ import { PROBLEM_TEXT } from "./problems";
 import type { ProjectStatus, StatusPage } from "./types";
 
 const DAY = 24 * 60 * 60 * 1000;
-const STALE_MS = 48 * 60 * 60 * 1000;
+// The page updates each hour, so 3 hours without an update means that the schedule stopped.
+const STALE_MS = 3 * 60 * 60 * 1000;
 
 const html = (text: string) =>
   text.replace(
@@ -28,11 +29,18 @@ function cells(s: ProjectStatus, now: Date): string[] {
   ];
 }
 
+const UPTIME_TEXT = { up: "Up", down: "Down" };
+
+function site(s: ProjectStatus): string {
+  const { state, at } = s.uptime;
+  if (state === "no-domain") return "No domain";
+  if (state === "not-available") return "Check not available";
+  return `${UPTIME_TEXT[state]} ${(at as Date).toISOString().slice(11, 16)}`;
+}
+
 function row(s: ProjectStatus, now: Date): string {
   const problems = s.problems.map((p) => html(PROBLEM_TEXT[p.reason])).join("<br>");
-  const data = cells(s, now)
-    .map((c) => `<td>${html(c)}</td>`)
-    .join("");
+  const data = [site(s), ...cells(s, now)].map((c) => `<td>${html(c)}</td>`).join("");
   return `<tr${s.problems.length ? ' class="problem"' : ""}><td>${html(s.project.name)} <small>${s.project.status}</small></td><td>${problems}</td>${data}</tr>`;
 }
 
@@ -64,10 +72,10 @@ tr.problem td:first-child { font-weight: 600; }
 <body>
 <h1>Project status</h1>
 <p class="meta">Last update: <time datetime="${iso}">${shown}</time> UTC</p>
-<p id="stale" hidden>Warning: this data is more than 48 hours old.</p>
+<p id="stale" hidden>Warning: this data is more than 3 hours old.</p>
 <div class="wrap">
 <table>
-<thead><tr><th>Project</th><th>Problems</th><th>Last commit</th><th>Open PRs</th><th>Renovate PRs</th><th>CI</th><th>Last deploy</th></tr></thead>
+<thead><tr><th>Project</th><th>Problems</th><th>Site</th><th>Last commit</th><th>Open PRs</th><th>Renovate PRs</th><th>CI</th><th>Last deploy</th></tr></thead>
 <tbody>
 ${page.rows.map((s) => row(s, page.generatedAt)).join("\n")}
 </tbody>
