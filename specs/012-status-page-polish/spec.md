@@ -18,6 +18,11 @@ light and dark schemes, and the phone card layout of spec 007."
 
 ### Session 2026-11-05
 
+- Design revision after the first release (Maintainer: "make it feel more serene and simple"):
+  colour only for states that need attention, one list item per project in place of a table of
+  9 columns, relative times only (exact time in the tooltip), no facts without a value, more
+  white space. Changes FR-004, FR-006 and FR-011; research.md §9.
+
 - Q: Should relative times be fixed when the page is generated, or update while the page is open?
   → A: Fixed when generated, then updated by a small script in the page. Without the script, the
   page still works.
@@ -177,12 +182,13 @@ tab" for the link.
 - **FR-003**: The page MUST have a favicon in the page itself (not a separate file from another
   site), with a different icon for each state of FR-001. Each icon MUST be different in shape, not
   only in colour.
-- **FR-004**: The states Up, Down, Passed, Failed, Succeeded, In progress, Unknown, "Data not
-  available", "No repo" and "Check not available" MUST show as a badge with the text of the state. Expiry and renewal dates MUST also show as a
-  badge. There are four kinds: good (correct colour), warning (warning colour), bad (problem
-  colour) and unknown (grey). A date is bad at or below the problem limit of spec 009 (certificate
-  14 days, renewal 30 days). A date is a warning above that limit and at or below two times the
-  limit (certificate 15 to 28 days, renewal 31 to 60 days).
+- **FR-004**: A state that is not good MUST show as a badge with its text: warning (warning
+  colour), bad (problem colour), unknown (grey). A good state MUST show as plain text without a
+  colour (design revision 2026-11-05). Expiry and renewal dates use the same kinds. A date is bad
+  at or below the problem limit of spec 009 (certificate 14 days, renewal 30 days). A date is a
+  warning above that limit and at or below two times the limit (certificate 15 to 28 days,
+  renewal 31 to 60 days). Each project has a dot of its most important kind, with a text for
+  screen readers.
 - **FR-005**: The page MUST show the projects in three sections, in this order: "Projects with
   problems"; "Check not available"; "Other projects". A project is "check not available" when it
   has 0 problems and one or more of these: its repo data is "Data not available"; its site check
@@ -190,12 +196,13 @@ tab" for the link.
   domain date that is "not known" does not count (normal for a platform subdomain, spec 009). This
   is the only definition; the badge, the favicon and the sections use it. In each section, the catalog
   order MUST stay. A section without projects MUST NOT show.
-- **FR-006**: Each date or time on the page MUST show a relative time next to it, calculated from
+- **FR-006**: Each date or time on the page MUST show as a relative time, calculated from
   the time of the update: "now" when less than 1 minute, minutes when less than 1 hour, hours
   when less than 48 hours, else days. A date without a time uses whole days ("today", "in 40
   days"). The uptime marks of spec 010 keep only their date in the tooltip (30 relative times in
   one bar give no value).
-  The exact date and time in UTC MUST be in a tooltip and available to screen readers. A small
+  The exact date and time in UTC MUST be in a tooltip and in text for screen readers (design
+  revision 2026-11-05: the exact value is not shown next to the relative time). A small
   script in the page MUST update the relative times each minute while the page is open. Without
   the script, the page MUST show the relative times of the update.
 - **FR-007**: Each link MUST open in a new tab and MUST NOT give the new tab access to the status
@@ -208,8 +215,10 @@ tab" for the link.
 - **FR-010**: The page MUST NOT load scripts, fonts or styles from other sites (spec 007 FR-011).
   Scripts MUST be in the page itself: the stale check of spec 001 and the script of FR-006. All
   content and links MUST work without scripts.
-- **FR-011**: On a screen 600 pixels wide or less, the page MUST keep the card layout of spec 007
-  without horizontal scroll.
+- **FR-011**: The page MUST show each project as one list item (name, problems, a line of facts),
+  not as a table, and MUST have no horizontal scroll at 360 pixels wide. A fact with no value
+  (0 PRs, no domain, an unknown CI result) MUST NOT show (design revision 2026-11-05; replaces
+  the table and the card layout of spec 007 FR-008).
 - **FR-012**: The links of spec 007, the content rules of spec 001 (FR-018) and the history
   values of spec 010 MUST stay. This feature changes only the look and the order.
 

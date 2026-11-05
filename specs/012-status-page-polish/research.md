@@ -98,6 +98,33 @@ else `Project status`.
 **Rationale**: in the page, so no file and no request. Different shapes, so the state is clear
 without colour (FR-003).
 
+## 9. Design revision (2026-11-05)
+
+**Reason**: the first release was too busy: 9 columns, a coloured badge for each state also when
+the state is good, 5 equal "No repo" badges in one row, each date two times, many new-tab marks
+with the link colour.
+
+**Decision**, from common status-page practice (GitHub status, Vercel, Atlassian Statuspage) and
+calm-design rules:
+
+- Colour only for a state that needs attention. Good states are plain grey text; a green dot in
+  front of the project is enough.
+- One list item per project: dot, name, problems, then one wrapping line of short facts. A fact
+  with no value does not show. This also removes the special card layout for phones.
+- One large block at the top with the total state, the summary and "Updated <relative>".
+- Relative times only; the exact time is in the tooltip and in screen-reader text.
+- A narrow column (760 px), 16 px text with line height 1.6, more space between groups, section
+  titles in small muted capitals with a count, thin lines between projects only.
+- Warm neutral colours; links in the text colour with a light underline (still underlined,
+  spec 007 FR-012); the new-tab mark is muted.
+- Second pass (Maintainer: "a lot of information without separation"): the facts are in three
+  labelled lines (Site, Code, Expiry) with ` · ` between the items (grouping by proximity and
+  labels). Screen-reader text is not selectable, so a copy has no "(opens in a new tab)" and no
+  duplicate times.
+
+**Contrast**: `style.test.ts` checks 18 pairs, also the text and muted colours on the tinted
+backgrounds of the top block. All are 4.5 or more in both schemes.
+
 ## 8. Validation results
 
 | Check | Date | Result |
@@ -106,3 +133,4 @@ without colour (FR-003).
 | Local page with live data (T027) | 2026-11-05 | 27 KB. Title `Project status`, grey "check not available" favicon and badge (hob.nl and pretband-backend: the local token cannot read them; CI uses their own tokens). Sections "Check not available" and "Other projects". imreboersma.nl certificate in 28 days shows as an amber badge. |
 | 360 px, dark scheme, script (T027) | 2026-11-05 | In a 360 px frame: card layout, scroll width 360 = client width (0 px scroll). Dark tokens: all badges readable. 25 links, 0 without `target="_blank"` and `rel="noopener noreferrer"`. The script changed "(now)" to "(3 minutes ago)" after the time was set 3 minutes back. Without the script the page has the relative times of the update (server text, render tests). Fix found in the check: a linked badge and its new-tab mark wrapped on two lines; `a:has(> .badge) { white-space: nowrap; }`. |
 | Live page (T030) | 2026-11-05 | Run 42061350967 (merge 830ab73): build, history and issues succeeded; the first deploy reported a GitHub Pages 500, but the page was published (the re-run of the deploy job failed only on the duplicate `github-pages` artifact). Live: "All correct", one section "Other projects", 29 of 29 links open a new tab, imreboersma.nl certificate amber (in 28 days), 27.9 KB, "History from 2026-11-05 (today)". |
+| Design revision, local (§9) | 2026-11-05 | 194 tests pass; 24 KB with live data; light and dark checked in the browser; in a 360 px frame 0 px horizontal scroll. |

@@ -1,24 +1,27 @@
 // Spec 012: colour tokens, CSS and favicons of the page (research.md §1, §5, §7).
 
+// Spec 012 design revision (research.md §9): warm neutrals, colour only for states that need
+// attention.
 const LIGHT = {
-  bg: "#ffffff",
-  fg: "#1a1a1a",
-  muted: "#666666",
-  line: "#dddddd",
-  problemRow: "#fdecea",
-  stale: "#b3261e",
-  link: "#0b57d0",
-  markUp: "#1e8e3e",
-  markDown: "#d93025",
-  markNone: "#c8c8c8",
-  goodFg: "#0d652d",
-  goodBg: "#e6f4ea",
-  warnFg: "#7a4a00",
-  warnBg: "#fef7e0",
-  badFg: "#a50e0e",
-  badBg: "#fce8e6",
-  unknownFg: "#3c4043",
-  unknownBg: "#eceff1",
+  bg: "#fbfbfa",
+  fg: "#1f2328",
+  muted: "#5f6670",
+  line: "#e8e8e5",
+  lineStrong: "#b8bcc2",
+  link: "#1f2328",
+  stale: "#b42318",
+  markUp: "#4aa36b",
+  markDown: "#d9534f",
+  markNone: "#d5d7da",
+  dotWarn: "#d4a017",
+  goodFg: "#1a6b33",
+  goodBg: "#edf5ef",
+  warnFg: "#734700",
+  warnBg: "#fdf2d8",
+  badFg: "#a8231a",
+  badBg: "#fcebe9",
+  unknownFg: "#474e56",
+  unknownBg: "#eff0f1",
 };
 
 export type Tokens = typeof LIGHT;
@@ -26,24 +29,25 @@ export type Tokens = typeof LIGHT;
 export const TOKENS: { light: Tokens; dark: Tokens } = {
   light: LIGHT,
   dark: {
-    bg: "#161616",
-    fg: "#eeeeee",
-    muted: "#999999",
-    line: "#333333",
-    problemRow: "#3a1d1b",
-    stale: "#f2b8b5",
-    link: "#8ab4f8",
-    markUp: "#81c995",
-    markDown: "#f28b82",
-    markNone: "#5f5f5f",
-    goodFg: "#a8dab5",
-    goodBg: "#0f2e1a",
-    warnFg: "#fdd663",
-    warnBg: "#3a2c00",
-    badFg: "#f6aea9",
-    badBg: "#3c1412",
-    unknownFg: "#c4c7c5",
-    unknownBg: "#2d2f31",
+    bg: "#121314",
+    fg: "#e6e6e3",
+    muted: "#9aa0a6",
+    line: "#26292c",
+    lineStrong: "#4a4f55",
+    link: "#e6e6e3",
+    stale: "#ffb4a9",
+    markUp: "#5fbf80",
+    markDown: "#f08a80",
+    markNone: "#3b3f43",
+    dotWarn: "#e0b43a",
+    goodFg: "#86d3a0",
+    goodBg: "#15261b",
+    warnFg: "#f2cc60",
+    warnBg: "#2c230f",
+    badFg: "#ffb4a9",
+    badBg: "#33191a",
+    unknownFg: "#c4c7cb",
+    unknownBg: "#22252a",
   },
 };
 
@@ -53,50 +57,79 @@ const vars = (t: Tokens) =>
     .map(([k, v]) => `--${kebab(k)}: ${v};`)
     .join(" ");
 
+// Spacing 4/8/12/16/24/40 px; type 13/14/16/20/24 px; weights 400, 500, 600.
 export function css(): string {
   return `:root { ${vars(TOKENS.light)} }
 @media (prefers-color-scheme: dark) {
   :root { ${vars(TOKENS.dark)} }
 }
-body { margin: 0 auto; padding: 16px; max-width: 1100px; background: var(--bg); color: var(--fg);
-  font: 15px/1.4 system-ui, sans-serif; }
-h2 { font-size: 17px; font-weight: 600; margin: 16px 0 8px; }
-.wrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-small, .meta { color: var(--muted); }
-tr.problem { background: var(--problem-row); }
-tr.problem td:first-child { font-weight: 600; }
-#stale { color: var(--stale); font-weight: 600; }
-a { color: var(--link); text-decoration: underline; }
-a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
-.nt { font-size: 12px; margin-left: 2px; text-decoration: none; display: inline-block; }
+* { box-sizing: border-box; }
+body { margin: 0 auto; padding: 40px 24px 64px; max-width: 760px; background: var(--bg);
+  color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased; }
+p { margin: 0; }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 8px 24px; margin-bottom: 24px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; }
+.top nav { display: flex; gap: 16px; font-size: 14px; }
+a { color: var(--link); text-decoration: underline; text-decoration-color: var(--line-strong);
+  text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 2px; }
+.nt { font-size: 0.75em; margin-left: 2px; color: var(--muted); }
+.sr, .nt { user-select: none; }
 .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.summary { font-weight: 600; }
-.badge { display: inline-block; padding: 0 8px; border-radius: 6px; font-weight: 600; }
-.badge.good, .total.correct { color: var(--good-fg); background: var(--good-bg); }
+.total { padding: 24px; border-radius: 12px; margin-bottom: 40px; }
+.total.correct { background: var(--good-bg); }
+.total.problems { background: var(--bad-bg); }
+.total.not-available { background: var(--unknown-bg); }
+.total .state { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 600;
+  line-height: 1.3; margin-bottom: 8px; }
+.total.correct .state { color: var(--good-fg); }
+.total.problems .state { color: var(--bad-fg); }
+.total.not-available .state { color: var(--unknown-fg); }
+.total svg { display: block; width: 24px; height: 24px; }
+.total .meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+#stale { color: var(--stale); font-weight: 600; margin-top: 8px; }
+section { margin-bottom: 40px; }
+h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); margin: 0 0 4px; }
+.count { font-weight: 400; margin-left: 4px; }
+.projects, .problems { list-style: none; padding: 0; }
+.projects { margin: 0; }
+.project { padding: 16px 0; border-top: 1px solid var(--line); }
+.project:first-child { border-top: 0; }
+.name { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--mark-up); }
+.dot.warn { background: var(--dot-warn); }
+.dot.bad { background: var(--mark-down); }
+.dot.unknown { background: var(--mark-none); }
+.tag { font-weight: 400; font-size: 13px; color: var(--muted); }
+.problems { margin: 8px 0 0 20px; }
+.problems li + li { margin-top: 8px; }
+.problems > li > a { color: var(--bad-fg); }
+.since, .rules { color: var(--muted); font-size: 14px; }
+.rules a { color: var(--muted); }
+.facts { margin: 8px 0 0 20px; font-size: 14px; color: var(--muted); }
+.facts div { display: grid; grid-template-columns: 56px 1fr; gap: 12px; }
+.facts div + div { margin-top: 2px; }
+.facts dt { font-size: 13px; color: var(--muted); opacity: 0.8; }
+.facts dd { margin: 0; color: var(--fg); }
+.sep { color: var(--line-strong); }
+.badge { display: inline-block; padding: 0 8px; border-radius: 999px; font-weight: 500; }
 .badge.warn { color: var(--warn-fg); background: var(--warn-bg); }
-.badge.bad, .total.problems { color: var(--bad-fg); background: var(--bad-bg); }
-.badge.unknown, .total.not-available { color: var(--unknown-fg); background: var(--unknown-bg); }
-.badge small { color: inherit; font-weight: 400; }
-a:has(> .badge) { white-space: nowrap; }
-.total { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px;
-  font-size: 20px; font-weight: 600; margin: 0 0 12px; }
-.total svg { width: 20px; height: 20px; }
-.bar { display: inline-flex; gap: 1px; flex-wrap: wrap; max-width: 100%; }
-.mark { display: inline-block; width: 5px; height: 12px; border-radius: 1px; background: var(--mark-none); }
+.badge.bad { color: var(--bad-fg); background: var(--bad-bg); }
+.badge.unknown { color: var(--unknown-fg); background: var(--unknown-bg); }
+a:has(> .badge) { text-decoration: none; }
+.bar { display: inline-flex; gap: 1px; vertical-align: middle; margin-left: 6px; }
+.mark { display: inline-block; width: 3px; height: 12px; border-radius: 1px; background: var(--mark-none); }
 .mark.up { background: var(--mark-up); }
 .mark.down { background: var(--mark-down); }
-/* Spec 007: cards on a phone, without horizontal scroll. */
 @media (max-width: 600px) {
-  .wrap { overflow-x: visible; }
-  table, tbody, tr, td { display: block; width: 100%; box-sizing: border-box; }
-  thead { display: none; }
-  tr { border: 1px solid var(--line); border-radius: 6px; margin-bottom: 12px; padding: 4px 0; }
-  td { border: 0; padding: 4px 12px; overflow-wrap: anywhere; }
-  td:empty { display: none; }
-  td::before { content: attr(data-label); display: block; font-size: 12px; color: var(--muted); }
+  body { padding: 24px 16px 48px; }
+  .total { padding: 20px; margin-bottom: 32px; }
+  .total .state { font-size: 20px; }
 }`;
 }
 

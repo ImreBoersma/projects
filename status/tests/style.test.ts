@@ -19,13 +19,20 @@ const PAIRS: [keyof Tokens, keyof Tokens][] = [
   ["muted", "bg"],
   ["link", "bg"],
   ["stale", "bg"],
-  ["fg", "problemRow"],
-  ["muted", "problemRow"],
-  ["link", "problemRow"],
+  ["badFg", "bg"],
   ["goodFg", "goodBg"],
   ["warnFg", "warnBg"],
   ["badFg", "badBg"],
   ["unknownFg", "unknownBg"],
+  ["fg", "goodBg"],
+  ["fg", "badBg"],
+  ["fg", "unknownBg"],
+  ["muted", "goodBg"],
+  ["muted", "badBg"],
+  ["muted", "unknownBg"],
+  ["stale", "goodBg"],
+  ["stale", "badBg"],
+  ["stale", "unknownBg"],
 ];
 
 describe("tokens (FR-009, SC-004)", () => {

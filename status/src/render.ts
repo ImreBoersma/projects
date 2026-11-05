@@ -10,25 +10,15 @@ import {
   deployKind,
   relTime,
   renewalKind,
+  rowKind,
   sections,
-  siteKind,
   totalState,
 } from "./view";
 
 // Spec 004 board and its public Roadmap view (spec 007, research.md §7).
 const BOARD = "https://github.com/users/ImreBoersma/projects/4";
 const ROADMAP = `${BOARD}/views/3`;
-const COLUMNS = [
-  "Project",
-  "Problems",
-  "Site",
-  "Expiry",
-  "Last commit",
-  "Open PRs",
-  "Renovate PRs",
-  "CI",
-  "Last deploy",
-];
+const DOCS = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
 
 const DAY = 24 * 60 * 60 * 1000;
 // The page updates each hour, so 3 hours without an update means that the schedule stopped.
@@ -39,40 +29,25 @@ const html = (text: string) =>
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
   );
-const day = (date: Date) => date.toISOString().slice(0, 10);
-const CI_TEXT = { passed: "Passed", failed: "Failed", unknown: "Unknown" };
-const DEPLOY_TEXT = { succeeded: "Succeeded", failed: "Failed", "in-progress": "In progress" };
-const UPTIME_TEXT = { up: "Up", down: "Down", "not-available": "Check not available" };
+const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-// Spec 012 contracts/page.md "Badges". `inner` is HTML.
-const badge = (kind: BadgeKind, inner: string) => `<span class="badge ${kind}">${inner}</span>`;
+// Spec 012 design revision (research.md §9): colour only for a state that is not good.
+// `inner` is HTML.
+const badge = (kind: BadgeKind, inner: string) =>
+  kind === "good" ? inner : `<span class="badge ${kind}">${inner}</span>`;
 
-// Spec 012 contracts/page.md "Times": the exact value, then the relative time of the update.
-// The page script keeps the relative time current (research.md §3).
-function timeTag(iso: string, shown: string, now: Date): string {
-  const title = iso.length === 10 ? iso : `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
-  return `<time datetime="${iso}" data-rel title="${title}">${shown}</time> <small class="rel">(${relTime(iso, now.getTime())})</small>`;
+// Spec 012 FR-006: the relative time is the visible text; the exact time is in the tooltip and
+// for screen readers. The page script keeps the text current (research.md §3).
+function timeTag(iso: string, now: Date): string {
+  const exact = iso.length === 10 ? iso : `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
+  return `<time datetime="${iso}" data-rel title="${exact}">${relTime(iso, now.getTime())}</time><span class="sr"> (${exact})</span>`;
 }
-const dateTag = (date: Date, now: Date) => timeTag(date.toISOString(), day(date), now);
 
 // Spec 012 FR-007, FR-008: each link opens a new tab. `inner` is HTML.
 const link = (inner: string, url: string | null) =>
   url
     ? `<a href="${html(url)}" target="_blank" rel="noopener noreferrer">${inner}<span class="nt" aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>`
     : inner;
-
-const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
-
-// The site state is the link; the time of the check is next to it.
-function site(s: ProjectStatus, now: Date, url: string | null): string {
-  const { state, at } = s.uptime;
-  if (state === "no-domain") return link("No domain", url);
-  const text = link(badge(siteKind(state), UPTIME_TEXT[state]), url);
-  if (state === "not-available" || !at) return text;
-  return `${text} ${timeTag(at.toISOString(), at.toISOString().slice(11, 16), now)}`;
-}
-
-const DOCS = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
 
 // Spec 008: the failed rules under the problem text, each a link to its repair steps.
 function ruleList(detail: string[]): string {
@@ -84,38 +59,19 @@ function ruleList(detail: string[]): string {
     .join(", ");
 }
 
-// Spec 009, contracts/page.md: the certificate and the renewal with the fewest days, as badges.
-function expiryCell(s: ProjectStatus, now: Date): string {
-  const { certificate, renewals, registryNotKnown } = s.expiry;
-  const notKnown = badge("unknown", "not known");
-  const lines: string[] = [];
-  if (certificate === "not-known") lines.push(`Certificate: ${notKnown}`);
-  else if (certificate)
-    lines.push(
-      `Certificate: ${badge(certificateKind(certificate.days), timeTag(certificate.date, certificate.date, now))}`,
-    );
-  const next = [...renewals].sort((a, b) => a.days - b.days)[0];
-  if (next)
-    lines.push(
-      `${html(next.name)}: ${badge(renewalKind(next.days), timeTag(next.date, next.date, now))}`,
-    );
-  if (registryNotKnown) lines.push(`Domain: ${notKnown}`);
-  return lines.join("<br>");
-}
-
-// Spec 010, contracts/page.md: since when a problem is open (spec 012: with a relative time).
+// Spec 010: since when a problem is open.
 function sinceText(s: ProjectStatus, key: string, now: Date): string {
   const time = s.history.since[key];
   if (!time) return "";
-  const shown = time.slice(0, 10) === day(now) ? time.slice(11, 16) : time.slice(0, 10);
   const orBefore = s.history.sinceIsHistoryStart.includes(key) ? " or before" : "";
-  return ` <small>since ${timeTag(time, shown, now)}${orBefore}</small>`;
+  return ` <span class="since">Started ${timeTag(time, now)}${orBefore}</span>`;
 }
 
-// Spec 010: uptime of 30 days and a bar of 30 marks, old to new.
-function uptimeCell(s: ProjectStatus): string {
+// Spec 010: the uptime of 30 days and 30 marks, old to new.
+const MARK_TEXT = { up: "up", down: "down", "no-data": "no data" };
+function uptime(s: ProjectStatus): string[] {
   const u = s.history.uptime;
-  if (!u) return "";
+  if (!u) return [];
   const first = Date.parse(`${s.history.uptimeEnd ?? ""}T00:00:00Z`);
   const marks = u.days
     .map((d, i) => {
@@ -128,52 +84,111 @@ function uptimeCell(s: ProjectStatus): string {
   const down = u.days.filter((d) => d === "down").length;
   const none = u.days.filter((d) => d === "no-data").length;
   const percent = u.percent === null ? "No data" : `${u.percent.toFixed(1)}%`;
-  return `<br><small>${percent} (30 days)</small><br><span class="bar" role="img" aria-label="Uptime of the last 30 days: ${count(down, "day")} down, ${count(none, "day")} without data">${marks}</span>`;
-}
-
-const MARK_TEXT = { up: "up", down: "down", "no-data": "no data" };
-
-// The five repo cells: Last commit, Open PRs, Renovate PRs, CI, Last deploy (HTML).
-function repoCells(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>): string[] {
-  if (s.availability !== "ok") {
-    const text = s.availability === "no-repo" ? "No repo" : "Data not available";
-    return Array(5).fill(badge("unknown", text));
-  }
-  const deploy =
-    s.deploy === "unknown"
-      ? badge("unknown", "Unknown")
-      : `${link(badge(deployKind(s.deploy), DEPLOY_TEXT[s.deploy.result]), links.deploy)} ${dateTag(s.deploy.at, now)}`;
   return [
-    s.lastCommitAt ? dateTag(s.lastCommitAt, now) : badge("unknown", "Unknown"),
-    String(s.openPrCount),
-    s.oldestRenovatePrAt
-      ? `${link(String(s.renovatePrCount), links.renovate)}, oldest ${dateTag(s.oldestRenovatePrAt, now)}`
-      : link(String(s.renovatePrCount), links.renovate),
-    link(badge(ciKind(s.ci), CI_TEXT[s.ci]), links.ci),
-    deploy,
+    `${percent} in 30 days <span class="bar" role="img" aria-label="Uptime of the last 30 days: ${count(down, "day")} down, ${count(none, "day")} without data">${marks}</span>`,
   ];
 }
 
-function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
-  const links = rowLinks(s, issues);
-  const problemLines = s.problems.map((p) => {
-    const text = `${link(html(p.text ?? PROBLEM_TEXT[p.reason]), links.problems.get(p.reason) ?? null)}${sinceText(s, p.key, now)}`;
-    return p.detail?.length ? `${text}<br><small>${ruleList(p.detail)}</small>` : text;
-  });
+// The facts of a project, in labelled groups (Site, Code, Expiry). Facts with no value are not
+// shown; a group without facts is not shown.
+function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) {
+  const site: string[] = [];
+  const { state, at } = s.uptime;
+  if (state === "up" || state === "down") {
+    const checked = at
+      ? `<span class="sr"> (checked ${at.toISOString().slice(11, 16)} UTC)</span>`
+      : "";
+    site.push(
+      `${link(badge(state === "up" ? "good" : "bad", state === "up" ? "Up" : "Down"), links.site)}${checked}`,
+    );
+    site.push(...uptime(s));
+  } else if (state === "not-available") {
+    site.push(link(badge("unknown", "Check not available"), links.site));
+  }
+
+  const code: string[] = [];
+  if (s.availability === "no-repo") code.push("No repo");
+  else if (s.availability === "unavailable") code.push(badge("unknown", "Data not available"));
+  else {
+    if (s.ci !== "unknown") {
+      code.push(link(badge(ciKind(s.ci), s.ci === "passed" ? "CI passed" : "CI failed"), links.ci));
+    }
+    if (s.deploy !== "unknown") {
+      const d = s.deploy;
+      const text =
+        d.result === "succeeded"
+          ? "Deployed"
+          : d.result === "failed"
+            ? "Deploy failed"
+            : "Deploying";
+      code.push(
+        `${link(badge(deployKind(d), text), links.deploy)} ${timeTag(d.at.toISOString(), now)}`,
+      );
+    }
+    if (s.lastCommitAt) code.push(`Last commit ${timeTag(s.lastCommitAt.toISOString(), now)}`);
+    if (s.openPrCount > 0) code.push(count(s.openPrCount, "open PR"));
+    if (s.renovatePrCount > 0) {
+      const oldest = s.oldestRenovatePrAt
+        ? `, oldest ${timeTag(s.oldestRenovatePrAt.toISOString(), now)}`
+        : "";
+      code.push(`${link(count(s.renovatePrCount, "Renovate PR"), links.renovate)}${oldest}`);
+    }
+  }
   if (s.conformanceNotAvailable.length) {
-    problemLines.push(
-      `<small>Setup check not available: ${html(s.conformanceNotAvailable.join(", "))}</small>`,
+    code.push(`Setup check not available: ${html(s.conformanceNotAvailable.join(", "))}`);
+  }
+
+  const expiry: string[] = [];
+  const { certificate, renewals, registryNotKnown } = s.expiry;
+  if (certificate === "not-known") expiry.push("Certificate date not known");
+  else if (certificate) {
+    const word = certificate.days < 0 ? "Certificate expired" : "Certificate";
+    expiry.push(
+      badge(certificateKind(certificate.days), `${word} ${timeTag(certificate.date, now)}`),
     );
   }
-  const values = [
-    `${link(html(s.project.name), links.project)} <small>${s.project.status}</small>`,
-    problemLines.join("<br>"),
-    `${site(s, now, links.site)}${uptimeCell(s)}`,
-    expiryCell(s, now),
-    ...repoCells(s, now, links),
-  ];
-  const tds = values.map((v, i) => `<td data-label="${COLUMNS[i]}">${v}</td>`).join("");
-  return `<tr${s.problems.length ? ' class="problem"' : ""}>${tds}</tr>`;
+  const next = [...renewals].sort((a, b) => a.days - b.days)[0];
+  if (next) {
+    const due = next.days < 0 ? "renewal was due" : "renewal";
+    expiry.push(
+      badge(renewalKind(next.days), `${html(next.name)} ${due} ${timeTag(next.date, now)}`),
+    );
+  }
+  if (registryNotKnown) expiry.push("Domain date not known");
+
+  return [
+    { label: "Site", items: site },
+    { label: "Code", items: code },
+    { label: "Expiry", items: expiry },
+  ].filter((g) => g.items.length > 0);
+}
+
+// The separator is text, so that a copy of the page keeps it.
+const SEP = '<span class="sep" aria-hidden="true"> · </span>';
+
+const DOT_TEXT = {
+  good: "Correct",
+  warn: "Warning",
+  bad: "Problem",
+  unknown: "Check not available",
+};
+
+function project(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
+  const links = rowLinks(s, issues);
+  const kind = rowKind(s);
+  const problems = s.problems.map((p) => {
+    const text = `${link(html(p.text ?? PROBLEM_TEXT[p.reason]), links.problems.get(p.reason) ?? null)}${sinceText(s, p.key, now)}`;
+    return `<li>${p.detail?.length ? `${text}<br><span class="rules">${ruleList(p.detail)}</span>` : text}</li>`;
+  });
+  const tag =
+    s.project.status === "active" ? "" : ` <span class="tag">${html(s.project.status)}</span>`;
+  const list = facts(s, now, links)
+    .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
+    .join("");
+  return `<li class="project ${kind}">
+<p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>${link(html(s.project.name), links.project)}${tag}</p>
+${problems.length ? `<ul class="problems">${problems.join("")}</ul>\n` : ""}${list ? `<dl class="facts">${list}</dl>` : ""}
+</li>`;
 }
 
 // Spec 010, contracts/page.md "Summary line": the average time to repair of the faults.
@@ -214,24 +229,17 @@ export function renderPage(page: StatusPage): string {
   const now = page.generatedAt;
   const iso = now.toISOString();
   const total = totalState(page.rows);
-  const tables = sections(page.rows)
+  const groups = sections(page.rows)
     .map(
       (section) => `<section>
-<h2>${section.title}</h2>
-<div class="wrap">
-<table>
-<thead><tr>${COLUMNS.map((c) => `<th>${c}</th>`).join("")}</tr></thead>
-<tbody>
-${section.rows.map((s) => row(s, now, page.issues)).join("\n")}
-</tbody>
-</table>
-</div>
+<h2>${section.title} <span class="count">${section.rows.length}</span></h2>
+<ul class="projects">
+${section.rows.map((s) => project(s, now, page.issues)).join("\n")}
+</ul>
 </section>`,
     )
     .join("\n");
-  const history = page.historyStart
-    ? `<p class="meta"><small>History from ${timeTag(page.historyStart, page.historyStart, now)}.</small></p>`
-    : "";
+  const history = page.historyStart ? ` · History from ${timeTag(page.historyStart, now)}` : "";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -244,22 +252,22 @@ ${css()}
 </style>
 </head>
 <body>
+<header class="top">
 <h1>Project status</h1>
-<p class="total ${total.kind}"><span aria-hidden="true">${ICON[total.kind]}</span>${total.text}</p>
+<nav>${link("Roadmap", ROADMAP)}${link("Project board", BOARD)}</nav>
+</header>
+<section class="total ${total.kind}">
+<p class="state"><span aria-hidden="true">${ICON[total.kind]}</span>${total.text}</p>
 <p class="summary">${html(summary(page.rows))} ${html(repairText(page.repair ?? null))}</p>
-<p class="meta">Last update: ${timeTag(iso, `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`, now)}</p>
+<p class="meta">Updated ${timeTag(iso, now)}${history}</p>
 <p id="stale" hidden>Warning: this data is more than 3 hours old.</p>
-${history}
-<p>${link("Roadmap", ROADMAP)} · ${link("Project board", BOARD)}</p>
-${tables}
+</section>
+${groups}
 <script>
 if (Date.now() - Date.parse("${iso}") > ${STALE_MS}) document.getElementById("stale").hidden = false;
 ${relTime.toString()}
 function updateTimes() {
-  for (const t of document.querySelectorAll("time[data-rel]")) {
-    const r = t.nextElementSibling;
-    if (r && r.classList.contains("rel")) r.textContent = "(" + relTime(t.getAttribute("datetime"), Date.now()) + ")";
-  }
+  for (const t of document.querySelectorAll("time[data-rel]")) t.textContent = relTime(t.getAttribute("datetime"), Date.now());
 }
 updateTimes();
 setInterval(updateTimes, 60000);

@@ -85,3 +85,15 @@ export const certificateKind = (days: number | "not-known"): BadgeKind =>
   days === "not-known" ? "unknown" : dateKind(days, CERT_LIMIT);
 
 export const renewalKind = (days: number): BadgeKind => dateKind(days, RENEWAL_LIMIT);
+
+// Spec 012 design revision: the dot in front of a project name.
+export function rowKind(s: ProjectStatus): BadgeKind {
+  if (s.problems.length > 0) return "bad";
+  if (checkNotAvailable(s)) return "unknown";
+  const { certificate, renewals } = s.expiry;
+  const dates = [
+    ...(certificate && certificate !== "not-known" ? [certificateKind(certificate.days)] : []),
+    ...renewals.map((r) => renewalKind(r.days)),
+  ];
+  return dates.includes("bad") || dates.includes("warn") ? "warn" : "good";
+}

@@ -21,7 +21,17 @@ the links and the forbidden content of those contracts stay.
 
 ## Sections
 
-Up to three, in this order, each an `<h2>` and a table with the columns of spec 007:
+Design revision 2026-11-05: each section is an `<h2>` with the number of projects and a list
+`<ul class="projects">`; each project is `<li class="project <kind>">` with a dot, the name (link),
+the problems (`<ul class="problems">`) and the facts (`<dl class="facts">`), in labelled groups,
+each group one line: **Site** (state, uptime and bar), **Code** (CI, deploy, last commit, open
+PRs, Renovate PRs, setup check not available; or "No repo" / "Data not available"), **Expiry**
+(certificate, next renewal, "not known" dates). A fact or a group with no value does not show.
+Items in a group have a text separator ` · ` (`aria-hidden`), so that a copy of the page keeps
+it. Screen-reader text and new-tab marks cannot be selected, so a copy does not contain them. Good states
+are plain text; other states are badges.
+
+Up to three sections, in this order:
 `Projects with problems`, `Check not available`, `Other projects`. A section without rows does not
 show. On a screen of 600 px or less, each table uses the card layout of spec 007.
 
@@ -35,7 +45,8 @@ Next to a badge, the time stays (for example `Up 15:00`, deploy date).
 ## Times
 
 Each time or date: `<time datetime="<ISO>" data-rel title="<YYYY-MM-DD HH:MM> UTC">` with the
-exact value, and after it `<small class="rel">(<relative>)</small>`. For dates without a time
+relative time as text, and after it `<span class="sr"> (<exact>)</span>` for screen readers
+(design revision 2026-11-05; was the exact value with the relative time in brackets). For dates without a time
 (expiry, renewal, history start), `title` has only the date. Covered: last update, last commit,
 last deploy, site check, oldest Renovate PR, "since" of a problem, certificate and renewal dates,
 "History from <date>". Not covered: the date in the tooltip of each uptime mark (spec FR-006).
