@@ -1,0 +1,117 @@
+---
+
+description: "Task list for hob.nl in git with a deploy workflow"
+---
+
+# Tasks: hob.nl in Git with a Deploy Workflow
+
+**Input**: Design documents from `/specs/006-hob-nl-deploy/`
+
+**Prerequisites**: plan.md, spec.md, research.md, contracts/, quickstart.md
+
+**Tests**: the deploy is workflow YAML and configuration, so the tests are actionlint and the real
+runs of quickstart.md (dry run, real change, removed file, syntax error, restore). There is no
+application code in this feature.
+
+**Organization**: US1 (code in git) is mostly done during planning. US2 adds the shared deploy and
+the caller. US3 connects hob.nl to the status page.
+
+**Repos**: paths without a prefix are in `ImreBoersma/projects`. Paths with the prefix `hob-nl:`
+are in `harmonieorkest-brummen/hob-nl`
+(local clone `~/RiderProjects/Personal/clients/hob-nl`).
+
+**Caution**: each push to `main` of `hob-nl` with the caller deploys to the live site.
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: can run in parallel (different files or repos, no dependencies)
+- **[Story]**: the user story of the task (US1, US2, US3)
+
+---
+
+## Phase 1: Setup
+
+- [ ] T001 Create the branch `006-hob-nl-deploy` in this repo. `deploy-ssh.yml` stays on this branch until T014.
+- [X] T002 Manual (Maintainer): make the private repo `harmonieorkest-brummen/hob-nl`. Done 2026-11-05.
+- [X] T003 Manual (Maintainer): set the Actions secrets `HOB_SSH_HOST`, `HOB_SSH_USER` and `HOB_SSH_PASSWORD` of `hob-nl` (contracts/caller.md), and remove `HOB_SSH_PRIVATE_KEY`. Done 2026-11-05.
+
+---
+
+## Phase 2: User Story 1 - The custom code of hob.nl is in git (Priority: P1)
+
+**Goal**: the `hob-*` must-use plugins are in git, without secrets.
+
+**Independent Test**: clone `hob-nl`; it contains the 3 `hob-*` items of research.md §1 and no `wp-config.php`, core, third-party code or uploads.
+
+- [X] T004 [US1] First commit of `hob-nl:mu-plugins/` (`hob-admin.php`, `hob-huisstijl.css`, `hob-docs/`) with `hob-nl:.gitignore` and `hob-nl:README.md`, after the secret scan of research.md §1. Done 2026-11-05 (commit a0a7690).
+- [ ] T005 [US1] Scan the full history of `hob-nl` (all commits, also the test workflows) for `wp-config`, `DB_PASSWORD`, `AUTH_KEY`, private keys and passwords: `git -C ~/RiderProjects/Personal/clients/hob-nl log -p --all | grep -inE 'wp-config|db_password|auth_key|BEGIN .*PRIVATE|password\s*='`. Expected: only the known matches of research.md §1 (WordPress function names). Record the result in `specs/006-hob-nl-deploy/research.md` §9.
+- [X] T006 [US1] Manual (Maintainer): add `wp-content/mu-plugins/hob-*` to the ignore list of `.vscode/sftp.json` (FR-012). Done 2026-11-05.
+
+**Checkpoint**: the custom code is in git, and git is the only way to change it.
+
+---
+
+## Phase 3: User Story 2 - A push to `main` deploys the change (Priority: P1) 🎯 MVP
+
+**Goal**: a push to `main` of `hob-nl` copies only the `hob-*` items, checks the site, and puts the previous version back on an error.
+
+**Independent Test**: quickstart.md §3: a comment line in `hob-admin.php` is on the server after the push, and the site works.
+
+- [ ] T007 [US2] Create `.github/workflows/deploy-ssh.yml` from `specs/006-hob-nl-deploy/contracts/deploy-ssh.md`: `on: workflow_call` with the inputs `known-hosts`, `source`, `target`, `pattern`, `php-lint` (default `true`), `health-urls` (default empty) and the secrets `ssh-host`, `ssh-user`, `ssh-password`. Job `deploy`: `if: github.event_name != 'pull_request'`; `environment: production`; concurrency `deploy-${{ github.repository }}`, no cancel; `permissions: contents: read`. Steps: checkout with `fetch-depth: 0`; `php -l` on each `*.php` under `source` when `php-lint` is true; install `sshpass`; write `known-hosts` to a file; rsync `-rlt --delete --checksum --itemize-changes --include='/<pattern>' --include='/<pattern>/***' --exclude='*'` with `--dry-run` first, then without, through `sshpass -e ssh -o UserKnownHostsFile=<file> -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no`; when `health-urls` is set, the check of contract step 8 (each URL with `?deploy=<run id>` added for the Cloudflare cache; fail on HTTP 5xx, no answer, or the text `There has been a critical error on this website`); on a failure, step 9 (check out `github.event.before` on a push with a real value, else `HEAD~1`, into a separate folder, rsync it with the same filter, check again, log the result, `exit 1`). Pass the password only as the environment value `SSHPASS`. Never use `-a`, `--delete-excluded` or `--force`. Step names in ASD-STE100. Add a header comment with the link to the contract. Run actionlint.
+- [ ] T008 [US2] In `hob-nl`, remove `hob-nl:.github/workflows/access-test.yml` and `hob-nl:.github/workflows/env-test.yml`, and add `hob-nl:.github/workflows/deploy.yml` from `specs/006-hob-nl-deploy/contracts/caller.md`, but with `deploy-ssh.yml@006-hob-nl-deploy` (test before the merge, constitution). Needs T007 pushed. Push to `main` of `hob-nl`.
+- [ ] T009 [US2] Validate quickstart.md §2 with the deploy of T008: the job passes; the dry-run log has no changed `hob-*` item (git and server are the same) and no line for a GoDaddy item; the check of the 2 URLs passes; the deployment record is `production` with status `success` (`gh api repos/harmonieorkest-brummen/hob-nl/deployments`).
+- [ ] T010 [US2] Validate quickstart.md §3 and §4: a comment line in `hob-nl:mu-plugins/hob-admin.php` (push, check the log and the site, then remove it again); a test file `hob-nl:mu-plugins/hob-test.txt` (push, then remove it in git and push; the log shows `*deleting hob-test.txt` and no GoDaddy item).
+- [ ] T011 [US2] Validate quickstart.md §5 on a branch `hob-nl:deploy-test` with `workflow_dispatch`: a syntax error in a `hob-*` PHP file makes `php -l` fail, and the log has no rsync step. Delete the branch after the test.
+- [ ] T012 [US2] Validate quickstart.md §7 on the branch `hob-nl:deploy-test`: the guarded call `if (isset($_GET['hob-deploy-test'])) { hob_missing_function(); }` and the extra health URL `https://harmonieorkestbrummen.nl/?hob-deploy-test=1` make the check fail; the log shows the restore of the previous commit; the job fails; the site works afterwards (also with the test query string). Delete the branch after the test.
+- [ ] T013 [US2] Open the PR of `006-hob-nl-deploy` into `main` of this repo. actionlint must pass.
+- [ ] T014 [US2] Ask the Maintainer to merge the PR. After the merge, change `deploy-ssh.yml@006-hob-nl-deploy` to `@main` in `hob-nl:.github/workflows/deploy.yml`, push to `main` of `hob-nl`, and make sure that the deploy passes.
+- [ ] T015 [US2] Manual (Maintainer), FR-008: in a terminal, `ssh <site user>@<host> 'cd html && wp config get DISALLOW_FILE_EDIT'`. If the result is not `1` or `true`, run `wp config set DISALLOW_FILE_EDIT true --raw`. Record the result in research.md §9.
+
+**Checkpoint**: hob.nl deploys through the shared workflow, with a check and a restore.
+
+---
+
+## Phase 4: User Story 3 - hob.nl is a normal project on the status page (Priority: P3)
+
+**Goal**: the row of hob.nl shows the last commit and the last deploy.
+
+**Independent Test**: quickstart.md §6.
+
+- [ ] T016 [P] [US3] Manual (Maintainer), FR-011: give `STATUS_READ_TOKEN_HOB` (the fine-grained token for `harmonieorkest-brummen`) read access to `hob-nl`: on GitHub, Settings, Developer settings, Fine-grained tokens, the token, Repository access: add `hob-nl` (or "All repositories"), with read access to Metadata, Contents, Pull requests and Deployments.
+- [ ] T017 [US3] In `projects.yaml`, set `repo: harmonieorkest-brummen/hob-nl` for `hob-nl`. Run the status page locally with `STATUS_READ_TOKEN_HOB` unknown (the value is only an Actions secret): make sure that the catalog loads. Push to `main` (a catalog change, no code), and make sure in the status run that the row of hob.nl shows the last commit and the last deploy, not "No repo" or "Data not available" (SC-004).
+
+**Checkpoint**: hob.nl is a normal row on the status page.
+
+---
+
+## Phase 5: Polish & Cross-Cutting Concerns
+
+- [ ] T018 [P] In `specs/002-shared-workflows/contracts/workflows.md`, add a line under the title: "Spec 006 adds `deploy-ssh.yml`: see `specs/006-hob-nl-deploy/contracts/deploy-ssh.md`".
+- [ ] T019 [P] Add §9 "Validation results" to `specs/006-hob-nl-deploy/research.md`: T005, T009 to T012, T014, T015, T017, with run ids and dates.
+- [ ] T020 [P] In `PLAN.md`, mark spec 006 as done in the feature table and the Done list.
+
+---
+
+## Dependencies & Execution Order
+
+- **Setup**: T001 first; T002 and T003 are done.
+- **US1**: T004 and T006 are done; T005 can run at any time.
+- **US2**: T007 needs T001. T008 needs T007 (pushed). T009 → T010 → T011 → T012, one after the other, because each one deploys to the live site. T013 after T012. T014 needs the merge. T015 at any time.
+- **US3**: T016 at any time. T017 needs T016 and at least one deploy (T009).
+- **Polish**: after all stories.
+
+## Parallel Example
+
+```text
+T005  history scan of hob-nl (local)
+T015  DISALLOW_FILE_EDIT check (Maintainer, terminal)
+T016  STATUS_READ_TOKEN_HOB access (Maintainer, GitHub settings)
+```
+
+## Implementation Strategy
+
+1. **MVP (US2)**: the shared deploy with the check and the restore. It is the main value and the
+   main risk, so the tests T009 to T012 run before the merge.
+2. **US3**: one catalog line and one token setting.
+3. Each deploy test is a real deploy to the live site. The tests change only comment lines, a test
+   file and a guarded test call; visitors do not see them.
