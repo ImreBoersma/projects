@@ -50,3 +50,8 @@ The rules of spec 001 stay (FR-016, FR-018). Links contain only: the catalog rep
 domain, the commit id, the Renovate app login, issue numbers of `projects` and fixed GitHub paths.
 `render.test.ts` checks that the fixture values for commit messages, PR titles, branch names and
 user names do not occur in the output, also not in links.
+
+## Pointer
+
+Spec 012 (design revision 2026-11-05) replaces the table and the card layout of this contract with a list: see
+[specs/012-status-page-polish/contracts/page.md](../../012-status-page-polish/contracts/page.md).

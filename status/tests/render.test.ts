@@ -9,81 +9,81 @@ import { status } from "./helpers";
 const generatedAt = new Date("2026-10-28T05:03:00Z");
 const render = (rows: ProjectStatus[], issues = new Map<string, number>()) =>
   renderPage({ generatedAt, rows, issues });
-// The cell values without the data-label attribute of the card layout (spec 007).
-const plain = (rows: ProjectStatus[]) => render(rows).replace(/ data-label="[^"]*"/g, "");
 // Spec 012: each link opens a new tab.
 const A = (url: string) => `<a href="${url}" target="_blank" rel="noopener noreferrer">`;
 const NT =
   '<span class="nt" aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>';
+// The facts line of the first project.
+const facts = (s: ProjectStatus) => render([s]).match(/<ul class="facts">(.*?)<\/ul>/)?.[1] ?? "";
+const ci = (id = "one") => ({
+  projectId: id,
+  reason: "ci-failed" as const,
+  key: `${id}/ci-failed`,
+});
+const site = {
+  id: "one",
+  name: "One",
+  repo: "ImreBoersma/one",
+  status: "active" as const,
+  domain: "one.example",
+};
 
 describe("renderPage", () => {
-  test("has the title and all columns", () => {
+  test("has the title, the header links and the total state", () => {
     const html = render([status()]);
     expect(html).toContain("<h1>Project status</h1>");
-    for (const column of [
-      "Project",
-      "Problems",
-      "Site",
-      "Last commit",
-      "Open PRs",
-      "Renovate PRs",
-      "CI",
-      "Last deploy",
-    ]) {
-      expect(html).toContain(`<th>${column}</th>`);
-    }
+    expect(html).toContain(
+      `${A("https://github.com/users/ImreBoersma/projects/4/views/3")}Roadmap${NT}`,
+    );
+    expect(html).toContain(
+      `${A("https://github.com/users/ImreBoersma/projects/4")}Project board${NT}`,
+    );
+    expect(html).toContain('<section class="total correct">');
   });
 
-  test("shows the values of a row", () => {
-    const html = plain([
+  test("shows the facts of a row, and leaves out facts with no value", () => {
+    const line = facts(
       status({
         openPrCount: 3,
         renovatePrCount: 2,
         oldestRenovatePrAt: new Date("2026-10-08T00:00:00Z"),
         deploy: { at: new Date("2026-10-27T11:00:00Z"), result: "succeeded" },
       }),
-    ]);
-    expect(html).toContain(
-      '<td><time datetime="2026-10-27T00:00:00.000Z" data-rel title="2026-10-27 00:00 UTC">2026-10-27</time> <small class="rel">(29 hours ago)</small></td><td>3</td>',
     );
-    expect(html).toContain(
-      '2, oldest <time datetime="2026-10-08T00:00:00.000Z" data-rel title="2026-10-08 00:00 UTC">2026-10-08</time> <small class="rel">(20 days ago)</small></td><td><span class="badge good">Passed</span></td>',
+    expect(line).toContain("<li>CI passed</li>");
+    expect(line).toContain(
+      `Deployed${NT} <time datetime="2026-10-27T11:00:00.000Z" data-rel title="2026-10-27 11:00 UTC">18 hours ago</time>`,
     );
-    expect(html).toContain(
-      `${A("https://github.com/ImreBoersma/one/deployments")}<span class="badge good">Succeeded</span>${NT} <time datetime="2026-10-27T11:00:00.000Z"`,
+    expect(line).toContain(
+      '<li>Last commit <time datetime="2026-10-27T00:00:00.000Z" data-rel title="2026-10-27 00:00 UTC">29 hours ago</time>',
     );
+    expect(line).toContain("<li>3 open PRs</li>");
+    expect(line).toContain("2 Renovate PRs");
+    expect(line).toContain(">20 days ago</time>");
+    const quiet = facts(status({ ci: "unknown" }));
+    expect(quiet).not.toContain("CI");
+    expect(quiet).not.toContain("open PR");
+    expect(quiet).not.toContain("Renovate");
+    expect(quiet).not.toContain("Site");
   });
 
-  test("puts the column Site after Problems", () => {
-    expect(render([status()])).toContain(
-      "<th>Problems</th><th>Site</th><th>Expiry</th><th>Last commit</th>",
-    );
-  });
-
-  test("shows the site state and the time of the check (spec 005)", () => {
+  test("shows the site state; colour only when it is not good", () => {
     const at = new Date("2026-11-04T10:17:42Z");
-    const cell = (uptime: ProjectStatus["uptime"]) => plain([status({ uptime })]);
-    const time =
-      '<time datetime="2026-11-04T10:17:42.000Z" data-rel title="2026-11-04 10:17 UTC">10:17</time>';
-    expect(cell({ state: "up", at })).toContain(`<td><span class="badge good">Up</span> ${time}`);
-    expect(cell({ state: "down", at })).toContain(
-      `<td><span class="badge bad">Down</span> ${time}`,
+    expect(facts(status({ uptime: { state: "up", at } }))).toContain(
+      '<li>Site up <span class="sr">(checked 10:17 UTC)</span>',
     );
-    expect(cell({ state: "no-domain", at: null })).toContain("<td>No domain</td>");
-    expect(cell({ state: "not-available", at })).toContain(
-      '<td><span class="badge unknown">Check not available</span></td>',
+    expect(facts(status({ uptime: { state: "down", at } }))).toContain(
+      '<span class="badge bad">Site down</span>',
     );
-    expect(plain([status({ availability: "no-repo", uptime: { state: "up", at } })])).toContain(
-      '</small></td><td></td><td><span class="badge unknown">No repo</span></td>',
+    expect(facts(status({ uptime: { state: "not-available", at } }))).toContain(
+      '<span class="badge unknown">Site check not available</span>',
     );
   });
 
-  test("no-repo and unavailable rows", () => {
-    expect(plain([status({ availability: "no-repo" })])).toContain(
-      '<td><span class="badge unknown">No repo</span></td>',
-    );
-    expect(plain([status({ availability: "unavailable" })])).toContain(
-      '<td><span class="badge unknown">Data not available</span></td>',
+  test("no-repo and unavailable rows show one fact", () => {
+    expect(facts(status({ availability: "no-repo" }))).toBe("<li>No repo</li>");
+    expect(facts(status({ availability: "unavailable" }))).toBe(
+      '<li><span class="badge unknown">Repo data not available</span></li>',
     );
   });
 
@@ -93,24 +93,24 @@ describe("renderPage", () => {
     expect(render([s])).toContain("&lt;b&gt;A &amp; B&lt;/b&gt;");
   });
 
-  test("shows problem texts and marks the row", () => {
+  test("shows problem texts and marks the project", () => {
     const html = render([
       status({
         ci: "failed",
-        problems: [
-          { projectId: "one", reason: "ci-failed", key: "one/ci-failed" },
-          { projectId: "one", reason: "inactive", key: "one/inactive" },
-        ],
+        problems: [ci(), { projectId: "one", reason: "inactive", key: "one/inactive" }],
       }),
     ]);
-    expect(html).toContain('<tr class="problem">');
-    expect(html).toContain("The last CI run failed.<br>No commit for more than 90 days.");
+    expect(html).toContain('<li class="project bad">');
+    expect(html).toContain('<span class="dot bad" role="img" aria-label="Problem"></span>');
+    expect(html).toContain(
+      "<li>The last CI run failed.</li><li>No commit for more than 90 days.</li>",
+    );
   });
 
   test("shows the update time and a hidden old-data warning", () => {
     const html = render([]);
     expect(html).toContain(
-      'Last update: <time datetime="2026-10-28T05:03:00.000Z" data-rel title="2026-10-28 05:03 UTC">2026-10-28 05:03 UTC</time> <small class="rel">(now)</small>',
+      'Updated <time datetime="2026-10-28T05:03:00.000Z" data-rel title="2026-10-28 05:03 UTC">now</time><span class="sr"> (2026-10-28 05:03 UTC)</span>',
     );
     expect(html).toContain('<p id="stale" hidden>Warning: this data is more than 3 hours old.</p>');
     expect(html).toContain(String(3 * 60 * 60 * 1000));
@@ -137,84 +137,63 @@ describe("renderPage", () => {
     }
   });
 
-  test("links each cell to its source (spec 007)", () => {
+  test("links each fact to its source (spec 007)", () => {
     const oid = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2";
     const html = render(
       [
         status({
-          project: {
-            id: "one",
-            name: "One",
-            repo: "ImreBoersma/one",
-            status: "active",
-            domain: "one.example",
-          },
+          project: site,
           commitOid: oid,
           ci: "failed",
           renovatePrCount: 1,
           renovateApp: "renovate",
           deploy: { at: generatedAt, result: "succeeded" },
           uptime: { state: "up", at: generatedAt },
-          problems: [{ projectId: "one", reason: "ci-failed", key: "one/ci-failed" }],
+          problems: [ci()],
         }),
       ],
       new Map([["one/ci-failed", 12]]),
     );
     expect(html).toContain(`${A("https://github.com/ImreBoersma/one")}One${NT}`);
     expect(html).toContain(
-      `${A(`https://github.com/ImreBoersma/one/commit/${oid}/checks`)}<span class="badge bad">Failed</span>${NT}`,
+      `${A(`https://github.com/ImreBoersma/one/commit/${oid}/checks`)}<span class="badge bad">CI failed</span>${NT}`,
     );
+    expect(html).toContain(`${A("https://github.com/ImreBoersma/one/deployments")}Deployed${NT}`);
     expect(html).toContain(
-      `${A("https://github.com/ImreBoersma/one/deployments")}<span class="badge good">Succeeded</span>${NT}`,
-    );
-    expect(html).toContain(
-      A("https://github.com/ImreBoersma/one/pulls?q=is%3Apr+is%3Aopen+author%3Aapp%2Frenovate"),
+      `${A("https://github.com/ImreBoersma/one/pulls?q=is%3Apr+is%3Aopen+author%3Aapp%2Frenovate")}1 Renovate PR${NT}`,
     );
     expect(html).toContain(
       `${A("https://github.com/ImreBoersma/projects/issues/12")}The last CI run failed.${NT}`,
     );
-    expect(html).toContain(`${A("https://one.example/")}<span class="badge good">Up</span>${NT}`);
+    expect(html).toContain(`${A("https://one.example/")}Site up${NT}`);
   });
 
-  test("cells without a source have no link", () => {
+  test("facts without a source have no link", () => {
     const noRepo = status({
       availability: "no-repo",
       project: { id: "p", name: "P", repo: null, status: "active" },
     });
     for (const s of [noRepo, status({ availability: "unavailable" }), status()]) {
-      const body = render([s]).split("<tbody>")[1];
+      const body = render([s]).split('<ul class="projects">')[1];
       expect(body.match(/<a /g) ?? []).toHaveLength(s.availability === "no-repo" ? 0 : 1);
     }
   });
 
-  test("links are underlined and show a focus outline (FR-012)", () => {
+  test("links are underlined and show a focus outline (spec 007 FR-012)", () => {
     const html = render([]);
-    expect(html).toContain("a { color: var(--link); text-decoration: underline; }");
-    expect(html).toContain("a:focus-visible { outline: 2px solid var(--link);");
+    expect(html).toContain("a { color: var(--link); text-decoration: underline;");
+    expect(html).toContain("a:focus-visible { outline: 2px solid var(--fg);");
     expect(html.match(/--link: #/g)).toHaveLength(2);
   });
 
-  test("each cell has a data-label for the card layout", () => {
-    const html = render([status()]);
-    for (const column of ["Project", "Problems", "Site", "Last commit", "CI", "Last deploy"]) {
-      expect(html).toContain(`<td data-label="${column}">`);
-    }
-    expect(html).toContain("@media (max-width: 600px)");
-    expect(html).toContain("td::before { content: attr(data-label);");
-    expect(html).toContain("thead { display: none; }");
+  test("a project status other than active shows as a tag", () => {
+    const s = status();
+    s.project = { ...s.project, status: "maintenance" };
+    expect(render([s])).toContain('<span class="tag">maintenance</span>');
+    expect(render([status()])).not.toContain('class="tag"');
   });
 
-  test("the header links to the roadmap and the board", () => {
-    const html = render([]);
-    expect(html).toContain(
-      `${A("https://github.com/users/ImreBoersma/projects/4/views/3")}Roadmap${NT}`,
-    );
-    expect(html).toContain(
-      `${A("https://github.com/users/ImreBoersma/projects/4")}Project board${NT}`,
-    );
-  });
-
-  test("the page loads no file from another site (FR-011)", () => {
+  test("the page loads no file from another site (spec 007 FR-011)", () => {
     expect(render([status()])).not.toMatch(/<(script|link|img)[^>]+(src|href)="(?!data:)/);
   });
 });
@@ -270,85 +249,78 @@ describe("conformance on the page (spec 008)", () => {
         ],
       }),
     ]);
-    expect(html).toContain("The repo does not follow the shared setup.<br><small>");
     const docs = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
+    expect(html).toContain('The repo does not follow the shared setup.<br><span class="rules">');
     expect(html).toContain(
       `${A(`${docs}#r4-renovate-preset`)}R4 Renovate preset${NT}, ${A(`${docs}#r6-issues-on`)}R6 Issues on${NT}`,
     );
   });
 
-  test("shows a note, not a problem, when rules could not be read", () => {
+  test("shows a fact, not a problem, when rules could not be read", () => {
     const html = render([status({ conformanceNotAvailable: ["R7", "R9"] })]);
-    expect(html).toContain("<small>Setup check not available: R7, R9</small>");
-    expect(html).not.toContain('class="problem"');
+    expect(html).toContain("<li>Setup check not available: R7, R9</li>");
+    expect(html).toContain('<li class="project unknown">');
   });
 });
 
 describe("expiry on the page (spec 009)", () => {
-  const cell = (expiry: ProjectStatus["expiry"]) =>
-    render([status({ expiry })]).match(/<td data-label="Expiry">(.*?)<\/td>/)?.[1];
+  const expiry = (e: ProjectStatus["expiry"]) => facts(status({ expiry: e }));
 
-  test("has the column Expiry after Site", () => {
-    expect(render([status()])).toContain("<th>Site</th><th>Expiry</th><th>Last commit</th>");
-  });
-
-  test("shows the certificate and the renewal with the fewest days, as badges", () => {
+  test("shows the certificate and the renewal with the fewest days", () => {
     const renewals = [
       { name: "Hosting", date: "2027-01-01", days: 57, source: "catalog" as const },
       { name: "Domain", date: "2027-03-01", days: 120, source: "registry" as const },
     ];
-    const both = cell({
+    const line = expiry({
       certificate: { date: "2026-12-19", days: 44 },
       renewals,
       registryNotKnown: false,
     });
-    expect(both).toContain(
-      'Certificate: <span class="badge good"><time datetime="2026-12-19" data-rel title="2026-12-19">2026-12-19</time> <small class="rel">(in 52 days)</small></span>',
+    expect(line).toContain(
+      '<li>Certificate expires <time datetime="2026-12-19" data-rel title="2026-12-19">in 52 days</time>',
     );
-    expect(both).toContain('<br>Hosting: <span class="badge warn"><time datetime="2027-01-01"');
-    expect(both).not.toContain("Domain");
-    expect(cell({ certificate: "not-known", renewals: [], registryNotKnown: true })).toBe(
-      'Certificate: <span class="badge unknown">not known</span><br>Domain: <span class="badge unknown">not known</span>',
+    expect(line).toContain(
+      '<li><span class="badge warn">Hosting renewal <time datetime="2027-01-01"',
     );
-    expect(cell({ certificate: null, renewals: [], registryNotKnown: false })).toBe("");
+    expect(line).not.toContain("Domain");
+    expect(expiry({ certificate: "not-known", renewals: [], registryNotKnown: true })).toEndWith(
+      "<li>Certificate date not known</li><li>Domain date not known</li>",
+    );
+    expect(expiry({ certificate: null, renewals: [], registryNotKnown: false })).not.toContain(
+      "Certificate",
+    );
   });
 
-  test("a date at or below the limit is bad, and the past says ago", () => {
+  test("a date at or below the limit is bad, and the past says so", () => {
     const past = { name: "Hosting", date: "2026-10-27", days: -1, source: "catalog" as const };
-    const html = cell({
+    const line = expiry({
       certificate: { date: "2026-11-17", days: 20 },
       renewals: [past],
       registryNotKnown: false,
     });
-    expect(html).toContain('Certificate: <span class="badge warn">');
-    expect(html).toContain("(in 20 days)");
-    expect(html).toContain('Hosting: <span class="badge bad">');
-    expect(html).toContain("(1 day ago)");
-  });
-
-  test("a problem with a text shows that text", () => {
-    const html = render([
-      status({
-        problems: [
-          {
-            projectId: "one",
-            reason: "cert-expiring",
-            key: "one/cert-expiring",
-            text: "The TLS certificate expires in 10 days.",
+    expect(line).toContain('<span class="badge warn">Certificate expires <time');
+    expect(line).toContain(">in 20 days</time>");
+    expect(line).toContain('<span class="badge bad">Hosting renewal was due <time');
+    expect(line).toContain(">1 day ago</time>");
+    expect(
+      render([
+        status({
+          expiry: {
+            certificate: { date: "2026-11-17", days: 20 },
+            renewals: [],
+            registryNotKnown: false,
           },
-        ],
-      }),
-    ]);
-    expect(html).toContain("The TLS certificate expires in 10 days.");
+        }),
+      ]),
+    ).toContain('<li class="project warn">');
   });
 });
 
 describe("history on the page (spec 010)", () => {
-  const ci = { projectId: "one", reason: "ci-failed" as const, key: "one/ci-failed" };
   const withSince = (time: string, atStart = false) =>
     render([
       status({
-        problems: [ci],
+        problems: [ci()],
         history: {
           since: { "one/ci-failed": time },
           sinceIsHistoryStart: atStart ? ["one/ci-failed"] : [],
@@ -357,18 +329,15 @@ describe("history on the page (spec 010)", () => {
       }),
     ]);
 
-  test("shows since when a problem is open, with a relative time", () => {
+  test("shows since when a problem is open", () => {
     expect(withSince("2026-10-28T04:00:00Z")).toContain(
-      '<small>since <time datetime="2026-10-28T04:00:00Z" data-rel title="2026-10-28 04:00 UTC">04:00</time> <small class="rel">(1 hour ago)</small></small>',
+      '<span class="since">Started <time datetime="2026-10-28T04:00:00Z" data-rel title="2026-10-28 04:00 UTC">1 hour ago</time>',
     );
-    expect(withSince("2026-10-26T04:00:00Z")).toContain(
-      '>2026-10-26</time> <small class="rel">(2 days ago)</small></small>',
-    );
-    expect(withSince("2026-10-27T04:00:00Z")).toContain("(25 hours ago)");
+    expect(withSince("2026-10-26T04:00:00Z")).toContain(">2 days ago</time>");
     expect(withSince("2026-10-28T04:00:00Z", true)).toContain(
-      "(1 hour ago)</small> or before</small>",
+      "(2026-10-28 04:00 UTC)</span> or before</span>",
     );
-    expect(render([status({ problems: [ci] })])).not.toContain("since <time");
+    expect(render([status({ problems: [ci()] })])).not.toContain("Started");
   });
 
   test("shows the uptime and a bar of 30 marks for a site", () => {
@@ -386,7 +355,7 @@ describe("history on the page (spec 010)", () => {
         },
       }),
     ]);
-    expect(html).toContain("<small>95.8% (30 days)</small>");
+    expect(html).toContain(' · 95.8% in 30 days <span class="bar"');
     expect(html.match(/<i class="mark /g)).toHaveLength(30);
     expect(html).toContain('<i class="mark down" title="2026-10-27 down"></i>');
     expect(html).toContain('<i class="mark no-data" title="2026-10-28 no data"></i>');
@@ -396,9 +365,10 @@ describe("history on the page (spec 010)", () => {
     expect(html.match(/--mark-down: #/g)).toHaveLength(2);
   });
 
-  test("shows no data, and nothing for a project without a domain", () => {
+  test("no data, and nothing for a project without a domain", () => {
     const noData = render([
       status({
+        uptime: { state: "up", at: generatedAt },
         history: {
           since: {},
           sinceIsHistoryStart: [],
@@ -406,29 +376,8 @@ describe("history on the page (spec 010)", () => {
         },
       }),
     ]);
-    expect(noData).toContain("No data (30 days)");
+    expect(noData).toContain("no data in 30 days");
     expect(render([status()])).not.toContain('class="bar"');
-  });
-});
-
-describe("repairText (spec 010)", () => {
-  test("uses hours, minutes or days", () => {
-    expect(repairText({ averageMs: 4 * 3600_000, count: 2 })).toBe(
-      "Average time to repair: 4 hours (2 faults, 90 days).",
-    );
-    expect(repairText({ averageMs: 30 * 60_000, count: 1 })).toBe(
-      "Average time to repair: 30 minutes (1 fault, 90 days).",
-    );
-    expect(repairText({ averageMs: 72 * 3600_000, count: 3 })).toBe(
-      "Average time to repair: 3 days (3 faults, 90 days).",
-    );
-    expect(repairText({ averageMs: 1.5 * 3600_000, count: 2 })).toBe(
-      "Average time to repair: 1.5 hours (2 faults, 90 days).",
-    );
-    expect(repairText({ averageMs: 3600_000, count: 1 })).toBe(
-      "Average time to repair: 1 hour (1 fault, 90 days).",
-    );
-    expect(repairText(null)).toBe("No repaired faults in the last 90 days.");
   });
 
   test("the page shows the repair time and the start of the history", () => {
@@ -441,25 +390,20 @@ describe("repairText (spec 010)", () => {
     });
     expect(html).toContain("No repaired faults in the last 90 days.");
     expect(html).toContain(
-      'History from <time datetime="2026-11-05" data-rel title="2026-11-05">2026-11-05</time> <small class="rel">(in 8 days)</small>.',
+      'History from <time datetime="2026-11-05" data-rel title="2026-11-05">in 8 days</time>',
     );
   });
 });
 
-describe("spec 012: total state, badges, sections, times, new tabs", () => {
-  const ci = (id: string) => ({
-    projectId: id,
-    reason: "ci-failed" as const,
-    key: `${id}/ci-failed`,
-  });
+describe("spec 012: total state, sections, times, new tabs", () => {
   const named = (id: string, o: Partial<ProjectStatus> = {}) =>
     status({ ...o, project: { id, name: `Name ${id}`, repo: null, status: "active" } });
 
-  test("US1: the title, the favicon and the badge show the total state", () => {
+  test("US1: the title, the favicon and the total state", () => {
     const two = render([status({ problems: [ci("one")] }), status({ problems: [ci("two")] })]);
     expect(two).toContain("<title>(2) Project status</title>");
     expect(two).toContain(`<link rel="icon" href="${FAVICON.problems}">`);
-    expect(two).toContain('<p class="total problems">');
+    expect(two).toContain('<section class="total problems">');
     expect(two).toMatch(/<\/svg><\/span>2 problems<\/p>\n<p class="summary">/);
     const none = render([status()]);
     expect(none).toContain("<title>Project status</title>");
@@ -470,7 +414,7 @@ describe("spec 012: total state, badges, sections, times, new tabs", () => {
     expect(notAvailable).toContain(`href="${FAVICON["not-available"]}"`);
   });
 
-  test("US2: states are badges with their text", () => {
+  test("US2: good states are plain text; other states are badges with their text", () => {
     const html = render([
       status({
         uptime: { state: "down", at: generatedAt },
@@ -478,9 +422,10 @@ describe("spec 012: total state, badges, sections, times, new tabs", () => {
         deploy: { at: generatedAt, result: "failed" },
       }),
     ]);
-    expect(html).toContain('<span class="badge bad">Down</span>');
-    expect(html).toContain('<span class="badge good">Passed</span>');
-    expect(html).toContain('<span class="badge bad">Failed</span>');
+    expect(html).toContain('<span class="badge bad">Site down</span>');
+    expect(html).toContain("<li>CI passed</li>");
+    expect(html).not.toContain("badge good");
+    expect(html).toContain('<span class="badge bad">Deploy failed</span>');
     expect(html).toContain(".badge.warn { color: var(--warn-fg);");
   });
 
@@ -491,18 +436,19 @@ describe("spec 012: total state, badges, sections, times, new tabs", () => {
       named("z", { problems: [ci("z")] }),
     ]);
     const at = (text: string) => html.indexOf(text);
-    expect(at("<h2>Projects with problems</h2>")).toBeLessThan(at("Name z"));
-    expect(at("Name z")).toBeLessThan(at("<h2>Check not available</h2>"));
-    expect(at("<h2>Check not available</h2>")).toBeLessThan(at("Name b"));
-    expect(at("Name b")).toBeLessThan(at("<h2>Other projects</h2>"));
-    expect(at("<h2>Other projects</h2>")).toBeLessThan(at("Name a"));
-    expect(render([named("a")])).not.toContain("<h2>Projects with problems</h2>");
+    expect(at("Projects with problems <span")).toBeLessThan(at("Name z"));
+    expect(at("Name z")).toBeLessThan(at("Check not available <span"));
+    expect(at("Check not available <span")).toBeLessThan(at("Name b"));
+    expect(at("Name b")).toBeLessThan(at("Other projects <span"));
+    expect(at("Other projects <span")).toBeLessThan(at("Name a"));
+    expect(render([named("a")])).not.toContain("Projects with problems");
+    expect(html).toContain('Other projects <span class="count">1</span>');
   });
 
-  test("US4: relative times, and one inline script that updates them", () => {
+  test("US4: relative times with the exact time in the tooltip, and one inline script", () => {
     const html = render([status({ lastCommitAt: new Date("2026-10-25T05:03:00Z") })]);
     expect(html).toContain(
-      'title="2026-10-25 05:03 UTC">2026-10-25</time> <small class="rel">(3 days ago)</small>',
+      'title="2026-10-25 05:03 UTC">3 days ago</time><span class="sr"> (2026-10-25 05:03 UTC)</span>',
     );
     expect(html.match(/<script/g)).toHaveLength(1);
     expect(html).not.toMatch(/<script[^>]*src=/);
@@ -514,20 +460,14 @@ describe("spec 012: total state, badges, sections, times, new tabs", () => {
     const html = render(
       [
         status({
-          project: {
-            id: "one",
-            name: "One",
-            repo: "ImreBoersma/one",
-            status: "active",
-            domain: "one.example",
-          },
+          project: site,
           commitOid: "abc",
           renovatePrCount: 1,
           renovateApp: "renovate",
           deploy: { at: generatedAt, result: "succeeded" },
           uptime: { state: "up", at: generatedAt },
           problems: [
-            { projectId: "one", reason: "ci-failed", key: "one/ci-failed" },
+            ci(),
             {
               projectId: "one",
               reason: "not-conformant",
@@ -547,7 +487,7 @@ describe("spec 012: total state, badges, sections, times, new tabs", () => {
     }
   });
 
-  test("a page with 20 rows is less than 100 KB (SC-006)", () => {
+  test("a page with 20 projects is less than 100 KB (SC-006)", () => {
     const rows = Array.from({ length: 20 }, (_, i) =>
       status({
         project: {
@@ -573,5 +513,26 @@ describe("spec 012: total state, badges, sections, times, new tabs", () => {
       }),
     );
     expect(Buffer.byteLength(render(rows))).toBeLessThan(100_000);
+  });
+});
+
+describe("repairText (spec 010)", () => {
+  test("uses hours, minutes or days", () => {
+    expect(repairText({ averageMs: 4 * 3600_000, count: 2 })).toBe(
+      "Average time to repair: 4 hours (2 faults, 90 days).",
+    );
+    expect(repairText({ averageMs: 30 * 60_000, count: 1 })).toBe(
+      "Average time to repair: 30 minutes (1 fault, 90 days).",
+    );
+    expect(repairText({ averageMs: 72 * 3600_000, count: 3 })).toBe(
+      "Average time to repair: 3 days (3 faults, 90 days).",
+    );
+    expect(repairText({ averageMs: 1.5 * 3600_000, count: 2 })).toBe(
+      "Average time to repair: 1.5 hours (2 faults, 90 days).",
+    );
+    expect(repairText({ averageMs: 3600_000, count: 1 })).toBe(
+      "Average time to repair: 1 hour (1 fault, 90 days).",
+    );
+    expect(repairText(null)).toBe("No repaired faults in the last 90 days.");
   });
 });
