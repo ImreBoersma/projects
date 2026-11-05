@@ -45,6 +45,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 009 | Renewals and certificate expiry | 005 |
 | 010 | Status history without a database | 007 |
 | 011 | New-project template and onboarding | 008 |
+| 012 | Status page visual polish | 007 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -123,6 +124,19 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
   catalog PR, and shows the table of secrets and variables to set.
 - Reason: a new project now needs changes in 4 to 5 repos. Spec 008 finds the deviations; this
   spec prevents them.
+
+### 012. Status page visual polish
+
+- A clear visual hierarchy: a header with the state of all projects as one coloured badge
+  (all correct, problems, check not available) above the summary line.
+- State badges in the cells (Up, Down, Passed, Failed, Succeeded) with a colour and a text, not
+  only a colour (accessibility).
+- Rows grouped: projects with problems first, in a separate section, then the other projects.
+- Relative times next to dates ("3 days ago"), with the exact date in a tooltip.
+- A small favicon and a page title with the number of problems, so that a browser tab shows the
+  state.
+- The same static page: no external fonts, scripts or styles (spec 007 FR-011), light and dark
+  colour schemes, the card layout of spec 007 on a phone.
 
 ## Ongoing (no spec)
 
