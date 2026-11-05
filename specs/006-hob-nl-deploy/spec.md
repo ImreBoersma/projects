@@ -26,6 +26,13 @@ a workflow on push to `main`."
   is in `~/html`. In `mu-plugins`, GoDaddy has its own files (owner `root`): `gd-system-plugin.php`,
   `gd-system-plugin/`, `object-cache-pro.php`, `object-cache-pro/`, `vendor/`. The deploy must
   never change or remove them.
+- Q: After the git deploy starts, can the `hob-*` files still change on the server through the
+  SFTP sync of VS Code (`.vscode/sftp.json`)? → A: No. Git is the only way to change them. The
+  `hob-*` files go in the ignore list of `.vscode/sftp.json`; the SFTP sync stays for other work.
+- Q: When the site does not work after a deploy, does the deploy find it and put back the
+  previous version itself? → A: Yes. After the copy, the deploy opens the home page and
+  `/wp-admin/`; on HTTP 5xx or the WordPress "critical error" page, it copies the `hob-*` files of
+  the previous commit back and marks the deploy as failed.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -96,11 +103,15 @@ that the row of hob.nl shows the last commit and the last deploy.
 - A WordPress update or a plugin update in the admin panel changes files on the hosting. These
   files are not in git, so the deploy does not change them.
 - A person changes a `hob-*` file on the hosting by SSH or SFTP. The next deploy replaces the
-  change. The `hob-*` files are only changed in git.
+  change. The `hob-*` files are only changed in git; the SFTP sync of VS Code ignores them
+  (FR-012).
 - GoDaddy updates its own must-use plugins in the same folder. The deploy does not touch them.
 - A new custom file does not start with `hob-`. The deploy does not copy it. All custom files get
   the prefix `hob-`.
-- The SSH key is not valid. The deploy fails with a message, and the site does not change.
+- The SSH password is not valid (for example after a change). The deploy fails with a message,
+  and the site does not change.
+- A `hob-*` file has an error that only shows when it runs. The check after the deploy finds it
+  and puts back the previous version (FR-013).
 - The deploy stops halfway. The next deploy completes the copy. The Maintainer can start the deploy
   again manually.
 - A file on the hosting contains a secret, for example a licence key in a plugin. It does not go
@@ -124,13 +135,21 @@ that the row of hob.nl shows the last commit and the last deploy.
   folder.
 - **FR-006**: The deploy job MUST use `environment: production` (constitution, Development
   Workflow).
-- **FR-007**: The SSH key and the host data MUST be Actions secrets (Principle III).
+- **FR-007**: The SSH login data (host, user, password or key) MUST be Actions secrets
+  (Principle III).
 - **FR-008**: The theme and plugin file editors in the WordPress admin MUST be turned off
   (`DISALLOW_FILE_EDIT`), if they are not already off.
 - **FR-009**: The `hob-nl` entry in `projects.yaml` MUST get the new `repo`.
 - **FR-010**: The Maintainer MUST be able to start the deploy manually.
 - **FR-011**: The status token `STATUS_READ_TOKEN_HOB` (spec 001) MUST have read access to the new
   repo, so that the status page shows hob.nl.
+- **FR-012**: Git MUST be the only way to change the `hob-*` files. The ignore list of the SFTP sync
+  (`.vscode/sftp.json` on the computer of the Maintainer) MUST contain `wp-content/mu-plugins/hob-*`,
+  so that a sync cannot upload them.
+- **FR-013**: After each deploy, the workflow MUST check the home page and `/wp-admin/`. On HTTP
+  5xx, or on the WordPress "critical error" page, it MUST copy the `hob-*` files of the previous
+  commit back to the hosting and MUST mark the deploy as failed.
+- **FR-014**: The deploy MUST stop before the copy when a `hob-*` PHP file has a syntax error.
 
 ### Key Entities
 

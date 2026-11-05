@@ -88,3 +88,19 @@ deploy fails with a host key error; update the input after a check of the new ke
 **Decision**: check `DISALLOW_FILE_EDIT` in `wp-config.php` with `wp config get` over SSH. If it is
 not `true`, the Maintainer sets it (`wp config set DISALLOW_FILE_EDIT true --raw`). This is a
 setting on the server, not in git.
+
+## 8. Check after the deploy (FR-013, clarification 2026-11-05)
+
+**Decision**: after the copy, request the home page and `/wp-admin/`. `/wp-admin/` without a login
+gives a redirect to the login page (HTTP 302 then 200); a fatal error in a must-use plugin gives
+HTTP 500 and the WordPress text "There has been a critical error on this website". On a failure,
+copy the `hob-*` files of the previous commit back with the same rsync filter, and stop the job
+with an error.
+
+**Rationale**: a must-use plugin loads on each request, so a runtime error stops the full site.
+`php -l` (§5) finds only syntax errors. The previous version is the previous commit, so the
+restore needs no backup on the server.
+
+**Limits**: the check sees errors on these 2 pages only. Cloudflare can cache the home page; the
+request adds a query string with the run id, so that the cache is not used.
+

@@ -16,6 +16,7 @@ jobs:
       source: mu-plugins
       target: html/wp-content/mu-plugins
       pattern: hob-*
+      health-urls: https://harmonieorkestbrummen.nl/ https://harmonieorkestbrummen.nl/wp-admin/
       known-hosts: >-
         512403.eu13.ssh.myftpupload.com ssh-ed25519
         AAAAC3NzaC1lZDI1NTE5AAAAILwQwncFCRpxxYViJR+ogl8E73kt/A2c+4QA7q9Qd5r4

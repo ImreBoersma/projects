@@ -38,3 +38,18 @@ On a branch of `hob-nl`, start the deploy with `workflow_dispatch` and a PHP syn
 Set `repo: harmonieorkest-brummen/hob-nl` for `hob-nl` in `projects.yaml`. Make sure that
 `STATUS_READ_TOKEN_HOB` can read the repo. Expected: the row of hob.nl shows the last commit and the
 last deploy.
+
+## 7. Restore after a broken deploy (FR-013)
+
+On a branch of `hob-nl`, start the deploy with `workflow_dispatch` and a `hob-*` PHP file that is
+valid syntax but stops when it runs (for example a call to a function that does not exist, inside a
+check that is only true on the test branch is not possible on the live site; use a call guarded by
+a query string, such as `if (isset($_GET['hob-deploy-test'])) { hob_missing(); }`, and add
+`?hob-deploy-test=1` to the `health-urls` of the test). Expected: the check fails, the previous
+files go back, the job fails, and the site works. Do not merge the branch.
+
+## 8. SFTP sync (FR-012)
+
+On the computer of the Maintainer, make sure that `.vscode/sftp.json` has
+`wp-content/mu-plugins/hob-*` in its ignore list.
+
