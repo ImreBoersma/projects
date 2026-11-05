@@ -101,7 +101,7 @@ domain and no close of a `site-down` issue.
 - [X] T019 Run the full local page once more on the real catalog (quickstart.md §2 without the test entry). Make sure that the 4 real sites show "Up" and that the run takes less than 1 minute more than before. Done 2026-11-04: the real catalog run took 2 seconds, with 4 sites "Up"; with one site down it took 6 seconds (the second attempt waits 5 seconds).
 - [X] T020 Push the branch and open the PR into `main`. CI (`status-page.yml` build, actionlint) must pass.
 - [X] T021 Ask the Maintainer to merge the PR, because a merge to `main` deploys the page. Done 2026-11-05: the Maintainer merged #10.
-- [ ] T022 After the merge, validate quickstart.md §5: `status-page.yml` runs each hour, and the live page shows the column "Site" with "Up" for the 4 sites. Record the start times of the first 3 scheduled runs. If a gap between two runs is more than 90 minutes, record it in research.md §10, because SC-002 allows 2 hours (C1).
+- [X] T022 After the merge, validate quickstart.md §5: `status-page.yml` runs each hour, and the live page shows the column "Site" with "Up" for the 4 sites. Record the start times of the first 3 scheduled runs. If a gap between two runs is more than 90 minutes, record it in research.md §10, because SC-002 allows 2 hours (C1). Done 2026-11-05: the GitHub schedule gave no run at 10:17, 11:17 and 12:17 UTC (gap of more than 90 minutes); see Phase 7.
 - [ ] T023 [P] Add §10 "Validation results" to `specs/005-uptime-checks/research.md`: the local run of T012 and T019, the dry run of T015, and the first scheduled runs of T022, with dates.
 - [X] T024 [P] In `PLAN.md`, mark feature 005 as done in the Done list and in the feature table. Note that the status page now runs each hour. Done.
 
@@ -133,3 +133,14 @@ status/tests/render.test.ts     (T008)
 
 All three go in one PR, because the hourly schedule without the second attempt can open issues for
 short errors.
+
+## Phase 7: Convergence
+
+The GitHub schedule did not run the status page each hour: after the change to `17 * * * *` on
+2026-11-05 09:47 UTC, the slots of 10:17, 11:17 and 12:17 had no run, and the old schedule started
+its runs 5 to 8 hours late. The Maintainer chose an external trigger on 2026-11-05.
+
+- [X] T025 Start `status-page.yml` each hour from outside GitHub per SC-002 (partial): a fine-grained PAT `projects status trigger` (repo `ImreBoersma/projects` only, Actions read and write, stored only in cron-job.org) and a cron-job.org job that sends `POST /repos/ImreBoersma/projects/actions/workflows/status-page.yml/dispatches` with `{"ref":"main"}` at minute 17 of each hour. Keep the GitHub `schedule` as a backup. Done 2026-11-05 by the Maintainer; `workflow_dispatch` runs at 12:57 and 13:00 UTC passed.
+- [ ] T026 Add a last step to job `issues` of `.github/workflows/status-page.yml` that pings healthchecks.io: `curl -fsS -m 10 --retry 3 "$STATUS_HEALTHCHECK_URL"` with `env: STATUS_HEALTHCHECK_URL: ${{ secrets.STATUS_HEALTHCHECK_URL }}` and `if: env.STATUS_HEALTHCHECK_URL != ''` on the step, so that a missing secret does not fail the run. The job `issues` runs only outside pull requests, so a PR does not ping. Run actionlint. Manual (Maintainer) first: a healthchecks.io check with cron `17 * * * *`, time zone UTC, grace 60 minutes, and its ping URL as the Actions secret `STATUS_HEALTHCHECK_URL` of `ImreBoersma/projects` per SC-002 (missing)
+- [ ] T027 After T025 and T026, make sure that 3 runs in a row start within 10 minutes after minute 17 of their hour (`gh run list --workflow status-page.yml`), and that healthchecks.io shows the check as up per SC-002, research.md §2 (partial)
+- [ ] T028 [P] Add to `specs/005-uptime-checks/research.md` §2 the result of the GitHub schedule (no run in 3 hourly slots; 5 to 8 hours late before), the decision for the external trigger and the healthchecks.io watchdog, and the exception to Principle I: cron-job.org only starts the run and keeps no project data; the token can only start workflows of `projects` per plan: schedule decision (partial)
