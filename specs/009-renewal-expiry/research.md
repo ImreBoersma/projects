@@ -23,8 +23,8 @@ read in a few lines.
 
 **Decision**: get `https://data.iana.org/rdap/dns.json` one time for each run, find the RDAP server
 of the top-level domain, and request `domain/<domain>` for the exact catalog domain. Use the
-`eventDate` of the event `expiration`. No server, an error, a status that is not 200, or no
-`expiration` event gives "not known".
+`eventDate` of the event `expiration`. HTTP 400 or 404 gives "not registered". No server, another
+error, or HTTP 200 without an `expiration` event gives "not known".
 
 **Rationale**: the exact domain makes the "owned domain" rule simple. Three results:
 
