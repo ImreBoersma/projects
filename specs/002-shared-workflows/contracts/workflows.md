@@ -1,5 +1,7 @@
 # Contract: shared workflows
 
+Spec 006 adds `deploy-ssh.yml`: see `specs/006-hob-nl-deploy/contracts/deploy-ssh.md`.
+
 All files are in `ImreBoersma/projects/.github/workflows/`. Callers use `@main`.
 
 ## `ci-node.yml`
