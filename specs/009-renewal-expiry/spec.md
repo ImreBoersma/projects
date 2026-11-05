@@ -11,6 +11,17 @@ of the TLS certificate and of the domain registration of each `domain`. Show the
 on the status page. Open an issue before each date. Reason: an expired domain or hosting contract
 stops a client site for days, and the uptime check finds it only after the stop."
 
+## Clarifications
+
+### Session 2026-11-05
+
+- Q: When one project has several renewals due at once, does each renewal get its own issue, or
+  does the project get one issue that lists them all? → A: One issue for each renewal (key
+  `<project id>/renewal-due/<renewal name>`), so that each issue closes when its renewal is done.
+- Q: Do renewal names and dates show on the public status page, or only in issues and the board?
+  → A: On the public page: the name and the days that remain (for example "Domain: 120 days"),
+  never cost or contract numbers.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Know before a certificate expires (Priority: P1)
@@ -112,11 +123,14 @@ date is always possible.
 - **FR-003**: The update SHOULD read the expiry date of the domain registration of each `domain`
   from its registry, when the registry publishes it, and only for a domain that the Maintainer
   owns.
-- **FR-004**: The status page MUST show, for each project, the days until the certificate expires,
-  and the name and the days until the next renewal (catalog or registry).
+- **FR-004**: The public status page MUST show, for each project, the days until the certificate
+  expires, and the name and the days until the next renewal (catalog or registry), for example
+  "Domain: 120 days".
 - **FR-005**: A certificate with 14 days or less MUST be a problem `cert-expiring`.
 - **FR-006**: A renewal or a domain expiry with 30 days or less, or in the past, MUST be a problem
-  `renewal-due`.
+  `renewal-due`, one problem for each renewal. The problem key contains the renewal name
+  (`<project id>/renewal-due/<renewal name>`), so that two renewals of one project get two
+  issues.
 - **FR-007**: The problems MUST use the problem rules, sort order and issue rules of spec 001: one
   issue for each problem, closed when the problem stops.
 - **FR-008**: A value that cannot be read MUST show "Not known" and MUST NOT make a problem.
@@ -126,7 +140,8 @@ date is always possible.
 
 ### Key Entities
 
-- **Renewal**: a name and a date, in the catalog, for one project.
+- **Renewal**: a name and a date, in the catalog, for one project. The name is unique within the
+  project, because it is part of the issue key.
 - **Certificate expiry**: one date for each `domain`, read from the site.
 - **Domain expiry**: one date for each owned `domain`, from the registry, when published.
 
