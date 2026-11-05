@@ -80,7 +80,8 @@ jobs:
           cat > "$RUNNER_TEMP/sync.sh" <<'SCRIPT'
           # Usage: sync.sh <folder> [--dry-run]. Only items that match PATTERN; never other files.
           set -euo pipefail
-          rsync -rlt --delete --checksum --itemize-changes ${2:-} \
+          # --omit-dir-times: the target folder can belong to another user (root on GoDaddy).
+          rsync -rlt --omit-dir-times --delete --checksum --itemize-changes ${2:-} \
             --include="/$PATTERN" --include="/$PATTERN/***" --exclude='*' \
             -e "sshpass -e ssh -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no" \
             "$1/" "$SSH_USER@$SSH_HOST:$TARGET/"
