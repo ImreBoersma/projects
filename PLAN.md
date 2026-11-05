@@ -45,7 +45,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 003 | Shared Renovate preset | 002 (automerge needs CI) |
 | 004 | Project board and public roadmap (done) | 002 (the shared workflow adds issues) |
 | 005 | Uptime checks on the status page (done) | 001 |
-| 006 | hob.nl in git with a deploy workflow | 002 |
+| 006 | hob.nl in git with a deploy workflow (planned) | 002 |
 | 007 | Status page links and layout (done) | 001, 005 |
 | 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry (done) | 005 |
