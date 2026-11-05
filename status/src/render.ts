@@ -1,5 +1,20 @@
+import { rowLinks } from "./links";
 import { PROBLEM_TEXT } from "./problems";
 import type { ProjectStatus, StatusPage } from "./types";
+
+// Spec 004 board and its public Roadmap view (spec 007, research.md §7).
+const BOARD = "https://github.com/users/ImreBoersma/projects/4";
+const ROADMAP = `${BOARD}/views/3`;
+const COLUMNS = [
+  "Project",
+  "Problems",
+  "Site",
+  "Last commit",
+  "Open PRs",
+  "Renovate PRs",
+  "CI",
+  "Last deploy",
+];
 
 const DAY = 24 * 60 * 60 * 1000;
 // The page updates each hour, so 3 hours without an update means that the schedule stopped.
@@ -38,10 +53,48 @@ function site(s: ProjectStatus): string {
   return `${UPTIME_TEXT[state]} ${(at as Date).toISOString().slice(11, 16)}`;
 }
 
-function row(s: ProjectStatus, now: Date): string {
-  const problems = s.problems.map((p) => html(PROBLEM_TEXT[p.reason])).join("<br>");
-  const data = [site(s), ...cells(s, now)].map((c) => `<td>${html(c)}</td>`).join("");
-  return `<tr${s.problems.length ? ' class="problem"' : ""}><td>${html(s.project.name)} <small>${s.project.status}</small></td><td>${problems}</td>${data}</tr>`;
+const link = (text: string, url: string | null) =>
+  url ? `<a href="${html(url)}">${html(text)}</a>` : html(text);
+
+function row(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
+  const links = rowLinks(s, issues);
+  const problems = s.problems
+    .map((p) => link(PROBLEM_TEXT[p.reason], links.problems.get(p.reason) ?? null))
+    .join("<br>");
+  const [lastCommit, openPrs, renovate, ci, deploy] = cells(s, now);
+  const values = [
+    `${link(s.project.name, links.project)} <small>${s.project.status}</small>`,
+    problems,
+    link(site(s), links.site),
+    html(lastCommit),
+    html(openPrs),
+    link(renovate, links.renovate),
+    link(ci, links.ci),
+    link(deploy, links.deploy),
+  ];
+  const tds = values.map((v, i) => `<td data-label="${COLUMNS[i]}">${v}</td>`).join("");
+  return `<tr${s.problems.length ? ' class="problem"' : ""}>${tds}</tr>`;
+}
+
+const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+// FR-007, contracts/page.md "Summary line".
+export function summary(rows: ProjectStatus[]): string {
+  const problems = rows.reduce((n, r) => n + r.problems.length, 0);
+  const withProblem = rows.filter((r) => r.problems.length > 0).length;
+  const parts =
+    problems > 0
+      ? [
+          `${count(problems, "problem")} in ${count(withProblem, "project")}.`,
+          `${count(rows.length - withProblem, "project")} without a problem.`,
+        ]
+      : ["No problems.", `${count(rows.length, "project")}.`];
+  const checked = rows.filter((r) => r.uptime.state === "up" || r.uptime.state === "down");
+  const up = checked.filter((r) => r.uptime.state === "up").length;
+  if (checked.length > 0) {
+    parts.push(`${up} of ${count(checked.length, "site")} ${up === 1 ? "is" : "are"} up.`);
+  }
+  return parts.join(" ");
 }
 
 export function renderPage(page: StatusPage): string {
@@ -54,9 +107,11 @@ export function renderPage(page: StatusPage): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Project status</title>
 <style>
-:root { --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #ddd; --problem: #fdecea; --warn: #b3261e; }
+:root { --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #ddd; --problem: #fdecea; --warn: #b3261e;
+  --link: #0b57d0; }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #161616; --fg: #eee; --muted: #999; --line: #333; --problem: #3a1d1b; --warn: #f2b8b5; }
+  :root { --bg: #161616; --fg: #eee; --muted: #999; --line: #333; --problem: #3a1d1b; --warn: #f2b8b5;
+    --link: #8ab4f8; }
 }
 body { margin: 0 auto; padding: 16px; max-width: 1100px; background: var(--bg); color: var(--fg);
   font: 15px/1.4 system-ui, sans-serif; }
@@ -67,17 +122,32 @@ small, .meta { color: var(--muted); }
 tr.problem { background: var(--problem); }
 tr.problem td:first-child { font-weight: 600; }
 #stale { color: var(--warn); font-weight: 600; }
+a { color: var(--link); text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.summary { font-weight: 600; }
+/* Spec 007: cards on a phone, without horizontal scroll. */
+@media (max-width: 600px) {
+  .wrap { overflow-x: visible; }
+  table, tbody, tr, td { display: block; width: 100%; box-sizing: border-box; }
+  thead { display: none; }
+  tr { border: 1px solid var(--line); border-radius: 6px; margin-bottom: 12px; padding: 4px 0; }
+  td { border: 0; padding: 4px 12px; overflow-wrap: anywhere; }
+  td:empty { display: none; }
+  td::before { content: attr(data-label); display: block; font-size: 12px; color: var(--muted); }
+}
 </style>
 </head>
 <body>
 <h1>Project status</h1>
+<p><a href="${ROADMAP}">Roadmap</a> · <a href="${BOARD}">Project board</a></p>
 <p class="meta">Last update: <time datetime="${iso}">${shown}</time> UTC</p>
 <p id="stale" hidden>Warning: this data is more than 3 hours old.</p>
+<p class="summary">${html(summary(page.rows))}</p>
 <div class="wrap">
 <table>
-<thead><tr><th>Project</th><th>Problems</th><th>Site</th><th>Last commit</th><th>Open PRs</th><th>Renovate PRs</th><th>CI</th><th>Last deploy</th></tr></thead>
+<thead><tr>${COLUMNS.map((c) => `<th>${c}</th>`).join("")}</tr></thead>
 <tbody>
-${page.rows.map((s) => row(s, page.generatedAt)).join("\n")}
+${page.rows.map((s) => row(s, page.generatedAt, page.issues)).join("\n")}
 </tbody>
 </table>
 </div>

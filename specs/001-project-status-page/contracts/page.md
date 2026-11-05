@@ -1,5 +1,7 @@
 # Contract: status page content
 
+Spec 007 changes this contract: see `specs/007-status-page-links/contracts/page.md` (links, summary line, card layout, header links).
+
 Spec 005 changes this contract: see `specs/005-uptime-checks/contracts/page.md` (column "Site", problem `site-down`).
 
 One public page at the GitHub Pages URL of `projects`. Text uses ASD-STE100.

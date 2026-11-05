@@ -9,7 +9,7 @@ export const RENOVATE = /(^|-)renovate(\[bot\])?$/;
 
 interface RepoNode {
   defaultBranchRef: {
-    target: { committedDate: string; statusCheckRollup: { state: string } | null };
+    target: { oid?: string; committedDate: string; statusCheckRollup: { state: string } | null };
   } | null;
   pullRequests: {
     totalCount: number;
@@ -25,7 +25,7 @@ export function tokenFor(owner: string, env: Record<string, string | undefined>)
 
 // FR-018: request no text fields (commit messages, PR titles, branch names).
 const FIELDS = `
-  defaultBranchRef { target { ... on Commit { committedDate statusCheckRollup { state } } } }
+  defaultBranchRef { target { ... on Commit { oid committedDate statusCheckRollup { state } } } }
   pullRequests(states: OPEN, first: 100) { totalCount nodes { createdAt author { login } } }
   deployments(environments: ["production", "Production", "github-pages"], first: 1,
     orderBy: { field: CREATED_AT, direction: DESC }) { nodes { createdAt latestStatus { state } } }`;
@@ -50,6 +50,8 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     deploy: "unknown",
     problems: [],
     uptime: { state: "no-domain", at: null },
+    commitOid: null,
+    renovateApp: null,
   };
 }
 
@@ -57,8 +59,10 @@ export function mapRepo(node: RepoNode | null, project: Project): ProjectStatus 
   if (!node) return emptyStatus(project, "unavailable");
   const commit = node.defaultBranchRef?.target;
   const rollup = commit?.statusCheckRollup?.state;
-  const renovate = node.pullRequests.nodes
-    .filter((pr) => pr.author && RENOVATE.test(pr.author.login))
+  const renovatePrs = node.pullRequests.nodes.filter(
+    (pr) => pr.author && RENOVATE.test(pr.author.login),
+  );
+  const renovate = renovatePrs
     .map((pr) => new Date(pr.createdAt))
     .sort((a, b) => a.getTime() - b.getTime());
   const dep = node.deployments.nodes[0];
@@ -87,6 +91,8 @@ export function mapRepo(node: RepoNode | null, project: Project): ProjectStatus 
           ? "failed"
           : "unknown",
     deploy,
+    commitOid: commit?.oid ?? null,
+    renovateApp: renovatePrs[0]?.author?.login.replace(/\[bot\]$/, "") ?? null,
   };
 }
 
