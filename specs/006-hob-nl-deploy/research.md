@@ -101,6 +101,10 @@ with an error.
 `php -l` (§5) finds only syntax errors. The previous version is the previous commit, so the
 restore needs no backup on the server.
 
+**Checked 2026-11-05**: `/wp-admin/?deploy=test` without a login gives HTTP 302 to `wp-login.php`;
+the check follows it. Not yet checked: the answer to a GitHub runner (Cloudflare or GoDaddy could
+give a challenge page). T009 checks it before a restore can happen by mistake.
+
 **Limits**: the check sees errors on these 2 pages only. Cloudflare can cache the home page; the
 request adds a query string with the run id, so that the cache is not used.
 

@@ -30,8 +30,11 @@ server; remove it in git, push, and make sure that it is gone from the server. G
 
 ## 5. A syntax error (research.md §5)
 
-On a branch of `hob-nl`, start the deploy with `workflow_dispatch` and a PHP syntax error in a
-`hob-*` file. Expected: `php -l` fails and nothing is copied. Do not merge the branch.
+The deploy runs only from `main` (contracts/deploy-ssh.md step 1), so test on `main`:
+
+1. Push a commit with a PHP syntax error in a `hob-*` file.
+2. Expected: `php -l` fails, there is no rsync step in the log, and the server does not change.
+3. Push the revert commit at once. Expected: its deploy passes.
 
 ## 6. Status page (US3)
 
@@ -43,14 +46,14 @@ last deploy.
 
 Test the restore without a risk for visitors: the error only happens with a test query string.
 
-1. On a branch of `hob-nl`, add to a `hob-*` PHP file:
+1. In one commit on `main` of `hob-nl`, add to a `hob-*` PHP file:
    `if (isset($_GET['hob-deploy-test'])) { hob_missing_function(); }`. The syntax is valid, so
    `php -l` passes.
-2. In the caller of the branch, add `https://harmonieorkestbrummen.nl/?hob-deploy-test=1` to
-   `health-urls`.
-3. Start the deploy of the branch with `workflow_dispatch`.
-4. Expected: the check fails on the test URL, the files of the previous commit go back, the job
-   fails, and the site works (also with the test query string). Do not merge the branch.
+2. In the same commit, add `https://harmonieorkestbrummen.nl/?hob-deploy-test=1` to `health-urls`
+   of the caller. Push.
+3. Expected: the check fails on the test URL, the files of the previous commit go back, the job
+   fails, and the site works (also with the test query string).
+4. Push the revert commit at once. Expected: its deploy passes.
 
 ## 8. SFTP sync (FR-012)
 

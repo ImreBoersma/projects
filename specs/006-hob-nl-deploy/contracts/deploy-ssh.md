@@ -18,9 +18,11 @@ File: `.github/workflows/deploy-ssh.yml` in `ImreBoersma/projects`. Trigger: `wo
 
 ## Behaviour
 
-1. The job runs only for a push to the default branch or a `workflow_dispatch`
-   (`github.event_name != 'pull_request'`), with `environment: production` and the concurrency
-   group `deploy-${{ github.repository }}`, no cancel.
+1. The job runs only on the default branch, as the other shared deploys:
+   `if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)`.
+   A push to `main` and a `workflow_dispatch` of `main` deploy; a dispatch of another branch does
+   nothing. `environment: production`; concurrency group `deploy-${{ github.repository }}`, no
+   cancel.
 2. Permissions: `contents: read`.
 3. Checkout the caller repo.
 4. When `php-lint` is `true`: `php -l` on each `*.php` under `source`. One error stops the job.
