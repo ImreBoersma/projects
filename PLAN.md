@@ -70,7 +70,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 012 | Status page visual polish (done) | 007 |
 | 013 | Expiry of tokens and secrets (done) | 009 |
 | 014 | Free-tier usage warnings | 005 |
-| 015 | Changes in all repos at once (campaigns) (specified) | 008 |
+| 015 | Changes in all repos at once (campaigns) (planned) | 008 |
 | 016 | Version drift between projects | 008 |
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
