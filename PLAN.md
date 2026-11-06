@@ -47,6 +47,10 @@ roadmap.
 - Spec 015: campaigns (`campaigns/<id>.yaml`, `bun run campaign <id>`): one fixed file change as a
   PR in many repos, with a dry run and a guard for hand fixes; progress in the section
   "Campaigns" of the status page. `bun run secret-set <NAME>` sets one secret in all its repos.
+- Spec 019: the status page uses DaisyUI (built into the page, no external files): one row for
+  each project with a pop-up for the details (`#p-<id>` is a link to it), filters, sort and tabs
+  in the page address (`?stakeholder=Harmonieorkest+Brummen` is the HOB view). Works without
+  scripts. Organisation names may show on the page; names of people may not.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -77,7 +81,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 016 | Version drift between projects | 008 |
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
-| 019 | Status page filters, sorting and detail views (planned) | 012, 013, 015 |
+| 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
 
 ### 002. Shared CI and deploy workflows
 

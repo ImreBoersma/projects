@@ -96,9 +96,9 @@ contracts/address.md, quickstart.md
 - [X] T023 Run quickstart.md §2 locally in Chrome and record each item as one row of a table "Validation results" at the end of `specs/019-dashboard-filters/research.md`: (1) the list height at 1100 × 800 in pixels (SC-001; when it fails, make the total block smaller); (2) iframe at 360 px: horizontal scroll 0 px, filters folded; (3) light and dark: the computed text and background colour of each badge kind (bad, warn, unknown), the controls and the tabs, with the contrast ratio ≥ 4.5 (analysis C1); (4) keyboard, one row each: Tab reaches search, each filter, sort, each tab and each row; Enter on a row opens its modal and the focus is on its title; Tab stays inside the open modal; Escape closes it and the focus is on the row again; Back closes an open modal (analysis C2); (5) scripts off: no controls, all panels, a row opens its modal by `:target`; (6) `?stakeholder=Harmonieorkest+Brummen` gives "3 of 11"; (7) page size and CSS size.
 - [X] T024 Update `specs/012-status-page-polish/contracts/page.md` and `specs/007-status-page-links/contracts/page.md` with a pointer to `specs/019-dashboard-filters/contracts/page.md`.
 - [X] T025 Commit (`feat: filters, sorting, tabs and pop-ups on the status page (spec 019)`), push, open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
-- [ ] T026 Ask the Maintainer to merge the PR.
-- [ ] T027 After the merge, run quickstart.md §3 on the live page and add the result to the table of T023.
-- [ ] T028 [P] In `PLAN.md`, mark spec 019 as done in the feature table and the Done list.
+- [X] T026 Ask the Maintainer to merge the PR.
+- [X] T027 After the merge, run quickstart.md §3 on the live page and add the result to the table of T023.
+- [X] T028 [P] In `PLAN.md`, mark spec 019 as done in the feature table and the Done list.
 
 ---
 
