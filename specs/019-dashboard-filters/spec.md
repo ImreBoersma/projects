@@ -15,6 +15,9 @@ some data behind other screens or pop ups. Make a spec for this."
 
 - Q: Do "HOB" and "Harmonieorkest Brummen" become one stakeholder name? → A: Yes, "Harmonieorkest
   Brummen" for pretband, pretband-backend and hob-nl (changed in the catalog on 2026-11-06).
+- Q: Spec 001 forbids stakeholder names on the page; may the stakeholder filter show
+  "Harmonieorkest Brummen"? → A: Yes for organisations: spec 001's forbidden list now says "names
+  of people"; organisation names are already public in the catalog and on the roadmap.
 - Q: Does the pop-up of a project have its own link? → A: Yes. While the pop-up is open, the page
   address has the project id; a link with that id opens the page with that pop-up open.
 

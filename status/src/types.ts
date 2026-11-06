@@ -80,6 +80,8 @@ export interface StatusPage {
   repair?: { averageMs: number; count: number } | null;
   generatedAt: Date;
   rows: ProjectStatus[];
+  // Spec 019: the built DaisyUI CSS (build/page.css); tests pass a small fake.
+  css?: string;
   // Spec 015: the campaigns to show.
   campaigns?: CampaignSummary[];
   // Spec 013: the secrets of the shared setup (this repo).
