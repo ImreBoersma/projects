@@ -77,7 +77,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 016 | Version drift between projects | 008 |
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
-| 019 | Status page filters, sorting and detail views (specified) | 012, 013, 015 |
+| 019 | Status page filters, sorting and detail views (planned) | 012, 013, 015 |
 
 ### 002. Shared CI and deploy workflows
 
