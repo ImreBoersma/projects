@@ -9,6 +9,15 @@
 **Input**: "Let's put DaisyUI in this dashboard. So we can make some filtering, sorting and hiding
 some data behind other screens or pop ups. Make a spec for this."
 
+## Clarifications
+
+### Session 2026-11-06
+
+- Q: Do "HOB" and "Harmonieorkest Brummen" become one stakeholder name? → A: Yes, "Harmonieorkest
+  Brummen" for pretband, pretband-backend and hob-nl (changed in the catalog on 2026-11-06).
+- Q: Does the pop-up of a project have its own link? → A: Yes. While the pop-up is open, the page
+  address has the project id; a link with that id opens the page with that pop-up open.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See a short list, and the details of one project in a pop-up (Priority: P1)
@@ -38,8 +47,11 @@ closes it and returns the keyboard focus to that row.
    opens with all the details and links of that project (the same content as the facts of spec
    012).
 4. **Given** an open pop-up, **When** the Maintainer presses Escape or clicks the close button,
-   **Then** the pop-up closes and the focus goes back to the row.
-5. **Given** a browser without scripts, **When** the page opens, **Then** each row can still open
+   **Then** the pop-up closes, the focus goes back to the row, and the project id leaves the page
+   address.
+5. **Given** a link with the id of a project, **When** it opens, **Then** the page shows the pop-up
+   of that project.
+6. **Given** a browser without scripts, **When** the page opens, **Then** each row can still open
    its details (the page stays usable without scripts).
 
 ---
@@ -143,8 +155,9 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
 - **FR-003**: The page MUST have a name search, a state filter, a stakeholder filter (from the
   catalog) and a "has a site" filter, with a count "<shown> of <all>".
 - **FR-004**: The page MUST have a sort by state (default), name, last commit and next expiry.
-- **FR-005**: The filters, the sort and the active tab MUST be in the page address, so that a link
-  opens the same view.
+- **FR-005**: The filters, the sort, the active tab and the open pop-up (project id) MUST be in the
+  page address, so that a link opens the same view. A link with a project id that is not in the
+  catalog opens the page without a pop-up.
 - **FR-006**: The page MUST have the tabs "Projects", "Campaigns", "Shared tokens" and "History",
   each with a count when something in it needs attention.
 - **FR-007**: The total state, the title and the favicon (spec 012) MUST count all projects,
@@ -161,7 +174,8 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
 
 ### Key Entities
 
-- **View**: the search text, the filters, the sort and the tab; kept in the page address.
+- **View**: the search text, the filters, the sort, the tab and the open project; kept in the page
+  address.
 - **Project row**: dot, name, summary line (the worst fact), link to its pop-up.
 - **Project details**: the facts, problems and links of spec 012, in a pop-up.
 
@@ -188,9 +202,8 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
   step of "the status page as an app" in PLAN.md, without a framework.
 - The calm look of spec 012 stays the target: colour only for states that need attention, white
   space, one column. The DaisyUI theme gets the colours of spec 012.
-- Stakeholder values come from the catalog field `stakeholder`; "HOB" and "Harmonieorkest
-  Brummen" are now two values for the same group; the plan decides whether the catalog uses one
-  name.
+- Stakeholder values come from the catalog field `stakeholder`. One name for each group:
+  "Harmonieorkest Brummen" for pretband, pretband-backend and hob-nl (clarification 2026-11-06).
 - The data on the page is the same as now; this feature changes how it shows, not what is
   measured.
 

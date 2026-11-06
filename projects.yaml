@@ -76,7 +76,7 @@ projects:
     stack: WordPress
     host: WordPress hosting
     domain: harmonieorkestbrummen.nl
-    stakeholder: HOB
+    stakeholder: Harmonieorkest Brummen
     renewal:
       - name: Domain
         date: 2027-05-01
