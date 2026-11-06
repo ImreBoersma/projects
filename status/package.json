@@ -7,7 +7,9 @@
     "lint": "biome check .",
     "start": "bun run src/main.ts",
     "board:add": "bun run src/board/add.ts",
-    "board:sync": "bun run src/board/sync.ts"
+    "board:sync": "bun run src/board/sync.ts",
+    "campaign": "bun run src/campaign/run.ts",
+    "secret-set": "bun run src/secret-set.ts"
   },
   "dependencies": {
     "yaml": "^2.8.1"

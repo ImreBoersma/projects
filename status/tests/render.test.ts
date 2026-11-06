@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mapRepo } from "../src/github";
 import { renderPage, repairText, summary } from "../src/render";
 import { FAVICON } from "../src/style";
-import type { Problem, ProjectStatus, SecretStatus } from "../src/types";
+import type { CampaignSummary, Problem, ProjectStatus, SecretStatus } from "../src/types";
 import fixture from "./fixtures/graphql-response.json";
 import { status } from "./helpers";
 
@@ -630,5 +630,59 @@ describe("secrets on the page (spec 013)", () => {
         shared: { secrets: [], problems: [], gaps: [] },
       }),
     ).not.toContain("Shared tokens");
+  });
+});
+
+describe("campaigns on the page (spec 015)", () => {
+  const counts = (o: Partial<Record<string, number>>) => ({
+    merged: 0,
+    open: 0,
+    "failed-ci": 0,
+    closed: 0,
+    "to-do": 0,
+    "not-needed": 0,
+    ...o,
+  });
+  const campaign = (o: Partial<CampaignSummary> = {}): CampaignSummary => ({
+    id: "node-24",
+    title: "Use Node 24",
+    started: "2026-10-24",
+    counts: counts({ merged: 2, open: 2 }),
+    done: false,
+    doneAt: null,
+    url: "https://github.com/pulls?q=is%3Apr+head%3Acampaign%2Fnode-24",
+    ...o,
+  });
+  const page = (campaigns: CampaignSummary[]) =>
+    renderPage({ generatedAt, rows: [status()], issues: new Map(), campaigns });
+
+  test("the counts and the search link", () => {
+    const html = page([campaign()]);
+    expect(html).toContain('<h2>Campaigns <span class="count">1</span></h2>');
+    expect(html).toContain(
+      `<dd>2 merged${SEP}2 open${SEP}${A("https://github.com/pulls?q=is%3Apr+head%3Acampaign%2Fnode-24")}PRs${NT}</dd>`,
+    );
+    expect(html).toContain('<li class="project unknown">');
+    expect(html).toContain(">4 days ago</time>");
+  });
+
+  test("failed CI: an amber badge and dot; the total state does not change", () => {
+    const html = page([campaign({ counts: counts({ open: 1, "failed-ci": 1 }) })]);
+    expect(html).toContain('<span class="badge warn">1 failed CI</span>');
+    expect(html).toContain('<li class="project warn">');
+    expect(html).toContain("<title>Project status</title>");
+    expect(html).toContain('<section class="total correct">');
+  });
+
+  test("done: Done with the time", () => {
+    const html = page([
+      campaign({ done: true, doneAt: "2026-10-27T05:03:00Z", counts: counts({ merged: 4 }) }),
+    ]);
+    expect(html).toContain('<li class="project good">');
+    expect(html).toContain('<dd>Done <time datetime="2026-10-27T05:03:00Z"');
+  });
+
+  test("no campaigns: no section", () => {
+    expect(page([])).not.toContain("Campaigns");
   });
 });

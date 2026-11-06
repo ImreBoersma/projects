@@ -2,7 +2,7 @@ import { RULES } from "./conformance/rules";
 import { rowLinks } from "./links";
 import { PROBLEM_TEXT } from "./problems";
 import { css, FAVICON, ICON } from "./style";
-import type { Problem, ProjectStatus, SecretStatus, StatusPage } from "./types";
+import type { CampaignSummary, Problem, ProjectStatus, SecretStatus, StatusPage } from "./types";
 import {
   type BadgeKind,
   certificateKind,
@@ -261,6 +261,7 @@ ${section.rows.map((s) => project(s, now, page.issues)).join("\n")}
     )
     .join("\n");
   const sharedGroup = sharedSection(shared, now, page.issues);
+  const campaignGroup = campaignSection(page.campaigns ?? [], now);
   const history = page.historyStart ? ` · History from ${timeTag(page.historyStart, now)}` : "";
   return `<!doctype html>
 <html lang="en">
@@ -285,6 +286,7 @@ ${css()}
 <p id="stale" hidden>Warning: this data is more than 3 hours old.</p>
 </section>
 ${groups}
+${campaignGroup}
 ${sharedGroup}
 <script>
 if (Date.now() - Date.parse("${iso}") > ${STALE_MS}) document.getElementById("stale").hidden = false;
@@ -337,6 +339,40 @@ function sharedSection(
 <p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>Shared setup</p>
 ${problems.length ? `<ul class="problems">${problems.join("")}</ul>\n` : ""}${groups ? `<dl class="facts">${groups}</dl>` : ""}
 </li>
+</ul>
+</section>`;
+}
+
+// Spec 015, contracts/page.md: the progress of the campaigns. A warning only; no problem, no issue.
+const CAMPAIGN_TEXT: [keyof CampaignSummary["counts"], string][] = [
+  ["merged", "merged"],
+  ["open", "open"],
+  ["failed-ci", "failed CI"],
+  ["closed", "closed"],
+  ["to-do", "to do"],
+  ["not-needed", "not needed"],
+];
+
+function campaignSection(campaigns: CampaignSummary[], now: Date): string {
+  if (!campaigns.length) return "";
+  const items = campaigns.map((c) => {
+    const kind = c.counts["failed-ci"] ? "warn" : c.done ? "good" : "unknown";
+    const counts = c.done
+      ? `Done ${timeTag(c.doneAt as string, now)}`
+      : CAMPAIGN_TEXT.filter(([k]) => c.counts[k] > 0)
+          .map(([k, text]) =>
+            k === "failed-ci" ? badge("warn", `${c.counts[k]} ${text}`) : `${c.counts[k]} ${text}`,
+          )
+          .join(SEP);
+    return `<li class="project ${kind}">
+<p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>${html(c.title)} <span class="tag">started ${timeTag(c.started, now)}</span></p>
+<dl class="facts"><div><dt>PRs</dt><dd>${counts}${SEP}${link("PRs", c.url)}</dd></div></dl>
+</li>`;
+  });
+  return `<section>
+<h2>Campaigns <span class="count">${campaigns.length}</span></h2>
+<ul class="projects">
+${items.join("\n")}
 </ul>
 </section>`;
 }

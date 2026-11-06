@@ -80,6 +80,8 @@ export interface StatusPage {
   repair?: { averageMs: number; count: number } | null;
   generatedAt: Date;
   rows: ProjectStatus[];
+  // Spec 015: the campaigns to show.
+  campaigns?: CampaignSummary[];
   // Spec 013: the secrets of the shared setup (this repo).
   shared?: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[]; noExpiry?: string[] };
   // Marker key `<project id>/<reason>` to the number of the open status-problem issue.
@@ -154,4 +156,41 @@ export interface SecretStatus {
   date: string | null;
   days: number | null;
   source: "catalog" | "token" | "both";
+}
+
+// Spec 015: campaigns (data-model.md).
+export type CampaignChange =
+  | { kind: "write"; path: string; content: string }
+  | { kind: "replace"; path: string; old: string; new: string };
+
+export interface Campaign {
+  id: string;
+  title: string;
+  reason: string;
+  started: string;
+  repos: "all" | string[];
+  changes: CampaignChange[];
+}
+
+export type ApplyResult =
+  | { kind: "needed"; files: Map<string, string> }
+  | { kind: "not-needed" }
+  | { kind: "failed"; reason: string };
+
+export type RepoResult =
+  | { kind: "opened" | "updated" | "merged" | "closed"; pr: number }
+  | { kind: "not-needed" | "no-access" }
+  | { kind: "changed-by-hand"; pr: number }
+  | { kind: "failed"; reason: string };
+
+export type CampaignState = "merged" | "open" | "failed-ci" | "closed" | "not-needed" | "to-do";
+
+export interface CampaignSummary {
+  id: string;
+  title: string;
+  started: string;
+  counts: Record<CampaignState, number>;
+  done: boolean;
+  doneAt: string | null;
+  url: string;
 }
