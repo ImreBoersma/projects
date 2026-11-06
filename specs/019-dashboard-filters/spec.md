@@ -170,8 +170,10 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
 - **FR-009**: All controls MUST work with the keyboard; a pop-up MUST keep the focus inside while
   it is open and give it back to its row when it closes; each control MUST have a text for screen
   readers.
-- **FR-010**: Text and controls MUST have a contrast ratio of 4.5:1 or more in the light and the
-  dark scheme (spec 012 FR-009); colour MUST NOT be the only signal.
+- **FR-010**: Text and controls MUST have a contrast ratio of 4.5:1 or more; colour MUST NOT be the
+  only signal. Theme change 2026-11-06 (Maintainer): the page uses the DaisyUI theme "bumblebee"
+  for light and dark, so there is one (light) scheme; status badges are solid, because the
+  bumblebee colours are too light as text.
 - **FR-011**: The rules of the earlier specs MUST stay: the links and content rules (spec 001 and
   007), relative times and new-tab links (spec 012), no secret values (spec 013).
 

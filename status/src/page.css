@@ -1,5 +1,5 @@
 /* Spec 019: Tailwind + DaisyUI for the status page. scripts/build-css.ts fills the two themes from
-   TOKENS of src/style.ts and writes build/page.css; the page puts it inline (spec 007 FR-011). */
+   THEME of src/style.ts and writes build/page.css; the page puts it inline (spec 007 FR-011). */
 @import "tailwindcss";
 @source "./render.ts";
 @source "./client.ts";

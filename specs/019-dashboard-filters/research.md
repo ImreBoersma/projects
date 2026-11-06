@@ -101,3 +101,20 @@ keep the uptime of their own site.
 | Found | In the implementation | 2026-11-06 | (1) Closing a modal that a link opened left it open (`:target` stays); with the script the class `modal-open` opens it and CSS hides `:target` (research.md §2). (2) Tailwind's base removes the link underline: external links get the DaisyUI class `link` (spec 007 FR-012). (3) The uptime bar was in each modal and in History: now only in History (page size). (4) Side note: spec 001 forbade stakeholder names; the Maintainer allowed organisation names (spec 001 contract changed). |
 | Found in CI | 2026-11-06 | The size test used the built CSS, which CI does not build before the tests (fallback 60 KB → 153 KB). Now two fixed budgets: CSS < 60 KB (css.test.ts) and HTML < 90 KB for 20 sites with problems and dates (render.test.ts). Only "down" and "no data" uptime marks have a tooltip (the bar aria-label has the totals): worst case 93 → 80 KB of HTML. |
 | Live (T027) | 2026-11-06 | Merge e497333: build, history, issues and deploy passed. Live page 101 KB: 11 rows, 11 modals, 4 tabs, "All correct". The local run showed the certificate of imreboersma.nl at 27 days; the live run and `openssl` give 2027-02-03 (89 days): the local network reached another server. |
+
+## 9. Theme "bumblebee" (2026-11-06)
+
+**Decision**: the Maintainer's theme replaces the two themes from the spec 012 colours: white base,
+yellow primary, 2rem radius, noise. Three changes, for FR-010:
+
+- `color-scheme: light` (the pasted theme said `dark`; on a white base the browser then draws its
+  own controls, such as the select menus, dark).
+- Solid badges and a solid total block (content colour on the strong colour). As soft badges, the
+  strong colour is the text: warning 1.7:1, success 1.9:1, error 2.8:1 on white.
+- `--color-error-content` `oklch(28% 0.141 25.723)` in place of 39%: 4.95:1 on the error colour
+  (39% gives 3.5:1).
+
+`prefersdark: true` keeps the same light theme in a dark system: there is no dark scheme now.
+`style.test.ts` checks the theme pairs (oklch to sRGB, ≥ 4.5); the browser gave error 4.94,
+warning 5.24, neutral 8.24, total block 16.6. CSS 55.8 KB.
+

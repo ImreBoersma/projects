@@ -1,50 +1,48 @@
 import { describe, expect, test } from "bun:test";
-import { FAVICON, TOKENS, type Tokens } from "../src/style";
+import { FAVICON, THEME } from "../src/style";
 
-// WCAG 2.1 relative luminance and contrast ratio.
-function luminance(hex: string): number {
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const c = Number.parseInt(hex.slice(i, i + 2), 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+// oklch() to linear sRGB (CSS Color 4), then WCAG 2.1 relative luminance and contrast.
+function linear(value: string): number[] {
+  const m = value.match(/oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)/);
+  if (!m) throw new Error(`not oklch: ${value}`);
+  const L = Number(m[1]) / 100;
+  const C = Number(m[2]);
+  const h = (Number(m[3]) * Math.PI) / 180;
+  const a = C * Math.cos(h);
+  const b = C * Math.sin(h);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const mm = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  return [
+    4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * mm + 1.707614701 * s,
+  ].map((x) => Math.min(Math.max(x, 0), 1));
 }
+const luminance = (v: string) => {
+  const [r, g, b] = linear(v);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
 export function contrast(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
 
-const PAIRS: [keyof Tokens, keyof Tokens][] = [
-  ["fg", "bg"],
-  ["muted", "bg"],
-  ["link", "bg"],
-  ["stale", "bg"],
-  ["badFg", "bg"],
-  ["goodFg", "goodBg"],
-  ["warnFg", "warnBg"],
-  ["badFg", "badBg"],
-  ["unknownFg", "unknownBg"],
-  ["fg", "goodBg"],
-  ["fg", "badBg"],
-  ["fg", "unknownBg"],
-  ["muted", "goodBg"],
-  ["muted", "badBg"],
-  ["muted", "unknownBg"],
-  ["stale", "goodBg"],
-  ["stale", "badBg"],
-  ["stale", "unknownBg"],
+// The text pairs that the page draws (solid badges and alerts: content on the colour).
+const PAIRS: [string, string][] = [
+  ["--color-base-content", "--color-base-100"],
+  ["--color-base-content", "--color-base-200"],
+  ["--color-error-content", "--color-error"],
+  ["--color-warning-content", "--color-warning"],
+  ["--color-success-content", "--color-success"],
+  ["--color-neutral-content", "--color-neutral"],
 ];
 
-describe("tokens (FR-009, SC-004)", () => {
-  test("contrast is 4.5 or more for each pair in both schemes", () => {
-    const fails: string[] = [];
-    for (const scheme of ["light", "dark"] as const) {
-      const t = TOKENS[scheme];
-      for (const [fg, bg] of PAIRS) {
-        const ratio = contrast(t[fg], t[bg]);
-        if (ratio < 4.5) fails.push(`${scheme} ${fg}/${bg} ${ratio.toFixed(2)}`);
-      }
-    }
+describe("theme (spec 019 FR-010)", () => {
+  test("contrast is 4.5 or more for each text pair", () => {
+    const fails = PAIRS.filter(([fg, bg]) => contrast(THEME[fg], THEME[bg]) < 4.5).map(
+      ([fg, bg]) => `${fg}/${bg} ${contrast(THEME[fg], THEME[bg]).toFixed(2)}`,
+    );
     expect(fails).toEqual([]);
   });
 

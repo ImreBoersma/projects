@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { TOKENS } from "../src/style";
+import { THEME } from "../src/style";
 
 // Spec 019 SC-005 and spec 007 FR-011: the built CSS goes inline and loads nothing.
 let css = "";
@@ -17,11 +17,12 @@ describe("build/page.css (spec 019)", () => {
     expect(css).not.toMatch(/url\(\s*["']?(https?:)?\/\//);
   });
 
-  test("the themes have the colours of TOKENS; the strong colour is --color-error (analysis C1)", () => {
-    expect(css).toContain("calm");
-    expect(css).toContain(TOKENS.light.bg);
-    expect(css).toMatch(new RegExp(`--color-error:\\s*${TOKENS.light.badFg}`));
-    expect(css).toMatch(new RegExp(`--color-error:\\s*${TOKENS.dark.badFg}`));
+  test("the bumblebee theme, light, with the darker error text", () => {
+    expect(css).toContain("bumblebee");
+    expect(css).toMatch(/color-scheme:\s*light/);
+    // The minifier writes 0.141 as .141.
+    expect(css).toMatch(/--color-error-content:\s*oklch\(28%\s+0?\.141\s+25\.723\)/);
+    expect(THEME["--color-error-content"]).toBe("oklch(28% 0.141 25.723)");
   });
 
   test("without the script: no controls, all panels (FR-008)", () => {

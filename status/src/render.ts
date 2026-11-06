@@ -36,12 +36,13 @@ const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 // Spec 012 design revision (research.md §9): colour only for a state that is not good.
 // `inner` is HTML.
-// Spec 019: DaisyUI soft badges; the kind class stays for the tests and the CSS.
+// Spec 019: DaisyUI solid badges (the bumblebee colours are too light as text); the kind class
+// stays for the tests and the CSS.
 const BADGE_CLASS = { warn: "badge-warning", bad: "badge-error", unknown: "badge-neutral" };
 const badge = (kind: BadgeKind, inner: string) =>
   kind === "good"
     ? inner
-    : `<span class="badge badge-soft badge-sm ${BADGE_CLASS[kind]} ${kind}">${inner}</span>`;
+    : `<span class="badge badge-sm ${BADGE_CLASS[kind]} ${kind}">${inner}</span>`;
 
 // Spec 012 FR-006: the relative time is the visible text; the exact time is in the tooltip and
 // for screen readers. The page script keeps the text current (research.md §3).
@@ -191,7 +192,7 @@ const secretText = (x: SecretStatus, now: Date) =>
   );
 // Spec 013 FR-010: a warning, not a problem; the dot and the total state do not change.
 const noExpiryText = (names: string[]) =>
-  `<span class="badge badge-soft badge-sm badge-warning warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: ${html(names.join(", "))}</span>`;
+  `<span class="badge badge-sm badge-warning warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: ${html(names.join(", "))}</span>`;
 const gapText = (names: string[]) => `Secret not in the catalog: ${html(names.join(", "))}`;
 
 // The separator is text, so that a copy of the page keeps it.
@@ -321,7 +322,7 @@ export function renderPage(page: StatusPage): string {
   ];
   const tabs = TABS.map(
     ([id, label]) =>
-      `<a role="tab" class="tab${id === "projects" ? " tab-active" : ""}" data-tab="${id}" href="?tab=${id}" aria-selected="${id === "projects"}">${label}${tabCount[id] ? ` <span class="badge badge-soft badge-sm ${id === "projects" ? "badge-error" : "badge-warning"} ml-1">${tabCount[id]}</span>` : ""}</a>`,
+      `<a role="tab" class="tab${id === "projects" ? " tab-active" : ""}" data-tab="${id}" href="?tab=${id}" aria-selected="${id === "projects"}">${label}${tabCount[id] ? ` <span class="badge badge-sm ${id === "projects" ? "badge-error" : "badge-warning"} ml-1">${tabCount[id]}</span>` : ""}</a>`,
   ).join("");
   const option = (value: string, text: string) =>
     `<option value="${html(value)}">${html(text)}</option>`;
@@ -372,7 +373,7 @@ ${page.css ?? ""}
 <h1 class="text-xl font-semibold">Project status</h1>
 <nav class="flex gap-4 text-sm">${link("Roadmap", ROADMAP)}${link("Project board", BOARD)}</nav>
 </header>
-<section class="total ${total.kind} alert alert-soft ${totalClass} mb-6 flex flex-col items-start gap-1">
+<section class="total ${total.kind} alert ${totalClass} mb-6 flex flex-col items-start gap-1">
 <p class="state flex items-center gap-3 text-xl font-semibold"><span aria-hidden="true" class="size-6">${ICON[total.kind]}</span>${total.text}</p>
 <p class="summary">${html(summary(page.rows, shared.problems.length))} ${html(repairText(page.repair ?? null))}</p>
 <p class="meta text-sm opacity-75">Updated ${timeTag(iso, now)}${history}</p>
