@@ -50,11 +50,17 @@ content (FR-008).
 
 ## 4. Theme colours and contrast
 
-**Decision**: the two DaisyUI themes get their values from `TOKENS` of `status/src/style.ts`
-(`base-100` = `bg`, `base-content` = `fg`, `error`/`error-content` = `badBg`/`badFg`,
-`warning`/`warning-content` = `warnBg`/`warnFg`, `success` = `goodBg`/`goodFg`, `neutral` =
-`unknown...`). `scripts/build-css.ts` writes these values into the theme blocks before it runs
-the CLI, so the contrast test of `style.test.ts` still covers the colours on the page.
+**Decision**: the two DaisyUI themes get their values from `TOKENS` of `status/src/style.ts`.
+In DaisyUI, `--color-error` is the strong colour and `--color-error-content` the text on it; the
+soft badge (`badge-soft`) uses `--color-error` as its text and a mix of it with `base-100` as its
+background. So (analysis C1): `base-100` = `bg`, `base-200` = `line`, `base-content` = `fg`,
+`primary` = `link`, `error` = `badFg`, `warning` = `warnFg`, `success` = `goodFg`, `neutral` =
+`unknownFg`, and each `-content` = `bg`. `scripts/build-css.ts` writes these values into the theme
+blocks before it runs the CLI.
+
+**Contrast check**: the `TOKENS` test of `style.test.ts` stays, but it does not cover the colours
+that DaisyUI mixes. The browser check (T023) reads the computed text and background colour of each
+badge kind and of the controls in both schemes and calculates the ratio (≥ 4.5).
 
 ## 5. The summary fact of a row
 
