@@ -44,6 +44,9 @@ roadmap.
   date, `never` or `none`; no values, no host accounts). The status tokens give their own date.
   An issue 30 days before a date; "No expiry" warning for a secret that can expire but has no
   date; a note for a workflow secret that is not listed. All tokens expire on 2027-11-05/06.
+- Spec 015: campaigns (`campaigns/<id>.yaml`, `bun run campaign <id>`): one fixed file change as a
+  PR in many repos, with a dry run and a guard for hand fixes; progress in the section
+  "Campaigns" of the status page. `bun run secret-set <NAME>` sets one secret in all its repos.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -70,7 +73,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 012 | Status page visual polish (done) | 007 |
 | 013 | Expiry of tokens and secrets (done) | 009 |
 | 014 | Free-tier usage warnings | 005 |
-| 015 | Changes in all repos at once (campaigns) (planned) | 008 |
+| 015 | Changes in all repos at once (campaigns) (done) | 008 |
 | 016 | Version drift between projects | 008 |
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
