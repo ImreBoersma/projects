@@ -82,6 +82,9 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
+| 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K | 019 |
+| 021 | History charts | 010, 019, 020 |
+| 022 | Stakeholder view and status badges | 019, 020 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -233,6 +236,44 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - The checklist: archive the repo, keep or stop the domain and the hosting, set the catalog
   status to `archived`, remove it from the board.
 - Reason: fewer projects means less maintenance (Principle VIII).
+
+### 020. Status app basics
+
+- **Data file**: each status run publishes `status.json` next to the page: the view model of
+  `status/src/view.ts` for each project, the total state and the time of the update. The content
+  rules of spec 001 (no text from private repos, no names of people) apply to it as to the page.
+  It is the base for 021, 022 and a later app.
+- **Since your last visit**: the browser keeps the time of the last visit (local storage, only in
+  that browser). The page marks the problems and warnings that are new since then, and the ones
+  that stopped: "2 new, 1 fixed since yesterday 18:00".
+- **Installable app**: a web app manifest and a small service worker, so that the page installs
+  on a phone or a computer, opens full screen and shows the last known state offline. The app
+  icon shows the number of problems as a badge where the system supports it.
+- **Shortcut links**: in each pop-up, links to the GitHub pages that do the work after their own
+  login: re-run the last CI run, the Renovate dashboard, the deployments, and "start the status
+  run now" (workflow dispatch page). The page itself gets no write access.
+- **⌘K**: a command box (⌘K or Ctrl+K) to jump to a project, a tab or a filter with the keyboard.
+- Reason: the daily use of the page. Without a server (Principle VIII).
+
+### 021. History charts
+
+- The History tab reads the day files of the branch `data` (spec 010) in the browser, or a
+  summary that the status run writes, and draws: the uptime of each site for 30 and 90 days, the
+  number of problems over time, and the repair time for each month.
+- Charts without an external library when possible (inline SVG); else one small library built
+  into the page (spec 007 FR-011: no external files).
+- Reason: the history grows each hour since 2026-11-05; now it shows only "since" and 30 marks.
+
+### 022. Stakeholder view and status badges
+
+- **Stakeholder view**: with `?stakeholder=<organisation>` the page can show a plain-language
+  view without the technical facts (CI, Renovate, commits): "The website was online for 30 days.
+  The domain renewal is in 5 months. Nothing needs your attention." A print layout for a monthly
+  page in a board meeting.
+- **Status badges**: the status run writes one small SVG for each project ("hob.nl ● online"),
+  for the README of each repo and the footer of a site. No external badge service.
+- Both follow the content rules of spec 001 (organisation names allowed, names of people not).
+- Reason: constitution Principle VII (read-only views for stakeholders).
 
 ## Ongoing (no spec)
 
