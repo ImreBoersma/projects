@@ -85,3 +85,12 @@ a log line. Kind `environment-secret` is not supported (the environment name is 
 catalog); the command says so.
 
 **Rationale**: `gh secret set` encrypts the value for each repo; no own encryption code.
+
+## 9. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| Unit tests, lint, types (T019) | 2026-11-06 | 258 tests pass (baseline 230); Biome and `tsc` clean. |
+| Dry run (T020) | 2026-11-06 | `campaigns/test-readme.yaml` (a new file `CAMPAIGN-TEST.md`, so no existing content changes) for scales-exercises and boek-de-bus: 2 lines `would open` with the diff, 3 seconds, no branch in either repo after the run. Local page: section "Campaigns" with "2 to do". |
+| Found in the implementation | 2026-11-06 | (1) Side note: a re-run force-updated a campaign branch and so removed hand fixes; now the command updates a branch only when it has exactly its own commit, else `changed by hand` (`--overwrite` to force). (2) `secret-set` needs a terminal: a value from a pipe is refused, so it cannot come from the shell history. (3) T013: a campaign that started more than 180 days ago is not read (simpler than "done and old": proving "done" needs the requests that the rule saves). |
+
