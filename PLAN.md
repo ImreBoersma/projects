@@ -82,7 +82,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
-| 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (specified) | 019 |
+| 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (planned) | 019 |
 | 021 | History charts | 010, 019, 020 |
 | 022 | Stakeholder view and status badges | 019, 020 |
 
