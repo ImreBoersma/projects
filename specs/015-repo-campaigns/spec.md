@@ -11,13 +11,22 @@ example 'Node 22 to 24', a new shared workflow version), with one label for the 
 status page shows each open campaign: the number of PRs merged, open and failed. Reason: changes
 for all repos (presets, shared CI, conformance repairs) are now done by hand, one repo at a time."
 
+## Clarifications
+
+### Session 2026-11-06
+
+- Q: Can a campaign run a command in each repo, or only make fixed file changes? → A: Fixed file
+  changes only (write or replace a file, replace text). A command can come later when a real case
+  needs it.
+- Q: Does the command that sets one secret in many repos (US3) stay in this spec? → A: Yes, as
+  P3. It uses the catalog list of spec 013 and is built last; it can be dropped if time is short.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open one change in all repos with one command (Priority: P1)
 
 The Maintainer writes a campaign in this repo: a short id, a title, a reason, the repos it
-applies to, and the change (files to write or text to replace, or a command that runs in each
-repo). One command makes a branch and a PR in each repo that needs the change, all with the same
+applies to, and the change (files to write, or text to replace). One command makes a branch and a PR in each repo that needs the change, all with the same
 title and the label of the campaign. A repo that already has the change gets no PR.
 
 **Why this priority**: changes for all repos (the Renovate preset of spec 003, the shared CI of
@@ -38,8 +47,8 @@ with the reason and a link to the campaign. Run the command again: no second PR.
    command again, **Then** the open PRs get the new change (one PR for each repo stays).
 4. **Given** a dry run, **When** the Maintainer runs the command with it, **Then** the command
    shows for each repo the change that it would make, and changes no repo.
-5. **Given** a repo where the change fails (for example the command gives an error), **When** the
-   command runs, **Then** that repo gets no PR, the result shows the error for that repo, and the
+5. **Given** a repo where the change fails (for example the text to replace is not in the file),
+   **When** the command runs, **Then** that repo gets no PR, the result shows the error for that repo, and the
    other repos continue.
 
 ---
@@ -100,6 +109,8 @@ the shell history or in a log.
 - An archived catalog project: not part of a campaign.
 - A PR of the campaign that the Maintainer closed without a merge: it counts as "closed"; the next
   run of the command does not open it again for that repo, unless the Maintainer asks for it.
+- A text replacement where the old text is not in the file, and the new text is not there either:
+  "failed" for that repo, with the file name. When the new text is already there: "not needed".
 - A change that Renovate also makes (a dependency version): not a campaign. The campaign text
   tells the Maintainer to use Renovate for dependencies (constitution Principle IV).
 - Two campaigns that change the same file in one repo: each has its own branch and PR; a merge
@@ -113,8 +124,9 @@ the shell history or in a log.
 ### Functional Requirements
 
 - **FR-001**: A campaign MUST be a file in this repo with an id (unique), a title, a reason, the
-  target repos (all catalog repos, or a list of catalog ids), and the change: files to write, text
-  to replace, or one command that runs in a copy of each repo.
+  target repos (all catalog repos, or a list of catalog ids), and the change: files to write
+  (complete content), or text to replace in a file (old text, new text). A campaign MUST NOT run a
+  command in a repo.
 - **FR-002**: One command MUST apply a campaign: for each target repo, make the change on a branch
   of the campaign, and open or update one PR with the campaign title, the label of the campaign,
   and a body with the reason and a link to the campaign file.
@@ -139,7 +151,8 @@ the shell history or in a log.
 
 ### Key Entities
 
-- **Campaign**: id, title, reason, target repos, change, start date.
+- **Campaign**: id, title, reason, target repos, change (a list of file writes and text
+  replacements), start date.
 - **Campaign PR**: repo, PR number, state (open, merged, closed), CI result.
 - **Campaign result**: for each target repo one of: PR opened, PR updated, not needed, failed (with
   the error), no access.

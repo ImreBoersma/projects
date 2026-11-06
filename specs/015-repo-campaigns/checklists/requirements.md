@@ -33,4 +33,5 @@
 
 - FR-006 keeps write access out of CI: the command runs with the Maintainer's own login. This is a
   scope decision, not an implementation detail; record it in the plan.
-- US3 (secret command) is P3 and can move to its own spec if the plan shows it does not fit.
+- US3 (secret command) stays as P3 (clarification 2026-11-06).
+- Campaign changes are fixed file changes only (clarification 2026-11-06).
