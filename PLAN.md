@@ -74,6 +74,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 016 | Version drift between projects | 008 |
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
+| 019 | Status page filters, sorting and detail views (specified) | 012, 013, 015 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -238,7 +239,10 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - **Static host**: Cloudflare Pages or Vercel. Before you put HOB or orchestra work on Vercel,
   read the commercial-use terms of Vercel Hobby (Principle VIII). No spec needs this decision now.
   Decide when you move the first static app.
-- **Status page as an app**: the status page is expected to become an app (filters, views for one
+- **Status page as an app**: first step decided on 2026-11-06 (spec 019): DaisyUI styles built
+  into the static page, with a small script for filters, sort, tabs and pop-ups; no framework, no
+  server. The next step (Next.js) only when a write action or server data is necessary.
+- **Status page as an app (earlier note)**: the status page is expected to become an app (filters, views for one
   stakeholder, data that changes in the browser). Until then it stays a static page with no UI
   library (spec 012 research.md §1). Start the app when one of these is necessary: a view for one
   stakeholder, filters or search, or a write action. Then use the stack of the other projects
