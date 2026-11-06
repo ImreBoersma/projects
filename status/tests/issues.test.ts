@@ -187,3 +187,42 @@ describe("expiry issues (spec 009)", () => {
     expect(plan([], open).close.map((c) => c.number)).toEqual([4]);
   });
 });
+
+describe("secret issues (spec 013)", () => {
+  const secret = (projectId: string, name: string): Problem => ({
+    projectId,
+    reason: "secret-expiring",
+    key: `${projectId}/secret-expiring/${name.toLowerCase()}`,
+    text: `The secret ${name} expires in 20 days.`,
+    secret: {
+      kind: "actions-secret",
+      where: "ImreBoersma/projects",
+      date: "2026-11-17",
+      source: "both",
+    },
+  });
+
+  test("a shared secret opens one issue for the Shared setup", () => {
+    const actions = plan([secret("shared", "TOKEN_A")], []);
+    expect(actions.open).toHaveLength(1);
+    const { title, body } = actions.open[0];
+    expect(title).toBe("Shared setup: The secret TOKEN_A expires in 20 days.");
+    expect(body).toContain("<!-- status-problem: shared/secret-expiring/token_a -->");
+    expect(body).toContain(
+      "Where: actions-secret in ImreBoersma/projects\nDate: 2026-11-17 (catalog and token)\n\nDo these steps:",
+    );
+    expect(body).toContain("2. Set it in ImreBoersma/projects (actions-secret).");
+  });
+
+  test("a project secret uses the project name", () => {
+    expect(plan([secret("one", "SSH")], []).open[0].title).toBe(
+      "One: The secret SSH expires in 20 days.",
+    );
+  });
+
+  test("the issue closes when the problem stops, and stays with a keep key", () => {
+    const open = [issue(7, "shared/secret-expiring/token_a")];
+    expect(plan([], open).close.map((c) => c.number)).toEqual([7]);
+    expect(plan([], open, [], false, [], ["shared/secret-expiring/token_a"]).close).toEqual([]);
+  });
+});

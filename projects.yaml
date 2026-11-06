@@ -1,5 +1,6 @@
 # Project catalog. Format: specs/001-project-status-page/contracts/catalog.md
-# Do not put contact details or secrets in this file (constitution, Principle III).
+# Do not put contact details or secret values in this file (constitution, Principle III).
+# Secret names, places and dates are allowed (spec 013).
 projects:
   - id: beter-dan-de-midi
     name: Beter dan de MIDI
@@ -106,3 +107,94 @@ projects:
     domain:
     stakeholder:
     renewal:
+
+# Spec 013: each secret that the projects and this repo use. Names, places and dates only.
+# `expires`: a date; `never` when an expiry is possible but not set (the page warns); `none` when
+# the value cannot expire (a host name, a URL, a key without an expiry setting).
+secrets:
+  # This repo (shared setup).
+  - name: STATUS_READ_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: never
+  - name: STATUS_READ_TOKEN_HOB
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: 2027-11-06
+  - name: CONFORMANCE_READ_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: never
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: 2027-11-05
+  - name: BOARD_SYNC_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: 2027-11-05
+  - name: STATUS_HEALTHCHECK_URL
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: none
+  # Project repos.
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/Beter-dan-de-MIDI
+    expires: 2027-11-05
+    project: beter-dan-de-midi
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/boek-de-bus
+    expires: 2027-11-05
+    project: boek-de-bus
+  - name: VERCEL_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/boek-de-bus
+    expires: 2027-11-05
+    project: boek-de-bus
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/personal-website
+    expires: 2027-11-05
+    project: personal-website
+  - name: VERCEL_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/personal-website
+    expires: 2027-11-05
+    project: personal-website
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/scales-exercises
+    expires: 2027-11-05
+    project: scales-exercises
+  - name: BUILD_ENV
+    kind: actions-secret
+    where: ImreBoersma/scales-exercises
+    expires: none
+    project: scales-exercises
+  - name: FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA
+    kind: actions-secret
+    where: ImreBoersma/scales-exercises
+    expires: none
+    project: scales-exercises
+  - name: HOB_SSH_HOST
+    kind: actions-secret
+    where: harmonieorkest-brummen/hob-nl
+    expires: none
+    project: hob-nl
+  - name: HOB_SSH_USER
+    kind: actions-secret
+    where: harmonieorkest-brummen/hob-nl
+    expires: none
+    project: hob-nl
+  - name: HOB_SSH_PASSWORD
+    kind: actions-secret
+    where: harmonieorkest-brummen/hob-nl
+    expires: none
+    project: hob-nl
+  - name: RENOVATE_APP_PRIVATE_KEY
+    kind: actions-secret
+    where: ImreBoersma/HomeLab
+    expires: none
+    project: homelab

@@ -22,20 +22,18 @@ secrets:
     where: harmonieorkest-brummen/hob-nl
     expires: never
     project: hob-nl
-  - name: WordPress admin
-    kind: account
-    where: GoDaddy
-    expires: never
-    project: hob-nl
 ```
 
 Rules (data-model.md "SecretEntry"); each failure stops the run with
 `Catalog error in secrets item <n>, field <field>: <rule>` before any output (spec 001 FR-015):
 
 - `name`: required, 1 to 60 characters of `A-Z a-z 0-9 _ -` and space.
-- `kind`: one of `actions-secret`, `environment-secret`, `actions-variable`, `account`.
-- `where`: `owner/repo` for the first three kinds; text of 1 to 40 characters for `account`.
-- `expires`: `YYYY-MM-DD` (a real date) or `never`.
+- `kind`: one of `actions-secret`, `environment-secret`, `actions-variable`. The kind `account`
+  is refused: host logins are not listed in this public file (spec clarification); they stay in
+  the password manager.
+- `where`: `owner/repo`.
+- `expires`: `YYYY-MM-DD` (a real date), `never` (an expiry is possible but not set: the page
+  warns, FR-010) or `none` (the value cannot expire: no warning).
 - `project`: empty or a catalog id.
 - `name` + `where` unique (case-insensitive).
 - No other fields. A field named `value`, `secret`, `password` or `token` is an error with the

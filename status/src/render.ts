@@ -2,7 +2,7 @@ import { RULES } from "./conformance/rules";
 import { rowLinks } from "./links";
 import { PROBLEM_TEXT } from "./problems";
 import { css, FAVICON, ICON } from "./style";
-import type { ProjectStatus, StatusPage } from "./types";
+import type { Problem, ProjectStatus, SecretStatus, StatusPage } from "./types";
 import {
   type BadgeKind,
   certificateKind,
@@ -11,6 +11,7 @@ import {
   relTime,
   renewalKind,
   rowKind,
+  secretKind,
   sections,
   totalState,
 } from "./view";
@@ -137,6 +138,7 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
   if (s.conformanceNotAvailable.length) {
     code.push(`Setup check not available: ${html(s.conformanceNotAvailable.join(", "))}`);
   }
+  if (s.secretGaps.length) code.push(gapText(s.secretGaps));
 
   const expiry: string[] = [];
   const { certificate, renewals, registryNotKnown } = s.expiry;
@@ -155,6 +157,12 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
     );
   }
   if (registryNotKnown) expiry.push("Domain date not known");
+  const secrets = [...s.secrets].sort((a, b) => (a.days as number) - (b.days as number));
+  if (secrets.length) {
+    const more = secrets.length > 1 ? ` (+${secrets.length - 1} more)` : "";
+    expiry.push(`${secretText(secrets[0], now)}${more}`);
+  }
+  if (s.secretsNoExpiry.length) expiry.push(noExpiryText(s.secretsNoExpiry));
 
   return [
     { label: "Site", items: site },
@@ -162,6 +170,17 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
     { label: "Expiry", items: expiry },
   ].filter((g) => g.items.length > 0);
 }
+
+// Spec 013: one secret with its date, and the names that the catalog does not list.
+const secretText = (x: SecretStatus, now: Date) =>
+  badge(
+    secretKind(x.days as number),
+    `Secret ${html(x.entry.name)} ${timeTag(x.date as string, now)}`,
+  );
+// Spec 013 FR-010: a warning, not a problem; the dot and the total state do not change.
+const noExpiryText = (names: string[]) =>
+  `<span class="badge warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: ${html(names.join(", "))}</span>`;
+const gapText = (names: string[]) => `Secret not in the catalog: ${html(names.join(", "))}`;
 
 // The separator is text, so that a copy of the page keeps it.
 const SEP = '<span class="sep" aria-hidden="true"> · </span>';
@@ -177,7 +196,7 @@ function project(s: ProjectStatus, now: Date, issues: Map<string, number>): stri
   const links = rowLinks(s, issues);
   const kind = rowKind(s);
   const problems = s.problems.map((p) => {
-    const text = `${link(html(p.text ?? PROBLEM_TEXT[p.reason]), links.problems.get(p.reason) ?? null)}${sinceText(s, p.key, now)}`;
+    const text = `${link(html(p.text ?? PROBLEM_TEXT[p.reason]), links.problems.get(p.key) ?? null)}${sinceText(s, p.key, now)}`;
     return `<li>${p.detail?.length ? `${text}<br><span class="rules">${ruleList(p.detail)}</span>` : text}</li>`;
   });
   const tag =
@@ -207,7 +226,7 @@ export function repairText(repair: { averageMs: number; count: number } | null):
 }
 
 // FR-007, contracts/page.md "Summary line".
-export function summary(rows: ProjectStatus[]): string {
+export function summary(rows: ProjectStatus[], sharedProblems = 0): string {
   const problems = rows.reduce((n, r) => n + r.problems.length, 0);
   const withProblem = rows.filter((r) => r.problems.length > 0).length;
   const parts =
@@ -222,13 +241,15 @@ export function summary(rows: ProjectStatus[]): string {
   if (checked.length > 0) {
     parts.push(`${up} of ${count(checked.length, "site")} ${up === 1 ? "is" : "are"} up.`);
   }
+  if (sharedProblems > 0) parts.push(`${count(sharedProblems, "shared problem")}.`);
   return parts.join(" ");
 }
 
 export function renderPage(page: StatusPage): string {
   const now = page.generatedAt;
   const iso = now.toISOString();
-  const total = totalState(page.rows);
+  const shared = page.shared ?? { secrets: [], problems: [], gaps: [] };
+  const total = totalState(page.rows, shared.problems.length);
   const groups = sections(page.rows)
     .map(
       (section) => `<section>
@@ -239,6 +260,7 @@ ${section.rows.map((s) => project(s, now, page.issues)).join("\n")}
 </section>`,
     )
     .join("\n");
+  const sharedGroup = sharedSection(shared, now, page.issues);
   const history = page.historyStart ? ` · History from ${timeTag(page.historyStart, now)}` : "";
   return `<!doctype html>
 <html lang="en">
@@ -258,11 +280,12 @@ ${css()}
 </header>
 <section class="total ${total.kind}">
 <p class="state"><span aria-hidden="true">${ICON[total.kind]}</span>${total.text}</p>
-<p class="summary">${html(summary(page.rows))} ${html(repairText(page.repair ?? null))}</p>
+<p class="summary">${html(summary(page.rows, shared.problems.length))} ${html(repairText(page.repair ?? null))}</p>
 <p class="meta">Updated ${timeTag(iso, now)}${history}</p>
 <p id="stale" hidden>Warning: this data is more than 3 hours old.</p>
 </section>
 ${groups}
+${sharedGroup}
 <script>
 if (Date.now() - Date.parse("${iso}") > ${STALE_MS}) document.getElementById("stale").hidden = false;
 ${relTime.toString()}
@@ -275,4 +298,45 @@ setInterval(updateTimes, 60000);
 </body>
 </html>
 `;
+}
+
+// Spec 013, contracts/page-issue.md: the group "Shared tokens" for the secrets of this repo.
+function sharedSection(
+  shared: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[]; noExpiry?: string[] },
+  now: Date,
+  issues: Map<string, number>,
+): string {
+  const undated = shared.noExpiry ?? [];
+  if (!shared.secrets.length && !shared.problems.length && !shared.gaps.length && !undated.length) {
+    return "";
+  }
+  const kind = shared.problems.length
+    ? "bad"
+    : shared.secrets.some((x) => secretKind(x.days as number) !== "good")
+      ? "warn"
+      : "good";
+  const problems = shared.problems.map((p) => {
+    const number = issues.get(p.key);
+    const url = number ? `https://github.com/ImreBoersma/projects/issues/${number}` : null;
+    return `<li>${link(html(p.text ?? PROBLEM_TEXT[p.reason]), url)}</li>`;
+  });
+  const secrets = [...shared.secrets]
+    .sort((a, b) => (a.days as number) - (b.days as number))
+    .map((x) => secretText(x, now));
+  const groups = [
+    { label: "Expiry", items: undated.length ? [...secrets, noExpiryText(undated)] : secrets },
+    { label: "Code", items: shared.gaps.length ? [gapText(shared.gaps)] : [] },
+  ]
+    .filter((g) => g.items.length)
+    .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
+    .join("");
+  return `<section>
+<h2>Shared tokens</h2>
+<ul class="projects">
+<li class="project ${kind}">
+<p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>Shared setup</p>
+${problems.length ? `<ul class="problems">${problems.join("")}</ul>\n` : ""}${groups ? `<dl class="facts">${groups}</dl>` : ""}
+</li>
+</ul>
+</section>`;
 }

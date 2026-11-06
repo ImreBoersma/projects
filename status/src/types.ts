@@ -29,7 +29,8 @@ export type Reason =
   | "site-down"
   | "not-conformant"
   | "cert-expiring"
-  | "renewal-due";
+  | "renewal-due"
+  | "secret-expiring";
 
 export interface Problem {
   projectId: string;
@@ -41,6 +42,8 @@ export interface Problem {
   text?: string;
   // Spec 009: where a renewal date comes from; the issue steps differ.
   source?: "catalog" | "registry";
+  // Spec 013: the place and the date of an expiring secret, for the issue text.
+  secret?: { kind: SecretKind; where: string; date: string; source: SecretStatus["source"] };
 }
 
 export type Deploy = { at: Date; result: "succeeded" | "failed" | "in-progress" } | "unknown";
@@ -64,6 +67,11 @@ export interface ProjectStatus {
   expiry: Expiry;
   // Spec 010: values from the stored results.
   history: ProjectHistory;
+  // Spec 013: the secrets of this project with a date, and the names that are not in the catalog.
+  secrets: SecretStatus[];
+  secretGaps: string[];
+  // Spec 013 FR-010: names of secrets that can expire but have no date.
+  secretsNoExpiry: string[];
 }
 
 export interface StatusPage {
@@ -72,6 +80,8 @@ export interface StatusPage {
   repair?: { averageMs: number; count: number } | null;
   generatedAt: Date;
   rows: ProjectStatus[];
+  // Spec 013: the secrets of the shared setup (this repo).
+  shared?: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[]; noExpiry?: string[] };
   // Marker key `<project id>/<reason>` to the number of the open status-problem issue.
   issues: Map<string, number>;
 }
@@ -124,4 +134,24 @@ export interface ProjectHistory {
   uptime: { percent: number | null; days: DayMark[] } | null;
   // Date (UTC) of the last day of the bar.
   uptimeEnd?: string;
+}
+
+// Spec 013: the catalog list `secrets` (contracts/catalog.md).
+// No `account`: host logins are not listed in the public catalog (spec 013 clarification).
+export type SecretKind = "actions-secret" | "environment-secret" | "actions-variable";
+
+export interface SecretEntry {
+  name: string;
+  kind: SecretKind;
+  where: string;
+  expires: string;
+  project: string | null;
+}
+
+export interface SecretStatus {
+  entry: SecretEntry;
+  owner: string;
+  date: string | null;
+  days: number | null;
+  source: "catalog" | "token" | "both";
 }

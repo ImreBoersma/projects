@@ -1,5 +1,6 @@
 // Spec 012: the view model of the page. Pure functions, no HTML (research.md §2).
 import { CERT_LIMIT, RENEWAL_LIMIT } from "./expiry/expiry";
+import { SECRET_LIMIT } from "./secrets/expiry";
 import type { ProjectStatus } from "./types";
 
 export type BadgeKind = "good" | "warn" | "bad" | "unknown";
@@ -35,8 +36,9 @@ export const checkNotAvailable = (s: ProjectStatus) =>
 
 export type TotalKind = "correct" | "problems" | "not-available";
 
-export function totalState(rows: ProjectStatus[]) {
-  const problems = rows.reduce((n, r) => n + r.problems.length, 0);
+// Spec 013: the shared problems (this repo) count with the problems of the projects.
+export function totalState(rows: ProjectStatus[], sharedProblems = 0) {
+  const problems = rows.reduce((n, r) => n + r.problems.length, 0) + sharedProblems;
   const kind: TotalKind =
     problems > 0 ? "problems" : rows.some(checkNotAvailable) ? "not-available" : "correct";
   const text =
@@ -86,6 +88,8 @@ export const certificateKind = (days: number | "not-known"): BadgeKind =>
 
 export const renewalKind = (days: number): BadgeKind => dateKind(days, RENEWAL_LIMIT);
 
+export const secretKind = (days: number): BadgeKind => dateKind(days, SECRET_LIMIT);
+
 // Spec 012 design revision: the dot in front of a project name.
 export function rowKind(s: ProjectStatus): BadgeKind {
   if (s.problems.length > 0) return "bad";
@@ -94,6 +98,7 @@ export function rowKind(s: ProjectStatus): BadgeKind {
   const dates = [
     ...(certificate && certificate !== "not-known" ? [certificateKind(certificate.days)] : []),
     ...renewals.map((r) => renewalKind(r.days)),
+    ...s.secrets.map((x) => secretKind(x.days as number)),
   ];
   return dates.includes("bad") || dates.includes("warn") ? "warn" : "good";
 }

@@ -25,9 +25,9 @@ expiry, so it cannot show the header.
 
 **Decision**: a top-level key `secrets` in `projects.yaml`, next to `projects`. Each item:
 `name`, `kind`, `where`, `expires` (`YYYY-MM-DD` or `never`), optional `project`.
-`kind` is one of `actions-secret`, `environment-secret`, `actions-variable`, `account`. `where`
-is `owner/repo` for the first three, and a short host name for `account` (for example
-`GoDaddy`). Contract: [contracts/catalog.md](./contracts/catalog.md).
+`kind` is one of `actions-secret`, `environment-secret`, `actions-variable`; `where` is
+`owner/repo`. Host accounts are not listed: the repo is public, and a list of logins is a target
+list (review note after the first implementation); the password manager keeps it. Contract: [contracts/catalog.md](./contracts/catalog.md).
 
 **Rationale**: a secret of this repo belongs to no project, so a list inside each project cannot
 hold it. A top-level list keeps one place for the full list (clarification 1).
@@ -80,3 +80,13 @@ later.
 values in this file. Secret names, places and dates are allowed (spec 013)."
 
 **Rationale**: the names are already in the public workflow files (spec Assumptions).
+
+## 7. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| Unit tests, lint, types (T020) | 2026-11-06 | 226 tests pass (baseline 194); Biome and `tsc` clean. |
+| Catalog list (T019) | 2026-11-06 | 18 entries from the workflow files of all catalog repos and this repo, read with `usedSecrets`. pretband-backend has no workflows. Local run with the real catalog: 0 gaps for the own repos and this repo. |
+| Local run with test dates (T021) | 2026-11-06 | A shared secret in 20 days: red badge in "Shared tokens", title `(1) Project status`, dry run `Open: Shared setup: The secret STATUS_HEALTHCHECK_URL expires in 20 days.`. A project secret in 45 days: amber badge and amber dot on boek-de-bus. The log has names and days only. The local `gh` token gives no expiry header ("no expiry"), as expected (§1). |
+| Found in the implementation | 2026-11-06 | (1) The shared workflows use secret names with `-` (`secrets.ssh-password`); the name pattern of spec 008 stops at `-`, so `usedSecrets` has its own pattern. (2) The issue links of the page were keyed by reason, so two problems of one reason in one project (two renewals, two secrets) linked to one issue; now keyed by the problem key. |
+| No-expiry warning (FR-010) | 2026-11-06 | 230 tests pass. Real catalog: 10 entries `never` (status, conformance, board and Vercel tokens) give "No expiry" warnings on 5 items; 7 entries `none` (SSH host, user and password, healthcheck URL, BUILD_ENV, Firebase service account, Renovate app key) give none. Project dots stay green; the title has no count. |

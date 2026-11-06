@@ -55,6 +55,9 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     conformanceNotAvailable: [],
     expiry: { certificate: null, renewals: [], registryNotKnown: false },
     history: { since: {}, sinceIsHistoryStart: [], uptime: null },
+    secrets: [],
+    secretGaps: [],
+    secretsNoExpiry: [],
   };
 }
 

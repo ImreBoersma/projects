@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mapRepo } from "../src/github";
 import { renderPage, repairText, summary } from "../src/render";
 import { FAVICON } from "../src/style";
-import type { ProjectStatus } from "../src/types";
+import type { Problem, ProjectStatus, SecretStatus } from "../src/types";
 import fixture from "./fixtures/graphql-response.json";
 import { status } from "./helpers";
 
@@ -532,5 +532,103 @@ describe("repairText (spec 010)", () => {
       "Average time to repair: 1 hour (1 fault, 90 days).",
     );
     expect(repairText(null)).toBe("No repaired faults in the last 90 days.");
+  });
+});
+
+describe("secrets on the page (spec 013)", () => {
+  const secret = (name: string, date: string, days: number, owner = "one"): SecretStatus => ({
+    entry: {
+      name,
+      kind: "actions-secret",
+      where: "ImreBoersma/one",
+      expires: date,
+      project: owner,
+    },
+    owner,
+    date,
+    days,
+    source: "catalog",
+  });
+
+  test("a project secret in 45 days is amber in the Expiry line, with a warn dot", () => {
+    const html = render([status({ secrets: [secret("VERCEL_TOKEN", "2026-12-12", 45)] })]);
+    expect(
+      group(status({ secrets: [secret("VERCEL_TOKEN", "2026-12-12", 45)] }), "Expiry")[0],
+    ).toStartWith('<span class="badge warn">Secret VERCEL_TOKEN <time datetime="2026-12-12"');
+    expect(html).toContain('<li class="project warn">');
+  });
+
+  test("two secrets show the first one and a count", () => {
+    const s = status({
+      secrets: [secret("B", "2027-06-01", 216), secret("A", "2027-01-01", 65)],
+    });
+    expect(group(s, "Expiry")[0]).toStartWith("Secret A <time");
+    expect(group(s, "Expiry")[0]).toEndWith("(+1 more)");
+  });
+
+  test("no expiry: an amber warning in the Expiry line; the dot stays green", () => {
+    const s = status({ secretsNoExpiry: ["BOARD_TOKEN", "VERCEL_TOKEN"] });
+    expect(group(s, "Expiry")).toEqual([
+      '<span class="badge warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: BOARD_TOKEN, VERCEL_TOKEN</span>',
+    ]);
+    expect(render([s])).toContain('<li class="project good">');
+    expect(render([s])).toContain("<title>Project status</title>");
+  });
+
+  test("the shared group shows the secrets without expiry", () => {
+    const html = renderPage({
+      generatedAt,
+      rows: [],
+      issues: new Map(),
+      shared: { secrets: [], problems: [], gaps: [], noExpiry: ["BOARD_SYNC_TOKEN"] },
+    });
+    expect(html).toContain("<h2>Shared tokens</h2>");
+    expect(html).toContain("No expiry: BOARD_SYNC_TOKEN</span>");
+  });
+
+  test("a gap shows in the Code line", () => {
+    expect(group(status({ secretGaps: ["X", "Y"] }), "Code")).toContain(
+      "Secret not in the catalog: X, Y",
+    );
+  });
+
+  test("the shared group, and the total counts its problems", () => {
+    const problem: Problem = {
+      projectId: "shared",
+      reason: "secret-expiring",
+      key: "shared/secret-expiring/token-a",
+      text: "The secret TOKEN_A expires in 20 days.",
+    };
+    const html = renderPage({
+      generatedAt,
+      rows: [status()],
+      issues: new Map([["shared/secret-expiring/token-a", 31]]),
+      shared: {
+        secrets: [secret("TOKEN_A", "2026-11-17", 20, "shared")],
+        problems: [problem],
+        gaps: ["NEW_SECRET"],
+      },
+    });
+    expect(html).toContain("<title>(1) Project status</title>");
+    expect(html).toContain("<h2>Shared tokens</h2>");
+    expect(html).toContain('<li class="project bad">');
+    expect(html).toContain(
+      `${A("https://github.com/ImreBoersma/projects/issues/31")}The secret TOKEN_A expires in 20 days.${NT}`,
+    );
+    expect(html).toContain('<span class="badge bad">Secret TOKEN_A <time datetime="2026-11-17"');
+    expect(html).toContain("Secret not in the catalog: NEW_SECRET");
+    expect(html).toContain("1 shared problem.");
+  });
+
+  test("no secrets and no gaps: no shared group", () => {
+    expect(render([status()])).not.toContain("Shared tokens");
+    expect(
+      renderPage({
+        generatedAt,
+        rows: [],
+        issues: new Map(),
+        shared: { secrets: [], problems: [], gaps: [] },
+      }),
+    ).not.toContain("Shared tokens");
   });
 });

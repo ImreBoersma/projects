@@ -5,8 +5,8 @@
 | Field | Type | Rule |
 |---|---|---|
 | `name` | string | Required. `A-Z`, `a-z`, `0-9`, `_`, `-`, space; 1 to 60 characters. |
-| `kind` | enum | `actions-secret`, `environment-secret`, `actions-variable`, `account`. |
-| `where` | string | `owner/repo` for the first three kinds; 1 to 40 characters of text for `account`. |
+| `kind` | enum | `actions-secret`, `environment-secret`, `actions-variable`. Not `account` (public repo). |
+| `where` | string | `owner/repo`. |
 | `expires` | `YYYY-MM-DD` or `never` | Required. A real date. |
 | `project` | string | Optional. Must be a catalog project id. Empty: shared. |
 
