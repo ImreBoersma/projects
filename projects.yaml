@@ -132,7 +132,7 @@ secrets:
   - name: BOARD_SYNC_TOKEN
     kind: actions-secret
     where: ImreBoersma/projects
-    expires: never
+    expires: 2027-11-05
   - name: STATUS_HEALTHCHECK_URL
     kind: actions-secret
     where: ImreBoersma/projects
