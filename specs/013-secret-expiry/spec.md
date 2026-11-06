@@ -27,8 +27,8 @@ of spec 009 apply: an issue 30 days before the date, a badge on the status page.
 
 The Maintainer records a token with its expiry date in the catalog, for example
 `STATUS_READ_TOKEN_HOB`, set as an Actions secret in `ImreBoersma/projects`, expires 2027-11-06.
-30 days before that date, the update opens an issue: "The token STATUS_READ_TOKEN_HOB expires in
-30 days." The issue says where the token is set. When the Maintainer makes a new token and
+30 days before that date, the update opens an issue: "The secret STATUS_READ_TOKEN_HOB expires in
+30 days." The issue says where the secret is set. When the Maintainer makes a new token and
 changes the date in the catalog, the issue closes.
 
 **Why this priority**: an expired token stops a check without a clear error. `pretband-backend`
@@ -89,7 +89,7 @@ each shows in its place, with the colour rules of spec 012.
 **Acceptance Scenarios**:
 
 1. **Given** a token of project `hob-nl`, **When** the page opens, **Then** the Expiry line of
-   hob.nl shows "Token <name> in <n> days".
+   hob.nl shows "Secret <name> in <n> days".
 2. **Given** a shared token, **When** the page opens, **Then** it shows in the group "Shared
    tokens" below the projects.
 3. **Given** a token in 45 days, **When** the page opens, **Then** it shows as a warning (amber);
@@ -108,8 +108,12 @@ each shows in its place, with the colour rules of spec 012.
 - A token that the update cannot read the expiry of (classic token without expiry, or no header):
   not shown unless it has a catalog date.
 - A date more than 10 years in the future: shown as a date, no problem (no special rule).
-- A workflow file that cannot be read: no setup note for that repo; the existing "Setup check not
-  available" of spec 008 shows.
+- A workflow file that cannot be read: no setup note for that repo. For a repo of the
+  conformance check (spec 008), its "Setup check not available" note shows; for another repo (for
+  example `harmonieorkest-brummen/hob-nl`), the run writes a log line only.
+- A shared (reusable) workflow of this repo uses secrets that the calling repo gives to it: these
+  names are not compared for this repo.
+- A secret of an archived project: in the catalog list only; not shown, not checked, no issue.
 - A secret in the catalog that no workflow uses any more: no note (the Maintainer can keep host
   accounts and passwords that are not in a workflow).
 
@@ -120,10 +124,10 @@ each shows in its place, with the colour rules of spec 012.
 - **FR-001**: The catalog MUST accept a list of secrets: each secret that the projects use, also a
   secret that does not expire. Each entry has a name, the place where it is set (repo and kind:
   Actions secret, Actions variable, environment secret, host account), an expiry date or "no
-  expiry", and optional the id of the project that it belongs to. An entry without a project is a
+  expiry", and, if necessary, the id of the project that it belongs to. An entry without a project is a
   shared entry. An entry with "no expiry" MUST NOT make a problem and MUST NOT show on the page.
-- **FR-002**: The catalog and the page MUST NOT contain secret values, parts of values, or
-  identifiers from which a value can be found (Principle III). Only the name, the place and the
+- **FR-002**: The catalog, the page, the issues, the log and the history MUST NOT contain secret
+  values, parts of values or hashes of values (Principle III). Only the name, the place and the
   date.
 - **FR-003**: For each token that the update uses, the update MUST read the expiry date that the
   token gives when it is used, if it gives one. When there is also a catalog date for that token,
@@ -137,8 +141,10 @@ each shows in its place, with the colour rules of spec 012.
 - **FR-006**: The page MUST show each secret with a date: in the Expiry line of its project, or in
   a group "Shared tokens" for a shared secret. The colour rules of spec 012 FR-004 MUST apply with
   the limit of 30 days (warning from 31 to 60 days).
-- **FR-007**: The catalog check MUST reject an entry with an unknown project id, a date that is not
-  a date, or a name that is used two times in the same place.
+- **FR-007**: The catalog check MUST reject an entry with an unknown project id (archived projects
+  are known ids), a date that is not a date, a name that is used two times in the same place, a
+  field that the list does not have, or a field with the name `value`, `secret`, `password` or
+  `token`.
 - **FR-008**: The check MUST run with each status update (each hour).
 - **FR-009**: Each run MUST compare the secret names that the workflow files of each catalog repo
   and of this repo use with the catalog list. A name that is used but not listed MUST show as a

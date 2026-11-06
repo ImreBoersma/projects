@@ -49,8 +49,11 @@ catalog entry for it, so the full list stays complete.
   already reads, and `parseCaller().secrets` (it already leaves out `GITHUB_TOKEN`).
 - Repos of other owners (`harmonieorkest-brummen/hob-nl`): read `.github/workflows/*.yml` with
   the status token of that owner, with the same read function. When that fails (no `Contents:
-  read` permission), log it and show no note.
-- This repo: read `../.github/workflows/*.yml` from the checkout of the run.
+  read` permission), log it and show no note (spec edge case).
+- This repo: read `../.github/workflows/*.yml` from the checkout of the run. Skip the secrets of a
+  shared workflow (`on: workflow_call`): the names under `on.workflow_call.secrets` and the
+  `secrets.<name>` uses of those names are set in the calling repo, not here. The other uses in
+  the file (for example a job of the same file that is not called) are compared as usual.
 - A name is listed when an entry has the same `name` and `where` equal to that repo, with kind
   `actions-secret` or `environment-secret`.
 
