@@ -153,3 +153,74 @@ describe("badge kinds (US2)", () => {
     expect([30, 31, 60, 61].map(renewalKind)).toEqual(["bad", "warn", "warn", "good"]);
   });
 });
+
+describe("spec 019: summaryFact, nextExpiry, rowData", () => {
+  const { summaryFact, nextExpiry, rowData } =
+    require("../src/view") as typeof import("../src/view");
+  const exp = (
+    certificate: { date: string; days: number } | null,
+    renewals: { name: string; date: string; days: number }[] = [],
+  ) => ({
+    certificate,
+    renewals: renewals.map((r) => ({ ...r, source: "catalog" as const })),
+    registryNotKnown: false,
+  });
+
+  test("the order of research.md §5", () => {
+    expect(summaryFact(status({ problems: [problem] }))).toEqual({
+      text: "The last CI run failed.",
+      kind: "bad",
+    });
+    expect(summaryFact(status({ availability: "unavailable" }))).toEqual({
+      text: "Check not available",
+      kind: "unknown",
+    });
+    expect(
+      summaryFact(
+        status({
+          expiry: exp({ date: "2026-12-01", days: 20 }, [
+            { name: "Domain", date: "2026-12-10", days: 40 },
+          ]),
+        }),
+      ),
+    ).toEqual({
+      text: "Certificate in 20 days",
+      kind: "warn",
+    });
+    expect(summaryFact(status({ secretsNoExpiry: ["A", "B"] }))).toEqual({
+      text: "No expiry: A, B",
+      kind: "warn",
+    });
+    expect(summaryFact(status({ expiry: exp({ date: "2027-06-01", days: 200 }) }))).toEqual({
+      text: "All correct",
+      kind: "good",
+    });
+  });
+
+  test("nextExpiry and rowData", () => {
+    const s = status({
+      project: {
+        id: "one",
+        name: "One Site",
+        repo: "a/b",
+        status: "active",
+        domain: "one.example",
+        stakeholder: "Harmonieorkest Brummen",
+      },
+      expiry: exp({ date: "2027-01-01", days: 60 }, [
+        { name: "Domain", date: "2026-12-01", days: 30 },
+      ]),
+    });
+    expect(nextExpiry(s)).toBe("2026-12-01");
+    expect(nextExpiry(status())).toBeNull();
+    expect(rowData(s, 3)).toEqual({
+      name: "one site",
+      state: "warn",
+      stakeholder: "Harmonieorkest Brummen",
+      site: "yes",
+      commit: "2026-10-27T00:00:00.000Z",
+      expiry: "2026-12-01",
+      order: "3",
+    });
+  });
+});

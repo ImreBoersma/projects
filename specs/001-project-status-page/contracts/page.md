@@ -42,8 +42,13 @@ One public page at the GitHub Pages URL of `projects`. Text uses ASD-STE100.
 
 ## Forbidden content (FR-016, FR-018)
 
-Commit messages, PR titles, branch names, user names, tokens, cost, stakeholder names. A test in
+Commit messages, PR titles, branch names, user names, tokens, cost, names of people. A test in
 `render.test.ts` MUST make sure that fixture values for these fields do not occur in the output.
+
+Change 2026-11-06 (spec 019, Maintainer's decision): the name of a stakeholder organisation (the
+catalog field `stakeholder`, for example "Harmonieorkest Brummen") may show; it is already public
+in `projects.yaml` and on the public roadmap. Names of people stay forbidden; the catalog field
+`stakeholder` MUST hold an organisation, not a person (constitution: by name or role).
 
 ## Pointer
 

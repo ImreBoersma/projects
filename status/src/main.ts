@@ -287,6 +287,8 @@ if (args.mode === "page") {
       issues,
       historyStart: stored.start ?? now.toISOString().slice(0, 10),
       repair: repairTime(results, now),
+      // Spec 019: the CSS that `bun run css` built (bun run start runs it first).
+      css: await Bun.file(new URL("../build/page.css", import.meta.url)).text(),
       shared,
       // Spec 015: the progress of the campaigns.
       campaigns: await readCampaigns(

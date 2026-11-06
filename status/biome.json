@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "includes": ["**", "!node_modules", "!_site"]
+    "includes": ["**", "!node_modules", "!_site", "!build"]
   },
   "formatter": {
     "enabled": true,
@@ -11,7 +11,16 @@
   },
   "linter": {
     "enabled": true,
-    "rules": { "preset": "recommended" }
+    "rules": {
+      "preset": "recommended"
+    }
   },
-  "assist": { "enabled": true }
+  "assist": {
+    "enabled": true
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }

@@ -5,17 +5,21 @@
   "scripts": {
     "test": "bun test",
     "lint": "biome check .",
-    "start": "bun run src/main.ts",
+    "start": "bun run css && bun run src/main.ts",
     "board:add": "bun run src/board/add.ts",
     "board:sync": "bun run src/board/sync.ts",
     "campaign": "bun run src/campaign/run.ts",
-    "secret-set": "bun run src/secret-set.ts"
+    "secret-set": "bun run src/secret-set.ts",
+    "css": "bun run scripts/build-css.ts"
   },
   "dependencies": {
     "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
-    "@types/bun": "^1.2.22"
+    "@tailwindcss/cli": "4.3.4",
+    "@types/bun": "^1.2.22",
+    "daisyui": "5.7.50",
+    "tailwindcss": "4.3.4"
   }
 }

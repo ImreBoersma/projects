@@ -85,3 +85,18 @@ the hash for the pop-up (Back closes it). Unknown values are ignored, with a sho
 `<section id="tab-...">`. Without the script, all sections show with their headings. The tab
 "History" holds the uptime bars of all sites and the repair time (spec 010); the project modals
 keep the uptime of their own site.
+
+## 8. Validation results
+
+| # | Check | Date | Result |
+|---|---|---|---|
+| T021 | Tests, lint, types | 2026-11-06 | 268 tests pass (baseline 259); Biome (with Tailwind syntax on, `build/` left out) and `tsc` clean. |
+| 1 | List height at a laptop window (SC-001) | 2026-11-06 | First 950 px; with `py-2` on the rows 774 px (< 800). |
+| 2 | 360 px | 2026-11-06 | Scroll width 360 = client width; the filters fold under "Filters". |
+| 3 | Contrast of the drawn colours (analysis C1) | 2026-11-06 | Light: error badge 6.12, warning 6.78, neutral 7.12, select 15.26; dark: 9.73, 10.67, 9.73, 14.87. All ≥ 4.5. |
+| 4 | Keyboard | 2026-11-06 | Tab reaches the tabs, the controls and the rows; Enter on a row opens its modal; Tab stays in the modal; Escape closes it, the hash goes away and the focus is on the row again. A modal opened by a link (`#p-hob-nl`) closes the same way. |
+| 5 | Without the script | 2026-11-06 | No controls, no tab bar, all 4 panels, 11 rows; a row opens its modal by `:target`. |
+| 6 | Filters and address | 2026-11-06 | `q=bus` → 1 of 11; `stakeholder=Harmonieorkest Brummen` → 3 of 11; sort `commit` → oldest first; `?tab=tokens` → only that panel. |
+| 7 | Sizes | 2026-11-06 | CSS 56.4 KB (DaisyUI `include:` only the used components; was 75 KB); page 100 KB with live data. |
+| Found | In the implementation | 2026-11-06 | (1) Closing a modal that a link opened left it open (`:target` stays); with the script the class `modal-open` opens it and CSS hides `:target` (research.md §2). (2) Tailwind's base removes the link underline: external links get the DaisyUI class `link` (spec 007 FR-012). (3) The uptime bar was in each modal and in History: now only in History (page size). (4) Side note: spec 001 forbade stakeholder names; the Maintainer allowed organisation names (spec 001 contract changed). |
+

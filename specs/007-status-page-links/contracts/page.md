@@ -55,3 +55,8 @@ user names do not occur in the output, also not in links.
 
 Spec 012 (design revision 2026-11-05) replaces the table and the card layout of this contract with a list: see
 [specs/012-status-page-polish/contracts/page.md](../../012-status-page-polish/contracts/page.md).
+
+## Pointer (spec 019)
+
+Spec 019 replaces the layout of this page with DaisyUI rows, pop-ups, filters and tabs; the content rules stay. See
+[specs/019-dashboard-filters/contracts/page.md](../../019-dashboard-filters/contracts/page.md).

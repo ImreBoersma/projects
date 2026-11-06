@@ -1,5 +1,6 @@
 // Spec 012: the view model of the page. Pure functions, no HTML (research.md §2).
 import { CERT_LIMIT, RENEWAL_LIMIT } from "./expiry/expiry";
+import { PROBLEM_TEXT } from "./problems";
 import { SECRET_LIMIT } from "./secrets/expiry";
 import type { ProjectStatus } from "./types";
 
@@ -101,4 +102,63 @@ export function rowKind(s: ProjectStatus): BadgeKind {
     ...s.secrets.map((x) => secretKind(x.days as number)),
   ];
   return dates.includes("bad") || dates.includes("warn") ? "warn" : "good";
+}
+
+// Spec 019, research.md §5: the most important fact of a project, for its row.
+export function summaryFact(s: ProjectStatus): { text: string; kind: BadgeKind } {
+  const p = s.problems[0];
+  if (p) return { text: p.text ?? PROBLEM_TEXT[p.reason], kind: "bad" };
+  if (checkNotAvailable(s)) return { text: "Check not available", kind: "unknown" };
+  const dated: { text: string; days: number; kind: BadgeKind }[] = [];
+  const { certificate, renewals } = s.expiry;
+  if (certificate && certificate !== "not-known") {
+    dated.push({
+      text: "Certificate",
+      days: certificate.days,
+      kind: certificateKind(certificate.days),
+    });
+  }
+  for (const r of renewals)
+    dated.push({ text: `${r.name} renewal`, days: r.days, kind: renewalKind(r.days) });
+  for (const x of s.secrets) {
+    dated.push({
+      text: `Secret ${x.entry.name}`,
+      days: x.days as number,
+      kind: secretKind(x.days as number),
+    });
+  }
+  const warn = dated.filter((d) => d.kind !== "good").sort((a, b) => a.days - b.days)[0];
+  if (warn)
+    return {
+      text: `${warn.text} in ${warn.days} ${warn.days === 1 ? "day" : "days"}`,
+      kind: "warn",
+    };
+  if (s.secretsNoExpiry.length) {
+    return { text: `No expiry: ${s.secretsNoExpiry.join(", ")}`, kind: "warn" };
+  }
+  return { text: "All correct", kind: "good" };
+}
+
+// Spec 019 data-model.md: the nearest date of a certificate, renewal or secret.
+export function nextExpiry(s: ProjectStatus): string | null {
+  const { certificate, renewals } = s.expiry;
+  const dates = [
+    ...(certificate && certificate !== "not-known" ? [certificate.date] : []),
+    ...renewals.map((r) => r.date),
+    ...s.secrets.map((x) => x.date as string),
+  ].filter(Boolean);
+  return dates.length ? [...dates].sort()[0] : null;
+}
+
+// Spec 019 data-model.md "Row": the data attributes of a row.
+export function rowData(s: ProjectStatus, order: number): Record<string, string> {
+  return {
+    name: s.project.name.toLowerCase(),
+    state: rowKind(s),
+    stakeholder: s.project.stakeholder ?? "",
+    site: s.project.domain ? "yes" : "no",
+    commit: s.lastCommitAt ? s.lastCommitAt.toISOString() : "",
+    expiry: nextExpiry(s) ?? "",
+    order: String(order),
+  };
 }

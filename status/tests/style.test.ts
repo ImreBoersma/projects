@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { css, FAVICON, TOKENS, type Tokens } from "../src/style";
+import { FAVICON, TOKENS, type Tokens } from "../src/style";
 
 // WCAG 2.1 relative luminance and contrast ratio.
 function luminance(hex: string): number {
@@ -46,12 +46,6 @@ describe("tokens (FR-009, SC-004)", () => {
       }
     }
     expect(fails).toEqual([]);
-  });
-
-  test("the CSS has each token in both schemes", () => {
-    const text = css();
-    expect(text.match(/--good-bg: #/g)).toHaveLength(2);
-    expect(text).toContain("@media (prefers-color-scheme: dark)");
   });
 
   test("three favicons in the page itself", () => {

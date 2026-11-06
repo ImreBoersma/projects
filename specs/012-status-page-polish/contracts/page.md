@@ -71,3 +71,8 @@ Without the script, the page shows the relative times of the update.
 Tokens on `:root`, with dark values under `@media (prefers-color-scheme: dark)`. Each text and
 badge pair has a contrast ratio of 4.5 or more (test `style.test.ts`). Colour is never the only
 signal: each badge has its text, each favicon its shape.
+
+## Pointer (spec 019)
+
+Spec 019 replaces the layout of this page with DaisyUI rows, pop-ups, filters and tabs; the content rules stay. See
+[specs/019-dashboard-filters/contracts/page.md](../../019-dashboard-filters/contracts/page.md).
