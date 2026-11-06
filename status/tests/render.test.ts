@@ -496,7 +496,7 @@ describe("spec 012: total state, sections, times, new tabs", () => {
     }
   });
 
-  test("a page with 20 projects and the CSS is less than 150 KB (spec 019 SC-005)", async () => {
+  test("a page with 20 sites, problems and dates is less than 90 KB of HTML (spec 019 SC-005)", () => {
     const rows = Array.from({ length: 20 }, (_, i) =>
       status({
         project: {
@@ -521,10 +521,8 @@ describe("spec 012: total state, sections, times, new tabs", () => {
         },
       }),
     );
-    // Spec 019 SC-005: the page with the built CSS stays less than 150 KB.
-    const css = Bun.file(new URL("../build/page.css", import.meta.url));
-    const cssSize = (await css.exists()) ? css.size : 60_000;
-    expect(Buffer.byteLength(render(rows)) + cssSize).toBeLessThan(150_000);
+    // Spec 019 SC-005: 90 KB for the HTML + 60 KB for the CSS (css.test.ts) < 150 KB.
+    expect(Buffer.byteLength(render(rows))).toBeLessThan(90_000);
   });
 });
 

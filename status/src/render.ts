@@ -85,7 +85,11 @@ function uptime(s: ProjectStatus, withBar = true): string[] {
       const date = Number.isNaN(first)
         ? ""
         : new Date(first - (29 - i) * DAY).toISOString().slice(0, 10);
-      return `<i class="mark ${d}" title="${date} ${MARK_TEXT[d]}"></i>`;
+      // Spec 019 page size: only the marks that need attention have a tooltip; the bar's
+      // aria-label gives the totals.
+      return d === "up"
+        ? '<i class="mark up"></i>'
+        : `<i class="mark ${d}" title="${date} ${MARK_TEXT[d]}"></i>`;
     })
     .join("");
   const down = u.days.filter((d) => d === "down").length;
