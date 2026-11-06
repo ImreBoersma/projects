@@ -151,7 +151,7 @@ secrets:
   - name: VERCEL_TOKEN
     kind: actions-secret
     where: ImreBoersma/boek-de-bus
-    expires: never
+    expires: 2027-11-05
     project: boek-de-bus
   - name: BOARD_TOKEN
     kind: actions-secret
@@ -161,7 +161,7 @@ secrets:
   - name: VERCEL_TOKEN
     kind: actions-secret
     where: ImreBoersma/personal-website
-    expires: never
+    expires: 2027-11-05
     project: personal-website
   - name: BOARD_TOKEN
     kind: actions-secret
