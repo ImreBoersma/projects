@@ -84,7 +84,7 @@ export function visibleProjects(projects: Project[]): Project[] {
 }
 
 // Spec 013, contracts/catalog.md: the top-level list `secrets`. Names, places and dates only.
-const KINDS: SecretKind[] = ["actions-secret", "environment-secret", "actions-variable", "account"];
+const KINDS: SecretKind[] = ["actions-secret", "environment-secret", "actions-variable"];
 const SECRET_NAME = /^[A-Za-z0-9_ -]{1,60}$/;
 const FIELDS = new Set(["name", "kind", "where", "expires", "project"]);
 const VALUE_FIELDS = new Set(["value", "secret", "password", "token"]);
@@ -109,12 +109,14 @@ export function parseSecrets(text: string, projects: Project[]): SecretEntry[] {
     if (typeof name !== "string" || !SECRET_NAME.test(name)) {
       fail("name", "required, 1 to 60 characters of A-Z, a-z, 0-9, _, - and space.");
     }
-    if (!KINDS.includes(kind as SecretKind)) fail("kind", `must be ${KINDS.join(", ")}.`);
     if (kind === "account") {
-      if (typeof where !== "string" || where.trim() === "" || where.length > 40) {
-        fail("where", "for an account, give a text of 1 to 40 characters.");
-      }
-    } else if (typeof where !== "string" || !REPO.test(where)) {
+      fail(
+        "kind",
+        "do not list host accounts in this public file. Keep them in the password manager.",
+      );
+    }
+    if (!KINDS.includes(kind as SecretKind)) fail("kind", `must be ${KINDS.join(", ")}.`);
+    if (typeof where !== "string" || !REPO.test(where)) {
       fail("where", "must be owner/repo.");
     }
     const exp = expires instanceof Date ? expires.toISOString().slice(0, 10) : expires;

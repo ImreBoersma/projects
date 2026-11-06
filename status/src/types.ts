@@ -135,7 +135,8 @@ export interface ProjectHistory {
 }
 
 // Spec 013: the catalog list `secrets` (contracts/catalog.md).
-export type SecretKind = "actions-secret" | "environment-secret" | "actions-variable" | "account";
+// No `account`: host logins are not listed in the public catalog (spec 013 clarification).
+export type SecretKind = "actions-secret" | "environment-secret" | "actions-variable";
 
 export interface SecretEntry {
   name: string;

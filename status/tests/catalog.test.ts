@@ -180,9 +180,9 @@ describe("parseSecrets (spec 013)", () => {
     kind: actions-secret
     where: ImreBoersma/projects
     expires: 2027-11-06
-  - name: WordPress admin
-    kind: account
-    where: GoDaddy
+  - name: DEPLOY_KEY
+    kind: environment-secret
+    where: ImreBoersma/one
     expires: never
     project: two
 `),
@@ -196,9 +196,9 @@ describe("parseSecrets (spec 013)", () => {
         project: null,
       },
       {
-        name: "WordPress admin",
-        kind: "account",
-        where: "GoDaddy",
+        name: "DEPLOY_KEY",
+        kind: "environment-secret",
+        where: "ImreBoersma/one",
         expires: "never",
         project: "two",
       },
@@ -216,16 +216,16 @@ describe("parseSecrets (spec 013)", () => {
 
   test("rejects each wrong field", () => {
     const cases: [string, RegExp][] = [
-      ["name: a.b\nkind: account\nwhere: GoDaddy\nexpires: never", /item 0, field `name`/],
-      [`name: ${"A".repeat(61)}\nkind: account\nwhere: GoDaddy\nexpires: never`, /field `name`/],
+      [`${base.replace("TOKEN_A", "a.b")}`, /item 0, field `name`/],
+      [`${base.replace("TOKEN_A", "A".repeat(61))}`, /field `name`/],
+      [`${base.replace("actions-secret", "account")}`, /field `kind`.*password manager/],
       ["name: A\nkind: password\nwhere: GoDaddy\nexpires: never", /field `kind`/],
       [
         "name: A\nkind: actions-secret\nwhere: GoDaddy\nexpires: never",
         /field `where`.*owner\/repo/,
       ],
-      [`name: A\nkind: account\nwhere: ${"x".repeat(41)}\nexpires: never`, /field `where`/],
-      ["name: A\nkind: account\nwhere: GoDaddy\nexpires: 2027-02-30", /field `expires`/],
-      ["name: A\nkind: account\nwhere: GoDaddy\nexpires: soon", /field `expires`/],
+      [`${base.replace("2027-11-06", "2027-02-30")}`, /field `expires`/],
+      [`${base.replace("2027-11-06", "soon")}`, /field `expires`/],
       [`${base}\nproject: nope`, /field `project`.*not a catalog id/],
       [`${base}\nnote: hi`, /field `note`.*not a field/],
     ];

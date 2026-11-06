@@ -14,6 +14,11 @@ of spec 009 apply: an issue 30 days before the date, a badge on the status page.
 
 ### Session 2026-11-06
 
+- Change after the first implementation (review note): host accounts (for example a WordPress
+  login at GoDaddy) are not listed. The repo is public, and unlike the secret names, a list of
+  logins is not public now. The password manager keeps that list. The catalog check refuses the
+  kind `account`.
+
 - Q: Does the catalog list only the secrets with an expiry, or each secret that the projects use?
   → A: Each secret, with a date or "no expiry". Only a secret with a date can make a problem or
   show on the page. The full list tells the Maintainer what to change after a leak.
@@ -114,8 +119,9 @@ each shows in its place, with the colour rules of spec 012.
 - A shared (reusable) workflow of this repo uses secrets that the calling repo gives to it: these
   names are not compared for this repo.
 - A secret of an archived project: in the catalog list only; not shown, not checked, no issue.
-- A secret in the catalog that no workflow uses any more: no note (the Maintainer can keep host
-  accounts and passwords that are not in a workflow).
+- A secret in the catalog that no workflow uses any more: no note.
+- An entry with the kind `account`: a catalog error that tells the Maintainer to keep host
+  accounts in the password manager.
 
 ## Requirements *(mandatory)*
 
@@ -123,7 +129,7 @@ each shows in its place, with the colour rules of spec 012.
 
 - **FR-001**: The catalog MUST accept a list of secrets: each secret that the projects use, also a
   secret that does not expire. Each entry has a name, the place where it is set (repo and kind:
-  Actions secret, Actions variable, environment secret, host account), an expiry date or "no
+  Actions secret, Actions variable, environment secret; not a host account), an expiry date or "no
   expiry", and, if necessary, the id of the project that it belongs to. An entry without a project is a
   shared entry. An entry with "no expiry" MUST NOT make a problem and MUST NOT show on the page.
 - **FR-002**: The catalog, the page, the issues, the log and the history MUST NOT contain secret
@@ -172,7 +178,7 @@ each shows in its place, with the colour rules of spec 012.
 - **SC-005**: The feature costs €0 each month to operate.
 - **SC-006**: After the first catalog update, 100% of the secrets in the workflow files of the
   catalog repos and this repo are in the catalog list, and each later gap shows on the page within
-  1 hour (FR-009).
+  1 hour (FR-009). Host accounts are out of scope: they stay in the password manager.
 
 ## Assumptions
 

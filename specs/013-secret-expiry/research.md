@@ -25,9 +25,9 @@ expiry, so it cannot show the header.
 
 **Decision**: a top-level key `secrets` in `projects.yaml`, next to `projects`. Each item:
 `name`, `kind`, `where`, `expires` (`YYYY-MM-DD` or `never`), optional `project`.
-`kind` is one of `actions-secret`, `environment-secret`, `actions-variable`, `account`. `where`
-is `owner/repo` for the first three, and a short host name for `account` (for example
-`GoDaddy`). Contract: [contracts/catalog.md](./contracts/catalog.md).
+`kind` is one of `actions-secret`, `environment-secret`, `actions-variable`; `where` is
+`owner/repo`. Host accounts are not listed: the repo is public, and a list of logins is a target
+list (review note after the first implementation); the password manager keeps it. Contract: [contracts/catalog.md](./contracts/catalog.md).
 
 **Rationale**: a secret of this repo belongs to no project, so a list inside each project cannot
 hold it. A top-level list keeps one place for the full list (clarification 1).
