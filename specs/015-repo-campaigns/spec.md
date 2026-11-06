@@ -15,6 +15,10 @@ for all repos (presets, shared CI, conformance repairs) are now done by hand, on
 
 ### Session 2026-11-06
 
+- Analysis 2026-11-06: the identity of a campaign PR is its branch `campaign/<id>` (labels cannot
+  be made in repos of another owner); the page counts also "to do"; a merged PR and a needed change
+  give a new PR (FR-002, FR-005, FR-007).
+
 - Q: Can a campaign run a command in each repo, or only make fixed file changes? → A: Fixed file
   changes only (write or replace a file, replace text). A command can come later when a real case
   needs it.
@@ -26,21 +30,21 @@ for all repos (presets, shared CI, conformance repairs) are now done by hand, on
 ### User Story 1 - Open one change in all repos with one command (Priority: P1)
 
 The Maintainer writes a campaign in this repo: a short id, a title, a reason, the repos it
-applies to, and the change (files to write, or text to replace). One command makes a branch and a PR in each repo that needs the change, all with the same
-title and the label of the campaign. A repo that already has the change gets no PR.
+applies to, and the change (files to write, or text to replace). One command makes the branch
+`campaign/<id>` and a PR in each repo that needs the change, all with the same title. A repo that already has the change gets no PR.
 
 **Why this priority**: changes for all repos (the Renovate preset of spec 003, the shared CI of
 spec 002, repairs of spec 008) are now done by hand in 5 to 8 repos. This takes an afternoon and
 gives errors, for example a wrong repo list or a typo in one repo.
 
 **Independent Test**: write a campaign that adds one line to `README.md` in 2 test repos. Run the
-command. Make sure that each repo has one PR with the campaign label, the same title and a body
+command. Make sure that each repo has one PR from the branch `campaign/<id>`, the same title and a body
 with the reason and a link to the campaign. Run the command again: no second PR.
 
 **Acceptance Scenarios**:
 
 1. **Given** a campaign for all repos of the catalog, **When** the Maintainer runs the command,
-   **Then** each repo that needs the change gets one PR with the campaign label.
+   **Then** each repo that needs the change gets one PR from the branch `campaign/<id>`.
 2. **Given** a repo that already has the change, **When** the command runs, **Then** that repo
    gets no PR and the result says "not needed".
 3. **Given** a campaign with open PRs, **When** the Maintainer changes the campaign and runs the
@@ -69,7 +73,7 @@ failed CI. Make sure that the page shows these numbers and a link to the open PR
 **Acceptance Scenarios**:
 
 1. **Given** an open campaign, **When** the page opens, **Then** it shows the title and the
-   numbers merged, open, failed CI and not needed.
+   numbers merged, open, failed CI, closed, to do (needed, no PR yet) and not needed.
 2. **Given** a campaign PR with a failed CI run, **When** the page opens, **Then** that PR counts
    as "failed CI" and the campaign shows as a warning.
 3. **Given** all PRs of a campaign are merged or closed, **When** the page opens, **Then** the
@@ -123,24 +127,29 @@ the shell history or in a log.
 
 ### Functional Requirements
 
-- **FR-001**: A campaign MUST be a file in this repo with an id (unique), a title, a reason, the
-  target repos (all catalog repos, or a list of catalog ids), and the change: files to write
+- **FR-001**: A campaign MUST be a file in this repo with an id (unique), a title, a reason, a
+  start date, the target repos (all catalog repos, or a list of catalog ids), and the change: files to write
   (complete content), or text to replace in a file (old text, new text). A campaign MUST NOT run a
   command in a repo.
 - **FR-002**: One command MUST apply a campaign: for each target repo, make the change on a branch
-  of the campaign, and open or update one PR with the campaign title, the label of the campaign,
-  and a body with the reason and a link to the campaign file.
+  `campaign/<id>`, and open or update one PR with the campaign title and a body with the reason
+  and a link to the campaign file. The branch name is the identity of the campaign PRs. The PR
+  gets the label `campaign` in the own repos; in a repo of another owner only when that label
+  exists (no setting changes there).
 - **FR-003**: A repo where the change gives no difference MUST get no PR and MUST show as "not
   needed".
 - **FR-004**: The command MUST have a dry run that shows the change for each repo and changes
   nothing.
-- **FR-005**: The command MUST NOT make a second PR for a repo that has an open or closed PR of
-  the campaign, and MUST continue with the next repo when one repo fails.
+- **FR-005**: The command MUST NOT make a second PR for a repo that has an open or closed (not
+  merged) PR of the campaign, except with the reopen option for that repo. When the PR is merged
+  and the change is needed again (the campaign changed), the command MUST open a new PR; when the
+  PR is merged and the change is not needed, the result is "merged". The command MUST continue
+  with the next repo when one repo fails.
 - **FR-006**: The command MUST run on the Maintainer's machine with the Maintainer's own access.
   The status update MUST NOT get write access to the project repos for this feature.
 - **FR-007**: The status page MUST show each open campaign with the numbers merged, open, failed
-  CI, closed and not needed, a link to the PR list of the campaign label, and "done" for 7 days
-  after the last PR is merged or closed.
+  CI, closed, to do (needed, no PR) and not needed, a link to a GitHub search of the PRs from the
+  branch `campaign/<id>`, and "done" for 7 days after the last PR is merged or closed.
 - **FR-008**: A campaign with a PR that has a failed CI run MUST show as a warning on the page. It
   MUST NOT make a problem or an issue.
 - **FR-009**: The secret command (US3) MUST use the repos that the catalog list of spec 013 gives
@@ -187,7 +196,7 @@ the shell history or in a log.
 
 | Principle | How this feature affects it |
 |---|---|
-| I. GitHub for all project work | Each change is a PR with a label; the page links to the PR list. |
+| I. GitHub for all project work | Each change is a PR from the branch `campaign/<id>`; the page links to a search of those PRs. |
 | II. Catalog is the only project list | Target repos come from the catalog only. |
 | III. No secrets or private data | No values in campaign files or PRs; the secret command does not store the value. |
 | IV. Use shared configuration | Campaigns move the repos to the shared setup; dependencies stay with Renovate. |

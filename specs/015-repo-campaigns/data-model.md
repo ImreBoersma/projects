@@ -20,8 +20,8 @@
 
 ## Repo result (command)
 
-`opened` (PR number) · `updated` (PR number) · `not-needed` · `closed` (PR number, not reopened) ·
-`failed` (reason) · `no-access`.
+`opened` (PR number) · `updated` (PR number) · `not-needed` · `merged` (PR number, no new change)
+· `closed` (PR number, not reopened) · `failed` (reason) · `no-access`.
 
 ## Campaign state (status run, one for each target repo)
 

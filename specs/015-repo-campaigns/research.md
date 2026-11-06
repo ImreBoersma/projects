@@ -54,14 +54,15 @@ another owner it adds the label only when it exists; it never makes a label ther
 no setting changes in repos of another owner). The page links to a GitHub search by branch:
 `https://github.com/pulls?q=is:pr+head:campaign/<id>+user:ImreBoersma+user:harmonieorkest-brummen`.
 
-**Spec deviation**: FR-002 says "the label of the campaign". The branch name is the identity; the
-label `campaign` is a help for the GitHub lists. Fix the wording in `/speckit-analyze`.
+The spec (FR-002, FR-007) uses this since the analysis of 2026-11-06.
 
-## 5. A closed PR and reopen
+## 5. A closed PR, reopen, and a merged PR
 
 **Decision**: when the branch has a closed PR (not merged), the command reports "closed" and does
 nothing for that repo, unless the option `--reopen <catalog id>` is given: then it updates the
-branch and reopens that PR.
+branch and reopens that PR. When the PR is merged: a needed change (the campaign changed after the
+merge) sets the branch to a new commit on the current default branch and opens a new PR; no
+needed change gives "merged". `findPr` takes the newest PR of the branch.
 
 ## 6. CI result of a PR
 
