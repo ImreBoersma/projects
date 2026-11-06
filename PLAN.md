@@ -64,7 +64,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish (done) | 007 |
-| 013 | Expiry of tokens and secrets (specified) | 009 |
+| 013 | Expiry of tokens and secrets (planned) | 009 |
 | 014 | Free-tier usage warnings | 005 |
 | 015 | Changes in all repos at once (campaigns) | 008 |
 | 016 | Version drift between projects | 008 |

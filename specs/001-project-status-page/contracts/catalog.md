@@ -25,3 +25,8 @@ projects:
   index and the field.
 - Token selection: owner `ImreBoersma` → `STATUS_READ_TOKEN`. Owner `harmonieorkest-brummen` →
   `STATUS_READ_TOKEN_HOB`. Other owner, or the secret is not set → `unavailable`.
+
+## Pointer
+
+Spec 013 adds the top-level list `secrets`: see
+[specs/013-secret-expiry/contracts/catalog.md](../../013-secret-expiry/contracts/catalog.md).
