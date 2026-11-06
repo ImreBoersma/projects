@@ -80,8 +80,8 @@ contracts/commands.md, contracts/page.md, quickstart.md
 
 - [X] T019 Run `cd status && bun test && bun run lint && bunx tsc --noEmit -p .`. All pass; more tests than the baseline of T001.
 - [X] T020 Run quickstart.md §2 (dry run) against scales-exercises and boek-de-bus with `campaigns/test-readme.yaml` from the branch. Record the result in a table "Validation results" at the end of `specs/015-repo-campaigns/research.md`.
-- [ ] T021 Ask the Maintainer before the real run of quickstart.md §3 (it opens 2 PRs in public repos). After a yes: run it and record how long it takes (SC-001: < 1 minute for 2 repos), run it a second time (0 new PRs), render the page locally (section "Campaigns" with `2 open`), close both PRs, delete both branches, delete `campaigns/test-readme.yaml`. Add the result to the table of T020.
-- [ ] T022 Commit (`feat: campaigns for all repos and a command for shared secrets (spec 015)`), push, and open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
+- [X] T021 Ask the Maintainer before the real run of quickstart.md §3 (it opens 2 PRs in public repos). After a yes: run it and record how long it takes (SC-001: < 1 minute for 2 repos), run it a second time (0 new PRs), render the page locally (section "Campaigns" with `2 open`), close both PRs, delete both branches, delete `campaigns/test-readme.yaml`. Add the result to the table of T020.
+- [X] T022 Commit (`feat: campaigns for all repos and a command for shared secrets (spec 015)`), push, and open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
 - [ ] T023 Ask the Maintainer to merge the PR.
 - [ ] T024 After the merge, check that the status run passes and that the page has no section "Campaigns" (no open campaign). Add the result to the table of T020.
 - [ ] T025 [P] In `PLAN.md`, mark spec 015 as done in the feature table and the Done list.

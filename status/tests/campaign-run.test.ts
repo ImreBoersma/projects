@@ -19,7 +19,7 @@ const targets = [
 ];
 
 // A fake GitHub API: records each call, answers by repo.
-function fakeGitHub(handFix = false) {
+function fakeGitHub(handFix = false, upToDate = false) {
   const calls: string[] = [];
   const fetch = (async (url: string, init: RequestInit = {}) => {
     const method = init.method ?? "GET";
@@ -30,6 +30,8 @@ function fakeGitHub(handFix = false) {
     if (repo === "org/d") return json({}, 404);
     if (path === `/repos/${repo}`) return json({ default_branch: "main" });
     if (path.endsWith("/git/ref/heads/main")) return json({ object: { sha: "base" } });
+    if (path.includes("/contents/.nvmrc?ref=campaign/"))
+      return new Response(upToDate ? "24\n" : "22\n");
     if (path.includes("/contents/.nvmrc"))
       return new Response(repo.endsWith("/c") ? "24\n" : "22\n");
     if (path.includes("/pulls?head="))
@@ -116,6 +118,23 @@ describe("hand fixes (side note 2026-11-06)", () => {
       () => {},
     );
     expect(calls).toContain("PATCH /repos/ImreBoersma/b/git/refs/heads/campaign/node-24");
+  });
+});
+
+describe("an open PR that is up to date", () => {
+  test("no new commit, so no new CI run", async () => {
+    const { calls, gh } = fakeGitHub(false, true);
+    const lines: string[] = [];
+    const results = await runCampaign(
+      campaign,
+      [targets[1]],
+      gh,
+      { dryRun: false, reopen: null },
+      (l) => lines.push(l),
+    );
+    expect(results.get("ImreBoersma/b")).toEqual({ kind: "up-to-date", pr: 5 });
+    expect(calls.filter((c) => !c.startsWith("GET"))).toEqual([]);
+    expect(lines[0]).toContain("up to date #5");
   });
 });
 

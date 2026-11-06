@@ -178,7 +178,7 @@ export type ApplyResult =
   | { kind: "failed"; reason: string };
 
 export type RepoResult =
-  | { kind: "opened" | "updated" | "merged" | "closed"; pr: number }
+  | { kind: "opened" | "updated" | "up-to-date" | "merged" | "closed"; pr: number }
   | { kind: "not-needed" | "no-access" }
   | { kind: "changed-by-hand"; pr: number }
   | { kind: "failed"; reason: string };

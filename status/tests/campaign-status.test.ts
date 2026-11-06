@@ -24,6 +24,8 @@ describe("classify (research.md §3, §6)", () => {
     expect(classify(null, notNeeded)).toBe("not-needed");
     expect(classify(null, { kind: "failed", reason: "x" })).toBe("to-do");
     expect(classify(pr("MERGED"), needed)).toBe("to-do");
+    // Found in the live test (T021): a closed PR is "closed", also when the change is still needed.
+    expect(classify(pr("CLOSED"), needed)).toBe("closed");
   });
 });
 

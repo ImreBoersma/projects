@@ -89,6 +89,15 @@ export async function runCampaign(
         line(`changed by hand #${pr?.number} (merge the PR, or use --overwrite ${t.id})`);
         continue;
       }
+      // An open PR whose branch already has this content: no new commit, so no new CI run.
+      if (action === "update") {
+        const onBranch = await gh.readFiles(t.repo, branch, [...apply.files.keys()]);
+        if ([...apply.files].every(([path, text]) => onBranch.get(path) === text)) {
+          results.set(t.repo, { kind: "up-to-date", pr: pr?.number as number });
+          line(`up to date #${pr?.number}`);
+          continue;
+        }
+      }
       if (opts.dryRun) {
         line(action === "open" ? "would open" : `would update #${pr?.number}`);
         for (const [path, text] of apply.files) log(diff(path, files.get(path) ?? null, text));

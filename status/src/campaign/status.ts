@@ -23,13 +23,14 @@ export interface CampaignPr {
   closedAt: string | null;
 }
 
-// Research.md §3 and §6. A merged or closed PR with a needed change again is "to do".
+// Research.md §3 and §6. A closed PR (not merged) is the Maintainer's "no" for that repo. A merged
+// PR with a needed change again (the campaign changed after the merge) is "to do".
 export function classify(pr: CampaignPr | null, apply: ApplyResult | null): CampaignState {
+  if (pr?.state === "CLOSED") return "closed";
   if (pr?.state === "OPEN")
     return pr.rollup === "FAILURE" || pr.rollup === "ERROR" ? "failed-ci" : "open";
   if (apply?.kind === "needed" || apply?.kind === "failed") return "to-do";
   if (pr?.state === "MERGED") return "merged";
-  if (pr?.state === "CLOSED") return "closed";
   return "not-needed";
 }
 
