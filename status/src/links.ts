@@ -1,7 +1,7 @@
 // Links of the status page cells (spec 007, data-model.md "Links of a row").
 // FR-010: links use only the catalog repo and domain, the commit id, the Renovate app login,
 // issue numbers and fixed GitHub paths.
-import type { ProjectStatus, Reason } from "./types";
+import type { ProjectStatus } from "./types";
 
 const GITHUB = "https://github.com";
 const ISSUES = `${GITHUB}/ImreBoersma/projects/issues`;
@@ -12,7 +12,8 @@ export interface RowLinks {
   deploy: string | null;
   renovate: string | null;
   site: string | null;
-  problems: Map<Reason, string>;
+  // Problem key to the URL of its issue (spec 013: one project can have two problems of a reason).
+  problems: Map<string, string>;
 }
 
 export function rowLinks(s: ProjectStatus, issues: Map<string, number>): RowLinks {
@@ -21,10 +22,10 @@ export function rowLinks(s: ProjectStatus, issues: Map<string, number>): RowLink
   const repoUrl = repo ? `${GITHUB}/${repo}` : null;
   // Data cells link only when the repo data is available.
   const data = s.availability === "ok" ? repoUrl : null;
-  const problems = new Map<Reason, string>();
+  const problems = new Map<string, string>();
   for (const p of s.problems) {
     const number = issues.get(p.key);
-    if (number !== undefined) problems.set(p.reason, `${ISSUES}/${number}`);
+    if (number !== undefined) problems.set(p.key, `${ISSUES}/${number}`);
   }
   return {
     project: repoUrl ?? site,

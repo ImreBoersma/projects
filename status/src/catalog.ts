@@ -1,5 +1,5 @@
 import { parse } from "yaml";
-import type { Project, ProjectState } from "./types";
+import type { Project, ProjectState, SecretEntry, SecretKind } from "./types";
 
 const STATES: ProjectState[] = ["active", "maintenance", "archived"];
 const ID = /^[a-z0-9-]+$/;
@@ -81,4 +81,58 @@ function parseRenewals(value: unknown, fail: (rule: string) => never) {
 
 export function visibleProjects(projects: Project[]): Project[] {
   return projects.filter((p) => p.status !== "archived");
+}
+
+// Spec 013, contracts/catalog.md: the top-level list `secrets`. Names, places and dates only.
+const KINDS: SecretKind[] = ["actions-secret", "environment-secret", "actions-variable", "account"];
+const SECRET_NAME = /^[A-Za-z0-9_ -]{1,60}$/;
+const FIELDS = new Set(["name", "kind", "where", "expires", "project"]);
+const VALUE_FIELDS = new Set(["value", "secret", "password", "token"]);
+
+export function parseSecrets(text: string, projects: Project[]): SecretEntry[] {
+  const list = parse(text)?.secrets;
+  if (list == null || list === "") return [];
+  if (!Array.isArray(list))
+    throw new Error("Catalog error: the top-level key `secrets` must be a list.");
+  const ids = new Set(projects.map((p) => p.id));
+  const seen = new Set<string>();
+  return list.map((raw: Record<string, unknown>, n: number): SecretEntry => {
+    const fail = (field: string, rule: string): never => {
+      throw new Error(`Catalog error in secrets item ${n}, field \`${field}\`: ${rule}`);
+    };
+    for (const key of Object.keys(raw ?? {})) {
+      if (VALUE_FIELDS.has(key.toLowerCase()))
+        fail(key, "Do not put secret values in the catalog.");
+      if (!FIELDS.has(key)) fail(key, "is not a field of a secret.");
+    }
+    const { name, kind, where, expires, project } = raw ?? {};
+    if (typeof name !== "string" || !SECRET_NAME.test(name)) {
+      fail("name", "required, 1 to 60 characters of A-Z, a-z, 0-9, _, - and space.");
+    }
+    if (!KINDS.includes(kind as SecretKind)) fail("kind", `must be ${KINDS.join(", ")}.`);
+    if (kind === "account") {
+      if (typeof where !== "string" || where.trim() === "" || where.length > 40) {
+        fail("where", "for an account, give a text of 1 to 40 characters.");
+      }
+    } else if (typeof where !== "string" || !REPO.test(where)) {
+      fail("where", "must be owner/repo.");
+    }
+    const exp = expires instanceof Date ? expires.toISOString().slice(0, 10) : expires;
+    if (exp !== "never" && (typeof exp !== "string" || !realDate(exp))) {
+      fail("expires", "must be a date as YYYY-MM-DD or never.");
+    }
+    if (project != null && project !== "" && !ids.has(project as string)) {
+      fail("project", `"${project}" is not a catalog id.`);
+    }
+    const key = `${(name as string).toLowerCase()} ${(where as string).toLowerCase()}`;
+    if (seen.has(key)) fail("name", `${name} in ${where} is used two times.`);
+    seen.add(key);
+    return {
+      name: name as string,
+      kind: kind as SecretKind,
+      where: where as string,
+      expires: exp as string,
+      project: project ? (project as string) : null,
+    };
+  });
 }

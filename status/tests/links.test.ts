@@ -57,10 +57,10 @@ describe("rowLinks", () => {
       ],
     });
     const links = rowLinks(s, new Map([["one/ci-failed", 12]]));
-    expect(links.problems.get("ci-failed")).toBe(
+    expect(links.problems.get("one/ci-failed")).toBe(
       "https://github.com/ImreBoersma/projects/issues/12",
     );
-    expect(links.problems.has("inactive")).toBe(false);
+    expect(links.problems.has("one/inactive")).toBe(false);
   });
 
   test("links the site to the domain", () => {

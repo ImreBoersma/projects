@@ -1,5 +1,6 @@
 import { RULES } from "./conformance/rules";
 import { PROBLEM_TEXT } from "./problems";
+import { SHARED_PROJECT } from "./secrets/expiry";
 import type { Problem, Project } from "./types";
 
 export const LABEL = "status-problem";
@@ -41,8 +42,27 @@ function steps(problem: Problem): string[] {
     const name = problem.text?.match(/^Renewal of (.+?) (is|was) due/)?.[1] ?? "it";
     return [`Renew ${name}.`, "Enter the next date in `projects.yaml`, field `renewal`."];
   }
+  if (problem.reason === "secret-expiring" && problem.secret) {
+    const { kind, where } = problem.secret;
+    return [
+      "Make a new secret at the provider.",
+      `Set it in ${where} (${kind}).`,
+      "Change `expires` of this secret in `projects.yaml`. For a GitHub token that the status run uses, the next run reads the new date without a catalog change.",
+    ];
+  }
   return ["Open the repo of the project.", "Find the cause.", "Repair the cause."];
 }
+
+const SOURCE_TEXT = { catalog: "catalog", token: "token", both: "catalog and token" };
+
+// Spec 013, contracts/page-issue.md: the place and the date before the steps.
+const secretLines = (problem: Problem) =>
+  problem.secret
+    ? `Where: ${problem.secret.kind} in ${problem.secret.where}
+Date: ${problem.secret.date} (${SOURCE_TEXT[problem.secret.source]})
+
+`
+    : "";
 
 export function issueContent(problem: Problem, project: Project, today: string) {
   if (problem.reason === "not-conformant") {
@@ -69,7 +89,7 @@ The next update closes this issue when all rules pass.
     body: `<!-- status-problem: ${problem.key} -->
 The status update found this problem on ${today}.
 
-Do these steps:
+${secretLines(problem)}Do these steps:
 
 ${steps(problem)
   .map((step, i) => `${i + 1}. ${step}`)
@@ -111,7 +131,7 @@ export function planIssueActions(
       .filter((p) => !openKeys.has(p.key))
       .map((p) => ({
         key: p.key,
-        ...issueContent(p, projects.get(p.projectId) as Project, today),
+        ...issueContent(p, projects.get(p.projectId) ?? SHARED_PROJECT, today),
       })),
     close: [...openKeys]
       .filter(([key]) => !found.has(key) && !keep(key))

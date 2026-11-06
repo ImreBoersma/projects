@@ -12,6 +12,7 @@ export const PROBLEM_TEXT: Record<Reason, string> = {
   "not-conformant": "The repo does not follow the shared setup.",
   "cert-expiring": "The TLS certificate expires soon.",
   "renewal-due": "A renewal is due.",
+  "secret-expiring": "A secret expires soon.",
 };
 
 export function evaluateProblems(s: ProjectStatus, now: Date): Problem[] {

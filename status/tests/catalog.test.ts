@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseCatalog, visibleProjects } from "../src/catalog";
+import { parseCatalog, parseSecrets, visibleProjects } from "../src/catalog";
 
 const valid = `
 projects:
@@ -162,5 +162,92 @@ describe("parseCatalog", () => {
 describe("visibleProjects", () => {
   test("drops archived projects", () => {
     expect(visibleProjects(parseCatalog(valid)).map((p) => p.id)).toEqual(["one", "two"]);
+  });
+});
+
+describe("parseSecrets (spec 013)", () => {
+  const projects = parseCatalog(valid);
+  const list = (items: string) => `${valid}secrets:\n${items}`;
+  const one = (fields: string) => list(`  - ${fields.trim().split("\n").join("\n    ")}\n`);
+  const base =
+    "name: TOKEN_A\nkind: actions-secret\nwhere: ImreBoersma/projects\nexpires: 2027-11-06";
+  const parse = (text: string) => parseSecrets(text, projects);
+
+  test("reads a valid list", () => {
+    expect(
+      parse(
+        list(`  - name: TOKEN_A
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: 2027-11-06
+  - name: WordPress admin
+    kind: account
+    where: GoDaddy
+    expires: never
+    project: two
+`),
+      ),
+    ).toEqual([
+      {
+        name: "TOKEN_A",
+        kind: "actions-secret",
+        where: "ImreBoersma/projects",
+        expires: "2027-11-06",
+        project: null,
+      },
+      {
+        name: "WordPress admin",
+        kind: "account",
+        where: "GoDaddy",
+        expires: "never",
+        project: "two",
+      },
+    ]);
+  });
+
+  test("a missing or empty list is valid", () => {
+    expect(parse(valid)).toEqual([]);
+    expect(parse(`${valid}secrets:\n`)).toEqual([]);
+  });
+
+  test("an archived project id is valid", () => {
+    expect(parse(one(`${base}\nproject: three`))[0].project).toBe("three");
+  });
+
+  test("rejects each wrong field", () => {
+    const cases: [string, RegExp][] = [
+      ["name: a.b\nkind: account\nwhere: GoDaddy\nexpires: never", /item 0, field `name`/],
+      [`name: ${"A".repeat(61)}\nkind: account\nwhere: GoDaddy\nexpires: never`, /field `name`/],
+      ["name: A\nkind: password\nwhere: GoDaddy\nexpires: never", /field `kind`/],
+      [
+        "name: A\nkind: actions-secret\nwhere: GoDaddy\nexpires: never",
+        /field `where`.*owner\/repo/,
+      ],
+      [`name: A\nkind: account\nwhere: ${"x".repeat(41)}\nexpires: never`, /field `where`/],
+      ["name: A\nkind: account\nwhere: GoDaddy\nexpires: 2027-02-30", /field `expires`/],
+      ["name: A\nkind: account\nwhere: GoDaddy\nexpires: soon", /field `expires`/],
+      [`${base}\nproject: nope`, /field `project`.*not a catalog id/],
+      [`${base}\nnote: hi`, /field `note`.*not a field/],
+    ];
+    for (const [fields, error] of cases) expect(() => parse(one(fields))).toThrow(error);
+  });
+
+  test("refuses a field for a value", () => {
+    for (const field of ["value", "secret", "password", "token", "Password"]) {
+      expect(() => parse(one(`${base}\n${field}: x`))).toThrow(
+        "Do not put secret values in the catalog.",
+      );
+    }
+  });
+
+  test("a name is unique in its place", () => {
+    const twice = list(
+      `  - ${base.split("\n").join("\n    ")}\n  - ${base.replace("TOKEN_A", "token_a").split("\n").join("\n    ")}\n`,
+    );
+    expect(() => parse(twice)).toThrow(/item 1, field `name`.*two times/);
+    const otherPlace = list(
+      `  - ${base.split("\n").join("\n    ")}\n  - ${base.replace("ImreBoersma/projects", "ImreBoersma/one").split("\n").join("\n    ")}\n`,
+    );
+    expect(parse(otherPlace)).toHaveLength(2);
   });
 });

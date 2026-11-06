@@ -1,12 +1,18 @@
-import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, readdir } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
-import { parseCatalog, visibleProjects } from "./catalog";
+import { parseCatalog, parseSecrets, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
 import { checkRepo } from "./conformance/rules";
-import { certificateProblem, daysUntil, mergeRenewals, renewalProblems } from "./expiry/expiry";
+import {
+  certificateProblem,
+  daysUntil,
+  mergeRenewals,
+  renewalProblems,
+  slug,
+} from "./expiry/expiry";
 import { readBootstrap, readCertificate, readRegistryDate } from "./expiry/read";
-import { fetchStatuses } from "./github";
+import { fetchStatuses, tokenFor } from "./github";
 import { repairTime, since, uptime as uptimeOf } from "./history/stats";
 import { readHistory, resultLine } from "./history/store";
 import {
@@ -19,7 +25,10 @@ import {
 } from "./issues";
 import { conformanceProblem, evaluateProblems, sortRows } from "./problems";
 import { renderPage } from "./render";
-import type { Project } from "./types";
+import { gaps, type Used, usedSecrets } from "./secrets/compare";
+import { type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
+import { readWorkflowTexts, tokenExpiry } from "./secrets/read";
+import type { Problem, Project, SecretEntry, SecretStatus } from "./types";
 import { checkAll } from "./uptime";
 
 // Research.md §9: the log shows only the state, never an error text.
@@ -48,8 +57,13 @@ if (args.mode !== "page" && args.mode !== "issues") {
 }
 
 let projects: Project[];
+let allProjects: Project[];
+let secretEntries: SecretEntry[];
 try {
-  projects = visibleProjects(parseCatalog(await Bun.file(args.catalog).text()));
+  const catalogText = await Bun.file(args.catalog).text();
+  allProjects = parseCatalog(catalogText);
+  projects = visibleProjects(allProjects);
+  secretEntries = parseSecrets(catalogText, allProjects);
 } catch (error) {
   // FR-015: stop before any output, so that GitHub Pages keeps the last correct page.
   console.error(error instanceof Error ? error.message : error);
@@ -63,6 +77,8 @@ for (const p of projects) {
   const u = uptime.get(p.id);
   if (p.domain && u) console.log(`Site ${p.domain}: ${LOG_TEXT[u.state]}`);
 }
+// Spec 013: workflow texts of the own repos, kept from the conformance check for the compare.
+const workflowTexts = new Map<string, string[]>();
 const unavailableSetup = await checkConformance();
 const keepKeys = await checkExpiry();
 for (const s of statuses) {
@@ -73,6 +89,72 @@ for (const s of statuses) {
     ...[certificateProblem(s.project.id, s.expiry.certificate)].filter((p) => p !== null),
     ...renewalProblems(s.project.id, s.expiry.renewals),
   ];
+}
+const shared = await checkSecrets();
+
+// Spec 013: the expiry of the secrets, and the names that the workflows use but the catalog
+// does not list. Logs names and dates only, never a value.
+async function checkSecrets(): Promise<{
+  secrets: SecretStatus[];
+  problems: Problem[];
+  gaps: string[];
+}> {
+  const read: ReadDates = new Map();
+  for (const name of ["STATUS_READ_TOKEN", "STATUS_READ_TOKEN_HOB", "CONFORMANCE_READ_TOKEN"]) {
+    const token = process.env[name];
+    if (!token) continue;
+    const date = await tokenExpiry(token);
+    if (date === "not-known") {
+      console.log(`Token ${name}: not known`);
+      const listed = secretEntries.find(
+        (e) => e.name === name && e.where === "ImreBoersma/projects" && e.expires !== "never",
+      );
+      if (!listed) keepKeys.add(`${SHARED}/secret-expiring/${slug(name)}`);
+    } else if (date) {
+      console.log(`Token ${name}: expires ${date}`);
+      read.set(name, date);
+    } else {
+      console.log(`Token ${name}: no expiry`);
+    }
+  }
+  const all = secretStatuses(secretEntries, read, allProjects, now).filter((s) => s.date);
+  for (const s of all) console.log(`Secret ${s.entry.name}: ${s.days} days`);
+  const problems = secretProblems(all);
+  for (const s of statuses) {
+    s.secrets = all.filter((x) => x.owner === s.project.id);
+    s.problems.push(...problems.filter((p) => p.projectId === s.project.id));
+  }
+
+  const used: Used[] = [];
+  for (const s of statuses) {
+    const repo = s.project.repo;
+    if (!repo) continue;
+    let texts = workflowTexts.get(s.project.id) ?? null;
+    if (!texts && !repo.startsWith("ImreBoersma/")) {
+      const token = tokenFor(repo.split("/")[0], process.env);
+      texts = token ? await readWorkflowTexts(repo, token) : null;
+      if (!texts) console.log(`Secrets compare ${repo}: workflows not available`);
+    }
+    if (texts) used.push({ owner: s.project.id, repo, names: texts.flatMap(usedSecrets) });
+  }
+  const dir = join(dirname(args.catalog), ".github", "workflows");
+  try {
+    const files = (await readdir(dir)).filter((f) => /\.ya?ml$/.test(f));
+    const texts = await Promise.all(files.map((f) => Bun.file(join(dir, f)).text()));
+    used.push({ owner: SHARED, repo: "ImreBoersma/projects", names: texts.flatMap(usedSecrets) });
+  } catch {
+    console.log("Secrets compare ImreBoersma/projects: workflows not available");
+  }
+  const found = gaps(used, secretEntries);
+  for (const s of statuses) {
+    s.secretGaps = found.filter((g) => g.owner === s.project.id).map((g) => g.name);
+  }
+  for (const g of found) console.log(`Secret not in the catalog: ${g.name} (${g.repo})`);
+  return {
+    secrets: all.filter((x) => x.owner === SHARED),
+    problems: problems.filter((p) => p.projectId === SHARED),
+    gaps: found.filter((g) => g.owner === SHARED).map((g) => g.name),
+  };
 }
 
 // Spec 009: certificate, registry and catalog dates. Returns the issue keys to keep open,
@@ -131,6 +213,12 @@ async function checkConformance(): Promise<Set<string>> {
     own.map(async (s) => {
       const repo = s.project.repo as string;
       const facts = await readFacts(repo, token);
+      if (facts !== "not-available" && facts.workflows !== "not-available") {
+        workflowTexts.set(
+          s.project.id,
+          facts.workflows.map((w) => w.text),
+        );
+      }
       const results = facts === "not-available" ? null : checkRepo(facts, s.project.exceptions);
       const notAvailable = results
         ? results.filter((r) => r.state === "not-available").map((r) => r.rule)
@@ -151,12 +239,16 @@ async function checkConformance(): Promise<Set<string>> {
 // Spec 010: the result of this run, added to the stored results.
 const current = {
   time: now.toISOString(),
-  projects: Object.fromEntries(
-    statuses.map((s) => [
+  projects: Object.fromEntries([
+    ...statuses.map((s) => [
       s.project.id,
       { site: s.uptime.state, problems: s.problems.map((p) => p.key) },
     ]),
-  ),
+    // Spec 013: the shared problems, so that "since" works for them.
+    ...(shared.problems.length
+      ? [[SHARED, { site: "no-domain", problems: shared.problems.map((p) => p.key) }]]
+      : []),
+  ]),
 };
 const stored = args.history ? await readHistory(args.history, now) : { results: [], start: null };
 const results = [...stored.results, current];
@@ -188,6 +280,7 @@ if (args.mode === "page") {
       issues,
       historyStart: stored.start ?? now.toISOString().slice(0, 10),
       repair: repairTime(results, now),
+      shared,
     }),
   );
   console.log(`Wrote ${join(args.out, "index.html")} with ${statuses.length} projects.`);
@@ -220,7 +313,7 @@ async function reconcileIssues() {
     process.exit(1);
   }
   const actions = planIssueActions(
-    statuses.flatMap((s) => s.problems),
+    [...statuses.flatMap((s) => s.problems), ...shared.problems],
     await listOpenIssues(repo, token),
     new Set(statuses.filter((s) => s.availability === "unavailable").map((s) => s.project.id)),
     [...uptime.values()].some((u) => u.state === "not-available"),

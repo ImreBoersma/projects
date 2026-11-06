@@ -80,3 +80,12 @@ later.
 values in this file. Secret names, places and dates are allowed (spec 013)."
 
 **Rationale**: the names are already in the public workflow files (spec Assumptions).
+
+## 7. Validation results
+
+| Check | Date | Result |
+|---|---|---|
+| Unit tests, lint, types (T020) | 2026-11-06 | 226 tests pass (baseline 194); Biome and `tsc` clean. |
+| Catalog list (T019) | 2026-11-06 | 18 entries from the workflow files of all catalog repos and this repo, read with `usedSecrets`. pretband-backend has no workflows. Local run with the real catalog: 0 gaps for the own repos and this repo. |
+| Local run with test dates (T021) | 2026-11-06 | A shared secret in 20 days: red badge in "Shared tokens", title `(1) Project status`, dry run `Open: Shared setup: The secret STATUS_HEALTHCHECK_URL expires in 20 days.`. A project secret in 45 days: amber badge and amber dot on boek-de-bus. The log has names and days only. The local `gh` token gives no expiry header ("no expiry"), as expected (§1). |
+| Found in the implementation | 2026-11-06 | (1) The shared workflows use secret names with `-` (`secrets.ssh-password`); the name pattern of spec 008 stops at `-`, so `usedSecrets` has its own pattern. (2) The issue links of the page were keyed by reason, so two problems of one reason in one project (two renewals, two secrets) linked to one issue; now keyed by the problem key. |
