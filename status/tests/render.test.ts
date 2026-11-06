@@ -80,10 +80,10 @@ describe("renderPage", () => {
       'Up<span class="sr"> (checked 10:17 UTC)</span>',
     ]);
     expect(group(status({ uptime: { state: "down", at } }), "Site")[0]).toStartWith(
-      '<span class="badge badge-soft badge-sm badge-error bad">Down</span>',
+      '<span class="badge badge-sm badge-error bad">Down</span>',
     );
     expect(group(status({ uptime: { state: "not-available", at } }), "Site")).toEqual([
-      '<span class="badge badge-soft badge-sm badge-neutral unknown">Check not available</span>',
+      '<span class="badge badge-sm badge-neutral unknown">Check not available</span>',
     ]);
   });
 
@@ -92,7 +92,7 @@ describe("renderPage", () => {
       "<div><dt>Code</dt><dd>No repo</dd></div>",
     );
     expect(group(status({ availability: "unavailable" }), "Code")).toEqual([
-      '<span class="badge badge-soft badge-sm badge-neutral unknown">Data not available</span>',
+      '<span class="badge badge-sm badge-neutral unknown">Data not available</span>',
     ]);
   });
 
@@ -167,7 +167,7 @@ describe("renderPage", () => {
     );
     expect(html).toContain(`${A("https://github.com/ImreBoersma/one")}One${NT}`);
     expect(html).toContain(
-      `${A(`https://github.com/ImreBoersma/one/commit/${oid}/checks`)}<span class="badge badge-soft badge-sm badge-error bad">CI failed</span>${NT}`,
+      `${A(`https://github.com/ImreBoersma/one/commit/${oid}/checks`)}<span class="badge badge-sm badge-error bad">CI failed</span>${NT}`,
     );
     expect(html).toContain(`${A("https://github.com/ImreBoersma/one/deployments")}Deployed${NT}`);
     expect(html).toContain(
@@ -293,7 +293,7 @@ describe("expiry on the page (spec 009)", () => {
       'Certificate <time datetime="2026-12-19" data-rel title="2026-12-19">in 52 days</time>',
     );
     expect(both[1]).toStartWith(
-      '<span class="badge badge-soft badge-sm badge-warning warn">Hosting renewal <time datetime="2027-01-01"',
+      '<span class="badge badge-sm badge-warning warn">Hosting renewal <time datetime="2027-01-01"',
     );
     expect(both).toHaveLength(2);
     expect(expiry({ certificate: "not-known", renewals: [], registryNotKnown: true })).toEqual([
@@ -312,11 +312,11 @@ describe("expiry on the page (spec 009)", () => {
     };
     const items = group(status({ expiry }), "Expiry");
     expect(items[0]).toStartWith(
-      '<span class="badge badge-soft badge-sm badge-warning warn">Certificate <time',
+      '<span class="badge badge-sm badge-warning warn">Certificate <time',
     );
     expect(items[0]).toContain(">in 20 days</time>");
     expect(items[1]).toStartWith(
-      '<span class="badge badge-soft badge-sm badge-error bad">Hosting renewal was due <time',
+      '<span class="badge badge-sm badge-error bad">Hosting renewal was due <time',
     );
     expect(items[1]).toContain(">1 day ago</time>");
     expect(render([status({ expiry: { ...expiry, renewals: [] } })])).toContain(
@@ -434,12 +434,10 @@ describe("spec 012: total state, sections, times, new tabs", () => {
         deploy: { at: generatedAt, result: "failed" },
       }),
     ]);
-    expect(html).toContain('<span class="badge badge-soft badge-sm badge-error bad">Down</span>');
+    expect(html).toContain('<span class="badge badge-sm badge-error bad">Down</span>');
     expect(html).toContain(`<dd>CI passed${SEP}`);
     expect(html).not.toContain("badge good");
-    expect(html).toContain(
-      '<span class="badge badge-soft badge-sm badge-error bad">Deploy failed</span>',
-    );
+    expect(html).toContain('<span class="badge badge-sm badge-error bad">Deploy failed</span>');
   });
 
   test("US3 (spec 019 default sort): problems, then check not available, then the others", () => {
@@ -567,7 +565,7 @@ describe("secrets on the page (spec 013)", () => {
     expect(
       group(status({ secrets: [secret("VERCEL_TOKEN", "2026-12-12", 45)] }), "Expiry")[0],
     ).toStartWith(
-      '<span class="badge badge-soft badge-sm badge-warning warn">Secret VERCEL_TOKEN <time datetime="2026-12-12"',
+      '<span class="badge badge-sm badge-warning warn">Secret VERCEL_TOKEN <time datetime="2026-12-12"',
     );
     expect(html).toContain('<li class="project warn"');
   });
@@ -583,7 +581,7 @@ describe("secrets on the page (spec 013)", () => {
   test("no expiry: an amber warning in the Expiry line; the dot stays green", () => {
     const s = status({ secretsNoExpiry: ["BOARD_TOKEN", "VERCEL_TOKEN"] });
     expect(group(s, "Expiry")).toEqual([
-      '<span class="badge badge-soft badge-sm badge-warning warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: BOARD_TOKEN, VERCEL_TOKEN</span>',
+      '<span class="badge badge-sm badge-warning warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: BOARD_TOKEN, VERCEL_TOKEN</span>',
     ]);
     expect(render([s])).toContain('<li class="project good"');
     expect(render([s])).toContain("<title>Project status</title>");
@@ -630,7 +628,7 @@ describe("secrets on the page (spec 013)", () => {
       `${A("https://github.com/ImreBoersma/projects/issues/31")}The secret TOKEN_A expires in 20 days.${NT}`,
     );
     expect(html).toContain(
-      '<span class="badge badge-soft badge-sm badge-error bad">Secret TOKEN_A <time datetime="2026-11-17"',
+      '<span class="badge badge-sm badge-error bad">Secret TOKEN_A <time datetime="2026-11-17"',
     );
     expect(html).toContain("Secret not in the catalog: NEW_SECRET");
     expect(html).toContain("1 shared problem.");
@@ -684,9 +682,7 @@ describe("campaigns on the page (spec 015)", () => {
 
   test("failed CI: an amber badge and dot; the total state does not change", () => {
     const html = page([campaign({ counts: counts({ open: 1, "failed-ci": 1 }) })]);
-    expect(html).toContain(
-      '<span class="badge badge-soft badge-sm badge-warning warn">1 failed CI</span>',
-    );
+    expect(html).toContain('<span class="badge badge-sm badge-warning warn">1 failed CI</span>');
     expect(html).toContain('<li class="project warn"');
     expect(html).toContain("<title>Project status</title>");
     expect(html).toContain('<section class="total correct');
