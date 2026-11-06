@@ -19,6 +19,10 @@ pretband-backend   no access
    diff of each changed file. No write to any repo.
 4. Exit code 0 when no repo failed, else 1. A failed repo does not stop the others.
 5. `--reopen <id>`: for that repo, a closed PR of the campaign is reopened and updated.
+6. Hand fixes: the command updates a campaign branch only when it has exactly the one commit that
+   the command makes (1 commit ahead of the default branch, message = campaign title). Else the
+   line is `changed by hand #<n> (merge the PR, or use --overwrite <id>)` and nothing changes.
+   `--overwrite <id>` updates that branch anyway (the hand commits go away).
 
 ## `bun run secret-set <NAME>`
 

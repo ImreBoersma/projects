@@ -143,8 +143,10 @@ the shell history or in a log.
 - **FR-005**: The command MUST NOT make a second PR for a repo that has an open or closed (not
   merged) PR of the campaign, except with the reopen option for that repo. When the PR is merged
   and the change is needed again (the campaign changed), the command MUST open a new PR; when the
-  PR is merged and the change is not needed, the result is "merged". The command MUST continue
-  with the next repo when one repo fails.
+  PR is merged and the change is not needed, the result is "merged". The command MUST NOT
+  overwrite a campaign branch that has commits it did not make (a hand fix), except with an
+  overwrite option for that repo. The command MUST continue with the next repo when one repo
+  fails.
 - **FR-006**: The command MUST run on the Maintainer's machine with the Maintainer's own access.
   The status update MUST NOT get write access to the project repos for this feature.
 - **FR-007**: The status page MUST show each open campaign with the numbers merged, open, failed

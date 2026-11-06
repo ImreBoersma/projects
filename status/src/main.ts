@@ -1,6 +1,7 @@
 import { mkdir, readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
+import { readCampaigns } from "./campaign/status";
 import { parseCatalog, parseSecrets, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
 import { checkRepo } from "./conformance/rules";
@@ -287,6 +288,13 @@ if (args.mode === "page") {
       historyStart: stored.start ?? now.toISOString().slice(0, 10),
       repair: repairTime(results, now),
       shared,
+      // Spec 015: the progress of the campaigns.
+      campaigns: await readCampaigns(
+        join(dirname(args.catalog), "campaigns"),
+        allProjects,
+        process.env,
+        now,
+      ),
     }),
   );
   console.log(`Wrote ${join(args.out, "index.html")} with ${statuses.length} projects.`);

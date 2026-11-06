@@ -25,7 +25,8 @@
 
 ## Campaign state (status run, one for each target repo)
 
-`merged` · `open` · `failed-ci` · `closed` · `not-needed` · `to-do` (needed, no PR).
+`merged` · `open` · `failed-ci` · `closed` (a PR closed without a merge, also when the change is
+still needed) · `not-needed` · `to-do` (needed and no PR, or needed again after a merge).
 
 ## Campaign summary (page)
 
