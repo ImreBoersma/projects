@@ -128,7 +128,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/projects
-    expires: never
+    expires: 2027-11-05
   - name: BOARD_SYNC_TOKEN
     kind: actions-secret
     where: ImreBoersma/projects
@@ -141,12 +141,12 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/Beter-dan-de-MIDI
-    expires: never
+    expires: 2027-11-05
     project: beter-dan-de-midi
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/boek-de-bus
-    expires: never
+    expires: 2027-11-05
     project: boek-de-bus
   - name: VERCEL_TOKEN
     kind: actions-secret
@@ -156,7 +156,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/personal-website
-    expires: never
+    expires: 2027-11-05
     project: personal-website
   - name: VERCEL_TOKEN
     kind: actions-secret
@@ -166,7 +166,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/scales-exercises
-    expires: never
+    expires: 2027-11-05
     project: scales-exercises
   - name: BUILD_ENV
     kind: actions-secret
