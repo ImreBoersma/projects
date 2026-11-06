@@ -9,6 +9,9 @@
 - Shared secrets: a group `Shared tokens` after the project sections, same list style as a
   project: one item "Shared setup" with an Expiry line of all shared secrets with a date, sorted
   by days, each with its badge kind.
+- No expiry (FR-010): `<span class="badge warn">No expiry: <names></span>` as the last item of
+  the Expiry line of the project or of "Shared setup". No problem, no issue; the dot and the total
+  state do not change.
 - Gaps (FR-009): in the **Code** line of the project: `Secret not in the catalog: <name>, <name>`;
   for this repo in the group `Shared tokens`.
 - The total state, title and summary of spec 012 count the shared problems.

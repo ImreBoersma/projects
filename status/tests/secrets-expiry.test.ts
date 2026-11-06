@@ -108,3 +108,19 @@ describe("privacy (SC-003, FR-002)", () => {
     });
   });
 });
+
+describe("no expiry (FR-010)", () => {
+  test("never is a warning, none is not, a read date is not", async () => {
+    const { noExpiry } = await import("../src/secrets/expiry");
+    const s = statuses(
+      [
+        entry({ name: "CAN", expires: "never" }),
+        entry({ name: "CANNOT", expires: "none" }),
+        entry({ name: "STATUS_READ_TOKEN", expires: "never" }),
+      ],
+      new Map([["STATUS_READ_TOKEN", "2027-01-01"]]),
+    );
+    expect(noExpiry(s).map((x) => x.entry.name)).toEqual(["CAN"]);
+    expect(secretProblems(s).map((p) => p.key)).toEqual([]);
+  });
+});

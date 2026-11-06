@@ -210,6 +210,11 @@ describe("parseSecrets (spec 013)", () => {
     expect(parse(`${valid}secrets:\n`)).toEqual([]);
   });
 
+  test("expires accepts never and none", () => {
+    expect(parse(one(base.replace("2027-11-06", "never")))[0].expires).toBe("never");
+    expect(parse(one(base.replace("2027-11-06", "none")))[0].expires).toBe("none");
+  });
+
   test("an archived project id is valid", () => {
     expect(parse(one(`${base}\nproject: three`))[0].project).toBe("three");
   });

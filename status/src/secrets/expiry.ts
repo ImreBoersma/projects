@@ -33,7 +33,7 @@ export function secretStatuses(
   return all
     .filter((e) => !(e.project && archived.has(e.project)))
     .map((entry) => {
-      const catalog = entry.expires === "never" ? null : entry.expires;
+      const catalog = entry.expires === "never" || entry.expires === "none" ? null : entry.expires;
       const read = entry.where === THIS_REPO ? (readDates.get(entry.name) ?? null) : null;
       // Dates as YYYY-MM-DD sort as text; the earlier date wins (FR-003).
       const date = catalog && read ? [catalog, read].sort()[0] : (catalog ?? read);
@@ -72,3 +72,7 @@ export function secretProblems(statuses: SecretStatus[]): Problem[] {
       };
     });
 }
+
+// Spec 013 FR-010: secrets that can expire but have no date. Not a problem; a warning on the page.
+export const noExpiry = (statuses: SecretStatus[]) =>
+  statuses.filter((s) => s.date === null && s.entry.expires === "never");

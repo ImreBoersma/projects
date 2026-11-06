@@ -70,6 +70,8 @@ export interface ProjectStatus {
   // Spec 013: the secrets of this project with a date, and the names that are not in the catalog.
   secrets: SecretStatus[];
   secretGaps: string[];
+  // Spec 013 FR-010: names of secrets that can expire but have no date.
+  secretsNoExpiry: string[];
 }
 
 export interface StatusPage {
@@ -79,7 +81,7 @@ export interface StatusPage {
   generatedAt: Date;
   rows: ProjectStatus[];
   // Spec 013: the secrets of the shared setup (this repo).
-  shared?: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[] };
+  shared?: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[]; noExpiry?: string[] };
   // Marker key `<project id>/<reason>` to the number of the open status-problem issue.
   issues: Map<string, number>;
 }

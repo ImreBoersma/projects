@@ -26,7 +26,7 @@ import {
 import { conformanceProblem, evaluateProblems, sortRows } from "./problems";
 import { renderPage } from "./render";
 import { gaps, type Used, usedSecrets } from "./secrets/compare";
-import { type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
+import { noExpiry, type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
 import { readWorkflowTexts, tokenExpiry } from "./secrets/read";
 import type { Problem, Project, SecretEntry, SecretStatus } from "./types";
 import { checkAll } from "./uptime";
@@ -98,6 +98,7 @@ async function checkSecrets(): Promise<{
   secrets: SecretStatus[];
   problems: Problem[];
   gaps: string[];
+  noExpiry: string[];
 }> {
   const read: ReadDates = new Map();
   for (const name of ["STATUS_READ_TOKEN", "STATUS_READ_TOKEN_HOB", "CONFORMANCE_READ_TOKEN"]) {
@@ -117,11 +118,15 @@ async function checkSecrets(): Promise<{
       console.log(`Token ${name}: no expiry`);
     }
   }
-  const all = secretStatuses(secretEntries, read, allProjects, now).filter((s) => s.date);
+  const statusesAll = secretStatuses(secretEntries, read, allProjects, now);
+  const all = statusesAll.filter((s) => s.date);
+  const undated = noExpiry(statusesAll);
+  for (const s of undated) console.log(`Secret ${s.entry.name}: no expiry set (${s.entry.where})`);
   for (const s of all) console.log(`Secret ${s.entry.name}: ${s.days} days`);
   const problems = secretProblems(all);
   for (const s of statuses) {
     s.secrets = all.filter((x) => x.owner === s.project.id);
+    s.secretsNoExpiry = undated.filter((x) => x.owner === s.project.id).map((x) => x.entry.name);
     s.problems.push(...problems.filter((p) => p.projectId === s.project.id));
   }
 
@@ -152,6 +157,7 @@ async function checkSecrets(): Promise<{
   for (const g of found) console.log(`Secret not in the catalog: ${g.name} (${g.repo})`);
   return {
     secrets: all.filter((x) => x.owner === SHARED),
+    noExpiry: undated.filter((x) => x.owner === SHARED).map((x) => x.entry.name),
     problems: problems.filter((p) => p.projectId === SHARED),
     gaps: found.filter((g) => g.owner === SHARED).map((g) => g.name),
   };

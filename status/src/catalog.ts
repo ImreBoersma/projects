@@ -120,8 +120,9 @@ export function parseSecrets(text: string, projects: Project[]): SecretEntry[] {
       fail("where", "must be owner/repo.");
     }
     const exp = expires instanceof Date ? expires.toISOString().slice(0, 10) : expires;
-    if (exp !== "never" && (typeof exp !== "string" || !realDate(exp))) {
-      fail("expires", "must be a date as YYYY-MM-DD or never.");
+    // `never`: an expiry is possible but not set (a warning); `none`: the value cannot expire.
+    if (exp !== "never" && exp !== "none" && (typeof exp !== "string" || !realDate(exp))) {
+      fail("expires", "must be a date as YYYY-MM-DD, never or none.");
     }
     if (project != null && project !== "" && !ids.has(project as string)) {
       fail("project", `"${project}" is not a catalog id.`);

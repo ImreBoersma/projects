@@ -109,7 +109,8 @@ projects:
     renewal:
 
 # Spec 013: each secret that the projects and this repo use. Names, places and dates only.
-# `expires: never` for a GitHub token of the status run: the run reads its real date itself.
+# `expires`: a date; `never` when an expiry is possible but not set (the page warns); `none` when
+# the value cannot expire (a host name, a URL, a key without an expiry setting).
 secrets:
   # This repo (shared setup).
   - name: STATUS_READ_TOKEN
@@ -135,7 +136,7 @@ secrets:
   - name: STATUS_HEALTHCHECK_URL
     kind: actions-secret
     where: ImreBoersma/projects
-    expires: never
+    expires: none
   # Project repos.
   - name: BOARD_TOKEN
     kind: actions-secret
@@ -170,30 +171,30 @@ secrets:
   - name: BUILD_ENV
     kind: actions-secret
     where: ImreBoersma/scales-exercises
-    expires: never
+    expires: none
     project: scales-exercises
   - name: FIREBASE_SERVICE_ACCOUNT_IMRE_BOERSMA
     kind: actions-secret
     where: ImreBoersma/scales-exercises
-    expires: never
+    expires: none
     project: scales-exercises
   - name: HOB_SSH_HOST
     kind: actions-secret
     where: harmonieorkest-brummen/hob-nl
-    expires: never
+    expires: none
     project: hob-nl
   - name: HOB_SSH_USER
     kind: actions-secret
     where: harmonieorkest-brummen/hob-nl
-    expires: never
+    expires: none
     project: hob-nl
   - name: HOB_SSH_PASSWORD
     kind: actions-secret
     where: harmonieorkest-brummen/hob-nl
-    expires: never
+    expires: none
     project: hob-nl
   - name: RENOVATE_APP_PRIVATE_KEY
     kind: actions-secret
     where: ImreBoersma/HomeLab
-    expires: never
+    expires: none
     project: homelab

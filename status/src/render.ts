@@ -162,6 +162,7 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
     const more = secrets.length > 1 ? ` (+${secrets.length - 1} more)` : "";
     expiry.push(`${secretText(secrets[0], now)}${more}`);
   }
+  if (s.secretsNoExpiry.length) expiry.push(noExpiryText(s.secretsNoExpiry));
 
   return [
     { label: "Site", items: site },
@@ -176,6 +177,9 @@ const secretText = (x: SecretStatus, now: Date) =>
     secretKind(x.days as number),
     `Secret ${html(x.entry.name)} ${timeTag(x.date as string, now)}`,
   );
+// Spec 013 FR-010: a warning, not a problem; the dot and the total state do not change.
+const noExpiryText = (names: string[]) =>
+  `<span class="badge warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: ${html(names.join(", "))}</span>`;
 const gapText = (names: string[]) => `Secret not in the catalog: ${html(names.join(", "))}`;
 
 // The separator is text, so that a copy of the page keeps it.
@@ -298,11 +302,14 @@ setInterval(updateTimes, 60000);
 
 // Spec 013, contracts/page-issue.md: the group "Shared tokens" for the secrets of this repo.
 function sharedSection(
-  shared: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[] },
+  shared: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[]; noExpiry?: string[] },
   now: Date,
   issues: Map<string, number>,
 ): string {
-  if (!shared.secrets.length && !shared.problems.length && !shared.gaps.length) return "";
+  const undated = shared.noExpiry ?? [];
+  if (!shared.secrets.length && !shared.problems.length && !shared.gaps.length && !undated.length) {
+    return "";
+  }
   const kind = shared.problems.length
     ? "bad"
     : shared.secrets.some((x) => secretKind(x.days as number) !== "good")
@@ -317,7 +324,7 @@ function sharedSection(
     .sort((a, b) => (a.days as number) - (b.days as number))
     .map((x) => secretText(x, now));
   const groups = [
-    { label: "Expiry", items: secrets },
+    { label: "Expiry", items: undated.length ? [...secrets, noExpiryText(undated)] : secrets },
     { label: "Code", items: shared.gaps.length ? [gapText(shared.gaps)] : [] },
   ]
     .filter((g) => g.items.length)

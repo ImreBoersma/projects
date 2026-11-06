@@ -57,6 +57,7 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     history: { since: {}, sinceIsHistoryStart: [], uptime: null },
     secrets: [],
     secretGaps: [],
+    secretsNoExpiry: [],
   };
 }
 

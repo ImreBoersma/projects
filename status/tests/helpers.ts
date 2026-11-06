@@ -19,6 +19,7 @@ export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
     history: { since: {}, sinceIsHistoryStart: [], uptime: null },
     secrets: [],
     secretGaps: [],
+    secretsNoExpiry: [],
     ...overrides,
   };
 }

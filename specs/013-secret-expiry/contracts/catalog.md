@@ -32,7 +32,8 @@ Rules (data-model.md "SecretEntry"); each failure stops the run with
   is refused: host logins are not listed in this public file (spec clarification); they stay in
   the password manager.
 - `where`: `owner/repo`.
-- `expires`: `YYYY-MM-DD` (a real date) or `never`.
+- `expires`: `YYYY-MM-DD` (a real date), `never` (an expiry is possible but not set: the page
+  warns, FR-010) or `none` (the value cannot expire: no warning).
 - `project`: empty or a catalog id.
 - `name` + `where` unique (case-insensitive).
 - No other fields. A field named `value`, `secret`, `password` or `token` is an error with the

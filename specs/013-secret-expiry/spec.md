@@ -18,6 +18,11 @@ of spec 009 apply: an issue 30 days before the date, a badge on the status page.
   login at GoDaddy) are not listed. The repo is public, and unlike the secret names, a list of
   logins is not public now. The password manager keeps that list. The catalog check refuses the
   kind `account`.
+- Change after the first implementation (Maintainer: "add a warning for never expiring secrets"):
+  `expires: never` means that an expiry is possible but not set; the page shows an amber "No
+  expiry" warning, without a problem or an issue, and the dot and the total state do not change.
+  `expires: none` means that the value cannot expire (a host name, a URL, a key without an expiry
+  setting); no warning (FR-010).
 
 - Q: Does the catalog list only the secrets with an expiry, or each secret that the projects use?
   → A: Each secret, with a date or "no expiry". Only a secret with a date can make a problem or
@@ -152,6 +157,10 @@ each shows in its place, with the colour rules of spec 012.
   field that the list does not have, or a field with the name `value`, `secret`, `password` or
   `token`.
 - **FR-008**: The check MUST run with each status update (each hour).
+- **FR-010**: An entry with `expires: never` and no read date MUST show as an amber warning
+  "No expiry: <names>" in the Expiry line of its project (or of "Shared setup"). It MUST NOT make a
+  problem or an issue, and MUST NOT change the dot of the project or the total state. An entry
+  with `expires: none` MUST NOT show.
 - **FR-009**: Each run MUST compare the secret names that the workflow files of each catalog repo
   and of this repo use with the catalog list. A name that is used but not listed MUST show as a
   setup note on that project ("Secret not in the catalog: <name>"), or in the group "Shared

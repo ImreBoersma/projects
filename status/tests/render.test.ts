@@ -566,6 +566,26 @@ describe("secrets on the page (spec 013)", () => {
     expect(group(s, "Expiry")[0]).toEndWith("(+1 more)");
   });
 
+  test("no expiry: an amber warning in the Expiry line; the dot stays green", () => {
+    const s = status({ secretsNoExpiry: ["BOARD_TOKEN", "VERCEL_TOKEN"] });
+    expect(group(s, "Expiry")).toEqual([
+      '<span class="badge warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: BOARD_TOKEN, VERCEL_TOKEN</span>',
+    ]);
+    expect(render([s])).toContain('<li class="project good">');
+    expect(render([s])).toContain("<title>Project status</title>");
+  });
+
+  test("the shared group shows the secrets without expiry", () => {
+    const html = renderPage({
+      generatedAt,
+      rows: [],
+      issues: new Map(),
+      shared: { secrets: [], problems: [], gaps: [], noExpiry: ["BOARD_SYNC_TOKEN"] },
+    });
+    expect(html).toContain("<h2>Shared tokens</h2>");
+    expect(html).toContain("No expiry: BOARD_SYNC_TOKEN</span>");
+  });
+
   test("a gap shows in the Code line", () => {
     expect(group(status({ secretGaps: ["X", "Y"] }), "Code")).toContain(
       "Secret not in the catalog: X, Y",
