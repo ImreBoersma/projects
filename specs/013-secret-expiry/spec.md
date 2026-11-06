@@ -10,6 +10,17 @@
 with its name, the place where it is set (repo, kind), and the date. No values. The renewal rules
 of spec 009 apply: an issue 30 days before the date, a badge on the status page."
 
+## Clarifications
+
+### Session 2026-11-06
+
+- Q: Does the catalog list only the secrets with an expiry, or each secret that the projects use?
+  → A: Each secret, with a date or "no expiry". Only a secret with a date can make a problem or
+  show on the page. The full list tells the Maintainer what to change after a leak.
+- Q: Does the update compare the secrets in the workflow files with the catalog list? → A: Yes,
+  each run. A secret that a workflow uses but that is not in the catalog shows as a setup note on
+  that project, without an issue.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Get an issue before a token expires (Priority: P1)
@@ -88,7 +99,8 @@ each shows in its place, with the colour rules of spec 012.
 
 - A token expires while the update runs with it: the read fails as now ("Data not available");
   the catalog date still makes the problem.
-- A catalog entry without a date ("no expiry"): not shown, no problem.
+- A catalog entry with "no expiry" (for example the board tokens): in the catalog list only; not
+  shown, no problem.
 - A catalog entry for a project that is not in the catalog: an error in the catalog check, as for
   other catalog errors.
 - Two entries with the same name in the same place: an error in the catalog check (the name is part
@@ -96,15 +108,20 @@ each shows in its place, with the colour rules of spec 012.
 - A token that the update cannot read the expiry of (classic token without expiry, or no header):
   not shown unless it has a catalog date.
 - A date more than 10 years in the future: shown as a date, no problem (no special rule).
+- A workflow file that cannot be read: no setup note for that repo; the existing "Setup check not
+  available" of spec 008 shows.
+- A secret in the catalog that no workflow uses any more: no note (the Maintainer can keep host
+  accounts and passwords that are not in a workflow).
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: The catalog MUST accept a list of secrets. Each entry has a name, the place where it
-  is set (repo and kind: Actions secret, Actions variable, environment secret, host account), an
-  expiry date, and optional the id of the project that it belongs to. An entry without a project is
-  a shared entry.
+- **FR-001**: The catalog MUST accept a list of secrets: each secret that the projects use, also a
+  secret that does not expire. Each entry has a name, the place where it is set (repo and kind:
+  Actions secret, Actions variable, environment secret, host account), an expiry date or "no
+  expiry", and optional the id of the project that it belongs to. An entry without a project is a
+  shared entry. An entry with "no expiry" MUST NOT make a problem and MUST NOT show on the page.
 - **FR-002**: The catalog and the page MUST NOT contain secret values, parts of values, or
   identifiers from which a value can be found (Principle III). Only the name, the place and the
   date.
@@ -123,11 +140,17 @@ each shows in its place, with the colour rules of spec 012.
 - **FR-007**: The catalog check MUST reject an entry with an unknown project id, a date that is not
   a date, or a name that is used two times in the same place.
 - **FR-008**: The check MUST run with each status update (each hour).
+- **FR-009**: Each run MUST compare the secret names that the workflow files of each catalog repo
+  and of this repo use with the catalog list. A name that is used but not listed MUST show as a
+  setup note on that project ("Secret not in the catalog: <name>"), or in the group "Shared
+  tokens" for this repo. It MUST NOT make a problem or an issue. The secret `GITHUB_TOKEN` (made by
+  GitHub for each run) is not compared.
 
 ### Key Entities
 
-- **Secret entry**: name, place (repo and kind), expiry date, optional project id. The name and the
-  place together are unique.
+- **Secret entry**: name, place (repo and kind), expiry date or "no expiry", optional project id.
+  The name and the place together are unique. All entries together are the list of secrets of
+  all projects.
 - **Read expiry**: the expiry date that a token gives when the update uses it. Not stored.
 
 ## Success Criteria *(mandatory)*
@@ -141,6 +164,9 @@ each shows in its place, with the colour rules of spec 012.
   fixture values).
 - **SC-004**: The Maintainer sees all expiry dates (certificates, renewals, secrets) on 1 page.
 - **SC-005**: The feature costs €0 each month to operate.
+- **SC-006**: After the first catalog update, 100% of the secrets in the workflow files of the
+  catalog repos and this repo are in the catalog list, and each later gap shows on the page within
+  1 hour (FR-009).
 
 ## Assumptions
 
