@@ -82,9 +82,9 @@ contracts/page-issue.md, quickstart.md
 - [X] T020 Run `cd status && bun test && bun run lint && bunx tsc --noEmit -p .`. All pass; the number of tests is more than the baseline of T001.
 - [X] T021 Run quickstart.md §2 and record the results in a table "Validation results" at the end of `specs/013-secret-expiry/research.md`.
 - [X] T022 Commit (`feat: track the expiry of tokens and secrets (spec 013)`), push, and open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
-- [ ] T023 Ask the Maintainer to merge the PR.
-- [ ] T024 After the merge, validate quickstart.md §3 (the log shows the token dates; the page shows "Shared tokens"; 0 gaps) and add the result to the table of T021.
-- [ ] T025 [P] In `PLAN.md`, mark spec 013 as done in the feature table and the Done list.
+- [X] T023 Ask the Maintainer to merge the PR.
+- [X] T024 After the merge, validate quickstart.md §3 (the log shows the token dates; the page shows "Shared tokens"; 0 gaps) and add the result to the table of T021.
+- [X] T025 [P] In `PLAN.md`, mark spec 013 as done in the feature table and the Done list.
 
 ---
 

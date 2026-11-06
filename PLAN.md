@@ -40,6 +40,10 @@ roadmap.
 - Spec 012: the status page shows the total state as one badge, in the tab title and in the
   favicon; state badges with a colour and a text (amber: certificate 15 to 28 days, renewal 31 to
   60 days); projects with problems first; relative times; all links open a new tab. No UI library.
+- Spec 013: the catalog lists each secret of the projects and this repo (`secrets`: name, place,
+  date, `never` or `none`; no values, no host accounts). The status tokens give their own date.
+  An issue 30 days before a date; "No expiry" warning for a secret that can expire but has no
+  date; a note for a workflow secret that is not listed. All tokens expire on 2027-11-05/06.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -64,7 +68,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 010 | Status history on a data branch (done) | 007 |
 | 011 | New-project template and onboarding | 008 |
 | 012 | Status page visual polish (done) | 007 |
-| 013 | Expiry of tokens and secrets (planned) | 009 |
+| 013 | Expiry of tokens and secrets (done) | 009 |
 | 014 | Free-tier usage warnings | 005 |
 | 015 | Changes in all repos at once (campaigns) | 008 |
 | 016 | Version drift between projects | 008 |
