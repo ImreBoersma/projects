@@ -9,6 +9,14 @@
 **Input**: PLAN.md 020: "Data file (`status.json`), since your last visit, installable app with
 the problem count on its icon, shortcut links in the pop-ups, and a command box (⌘K)."
 
+## Clarifications
+
+### Session 2026-11-06
+
+- Q: What does "what changed" compare against? → A: The last visit on this device when there is
+  one; else the last 24 hours (first visit, other device, private window), from the problem
+  history of spec 010.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See what changed since my last visit (Priority: P1)
@@ -27,8 +35,9 @@ mark.
 
 **Acceptance Scenarios**:
 
-1. **Given** a first visit in this browser, **When** the page opens, **Then** there is no
-   "since" line and no "New" mark; the visit is remembered.
+1. **Given** a first visit in this browser (or a browser without storage), **When** the page
+   opens, **Then** the line compares with the last 24 hours ("In the last 24 hours: 1 new, 0
+   fixed"), with the same "New" marks; the visit is remembered for the next time.
 2. **Given** a problem that was not there at the last visit, **When** the page opens, **Then**
    its row has a "New" mark and the line counts it as new.
 3. **Given** a problem that was there at the last visit and is gone now, **When** the page opens,
@@ -137,8 +146,8 @@ opens.
 
 ### Edge Cases
 
-- A browser that blocks local storage (private window): no "since" line, no "New" marks; the page
-  works as now.
+- A browser that blocks local storage (private window): the comparison uses the last 24 hours, as
+  on a first visit.
 - A very old last visit (more than 30 days): the line says "Since <date>" with the counts; the
   "Fixed" list shows at most 20 names.
 - A project that is new in the catalog since the last visit: its problems count as new.
@@ -158,7 +167,10 @@ opens.
   warning keys of the last visit, and nothing else.
 - **FR-002**: The page MUST show "Since <time>: <n> new, <m> fixed" (or "No change since <time>")
   and a "New" mark on each row with a new problem or warning. A visit counts as the last visit
-  only when it is more than 10 minutes after the one before.
+  only when it is more than 10 minutes after the one before. Without a stored visit, the page
+  MUST compare with the last 24 hours: problems that started in that time are new, problems that
+  stopped in that time are fixed (from the history of spec 010), with the text "In the last 24
+  hours: …".
 - **FR-003**: The page MUST list the fixed problems (project and text) in a folded list, at most
   20.
 - **FR-004**: Each update MUST publish a data file next to the page with the content of FR-005,
@@ -185,7 +197,9 @@ opens.
 ### Key Entities
 
 - **Visit**: time and the set of problem and warning keys; stored in this browser only.
-- **Change**: new keys and fixed keys between the visit and now.
+- **Change**: new keys and fixed keys between the visit (or 24 hours ago) and now.
+- **Recent changes**: for the last 24 hours, the problem keys that started and the ones that
+  stopped, with their project and text; made by the update from the history of spec 010.
 - **Data file**: the content of FR-005 for one update.
 - **Shortcut**: a label and a GitHub address for a project or for the status workflow.
 
