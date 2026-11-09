@@ -109,3 +109,18 @@ Facts about the repos are from the GitHub API on 2026-11-02.
   and the update is not tested before it reaches `main` (SC-003, FR-004).
 - **Alternatives considered**: `ci-node.yml` of spec 002 for `status/` (it expects the package in the
   repo root).
+
+## 14. The update window was too short (2026-11-09)
+
+**Finding**: on Saturday 2026-11-07 the window `* 2-5 * * 6` (02:00–06:00 Amsterdam) gave one PR
+in 5 hosted-app repos (Reperatie-Formulier #118, 04:15 UTC). The other 4 repos still had their
+patch and minor groups under "Awaiting Schedule" on 2026-11-09: the hosted app visits a repo
+every few hours at no fixed time, so a 4-hour weekly window is often missed. HomeLab never fits:
+its self-hosted Renovate runs from a daily GitHub cron at about 07:00–08:00 UTC (08:00–09:00
+Amsterdam), after the window.
+
+**Decision** (Maintainer, 2026-11-09): `* * * * 0,6`, Saturday and Sunday all day. The hosted app
+visits each repo several times in 48 hours; the HomeLab run lands on both days. Still one batch
+of PRs a week, so SC-004 stays. The research decision §2 ("the same window as HomeLab") is
+replaced.
+

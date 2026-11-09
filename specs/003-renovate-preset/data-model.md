@@ -18,9 +18,9 @@ No stored data. The entities are configuration files and the PRs that Renovate o
 
 | Type | Group | Automerge | Schedule | Release age |
 |---|---|---|---|---|
-| patch | "patch updates", one PR | yes, when all checks pass | Saturday 02:00–06:00 | 3 days |
-| minor | "minor updates", one PR | no | Saturday 02:00–06:00 | 3 days |
-| major | one PR for each package | no | Saturday 02:00–06:00 | 3 days |
+| patch | "patch updates", one PR | yes, when all checks pass | Saturday and Sunday (since 2026-11-09) | 3 days |
+| minor | "minor updates", one PR | no | Saturday and Sunday (since 2026-11-09) | 3 days |
+| major | one PR for each package | no | Saturday and Sunday (since 2026-11-09) | 3 days |
 | security | one PR for each fix, label `security` | no | at once | none |
 
 Author: `renovate[bot]` (hosted app) or `imreboersma-homelab-renovate[bot]` (HomeLab). The status
