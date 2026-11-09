@@ -454,7 +454,6 @@ start(${json(known)});`;
   const minified = new Bun.Transpiler({
     loader: "js",
     minifyWhitespace: true,
-    minifySyntax: true,
   }).transformSync(updates);
   return `<!doctype html>
 <html lang="en">

@@ -1,4 +1,5 @@
 // Parse one workflow file for the conformance rules (spec 008, contracts/rules.md R1–R3, R9).
+import { readdir } from "node:fs/promises";
 import { parse } from "yaml";
 
 export interface Caller {
@@ -34,4 +35,16 @@ export function parseCaller(text: string): Caller {
         ? "empty"
         : (p as Record<string, string> | string);
   return { uses, permissions, secrets: names(text, "secrets"), vars: names(text, "vars") };
+}
+
+// A shared workflow reads `vars` of the caller repo (deploy-vercel.yml: VERCEL_ORG_ID). R9 adds
+// these names to the names of the caller. File name → variable names.
+export async function sharedWorkflowVars(dir: string): Promise<Record<string, string[]>> {
+  const out: Record<string, string[]> = {};
+  for (const file of await readdir(dir)) {
+    if (!/\.ya?ml$/.test(file)) continue;
+    const found = names(await Bun.file(`${dir}/${file}`).text(), "vars");
+    if (found.length) out[file] = found;
+  }
+  return out;
 }

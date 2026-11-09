@@ -6,6 +6,7 @@ import { readCampaigns } from "./campaign/status";
 import { parseCatalog, parseSecrets, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
 import { checkRepo } from "./conformance/rules";
+import { sharedWorkflowVars } from "./conformance/workflows";
 import { statusJson } from "./data";
 import {
   certificateProblem,
@@ -218,6 +219,10 @@ async function checkConformance(): Promise<Set<string>> {
     return unavailable;
   }
   const own = statuses.filter((s) => s.project.repo?.startsWith("ImreBoersma/"));
+  // R9: the vars that each shared workflow of this repo reads from the caller repo.
+  const sharedVars = await sharedWorkflowVars(
+    new URL("../../.github/workflows", import.meta.url).pathname,
+  );
   await Promise.all(
     own.map(async (s) => {
       const repo = s.project.repo as string;
@@ -228,7 +233,8 @@ async function checkConformance(): Promise<Set<string>> {
           facts.workflows.map((w) => w.text),
         );
       }
-      const results = facts === "not-available" ? null : checkRepo(facts, s.project.exceptions);
+      const results =
+        facts === "not-available" ? null : checkRepo(facts, s.project.exceptions, sharedVars);
       const notAvailable = results
         ? results.filter((r) => r.state === "not-available").map((r) => r.rule)
         : ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"];

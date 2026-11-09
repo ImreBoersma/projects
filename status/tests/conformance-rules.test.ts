@@ -139,6 +139,31 @@ describe("deviations of the first week (research.md §8)", () => {
     });
     expect(failed(f)).toEqual(["R9"]);
   });
+  test("vars that the called shared workflow reads, not the caller: R9", () => {
+    // deploy-vercel.yml reads vars.VERCEL_ORG_ID and vars.VERCEL_PROJECT_ID of the caller repo.
+    const vercel = caller(`  deploy:
+    uses: ImreBoersma/projects/.github/workflows/deploy-vercel.yml@main
+    secrets: { vercel-token: "\${{ secrets.VERCEL_TOKEN }}" }
+`);
+    const shared = { "deploy-vercel.yml": ["VERCEL_ORG_ID", "VERCEL_PROJECT_ID"] };
+    const f = (variableNames: string[]) =>
+      facts({
+        workflows: [
+          { path: "ci.yml", text: vercel },
+          { path: "board.yml", text: board },
+        ],
+        secretNames: ["BUILD_ENV", "BOARD_TOKEN", "VERCEL_TOKEN"],
+        variableNames,
+      });
+    expect(checkRepo(f([]), {}, shared).find((r) => r.rule === "R9")?.state).toBe("fail");
+    expect(checkRepo(f(["VERCEL_ORG_ID"]), {}, shared).find((r) => r.rule === "R9")?.state).toBe(
+      "fail",
+    );
+    expect(
+      checkRepo(f(["VERCEL_ORG_ID", "VERCEL_PROJECT_ID"]), {}, shared).find((r) => r.rule === "R9")
+        ?.state,
+    ).toBe("pass");
+  });
   test("a caller with permissions: {}: R3", () => {
     const f = facts({
       workflows: [
