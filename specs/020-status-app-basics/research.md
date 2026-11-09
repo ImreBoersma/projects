@@ -16,7 +16,11 @@ the project name and `PROBLEM_TEXT` of its reason (for example "hob.nl: The last
 ## 2. Keys for "new" and "fixed"
 
 **Decision**: the keys are the problem keys (`<id>/<reason>[/<slug>]`) plus one warning key for
-each row with the state `warn`: `<id>/warning`. The page has them inline (`data-keys` on each row
+each row with the state `warn`: `<id>/warning`. The page has a small table reason → text
+(`PROBLEM_TEXT`, and "A warning." for `warning`) as inline data, so the browser can write
+"<project name>: <text>" for a fixed key from a stored visit, the same as the update does for the
+24-hour list (analysis U1). Fixed keys of a project that is not on the page any more are left out
+(analysis U2). The page has them inline (`data-keys` on each row
 and a list for the whole page), so the compare needs no data file.
 
 ## 3. The last visit in local storage
@@ -41,7 +45,8 @@ spec 001 privacy test.
 **Decision**:
 
 - `manifest.webmanifest`: `name` "Project status", `short_name` "Status", `start_url` "./",
-  `scope` "./", `display` "standalone", `theme_color` the bumblebee primary as hex,
+  `scope` "./", `display` "standalone", `theme_color` `#fdc700` (the bumblebee primary
+  `oklch(85% 0.199 91.936)` in hex),
   `background_color` white, icons: the "correct" favicon SVG as `any` and as `maskable`
   (`sizes: "any"`, type `image/svg+xml`), written as files `icon.svg` and
   `icon-maskable.svg`.

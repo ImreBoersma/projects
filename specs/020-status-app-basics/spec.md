@@ -170,7 +170,8 @@ opens.
   only when it is more than 10 minutes after the one before. Without a stored visit, the page
   MUST compare with the last 24 hours: problems that started in that time are new, problems that
   stopped in that time are fixed (from the history of spec 010), with the text "In the last 24
-  hours: …".
+  hours: …". The 24-hour compare covers problems only: the history does not store warnings, so a
+  new warning gets the "New" mark only against a stored visit (analysis I1).
 - **FR-003**: The page MUST list the fixed problems (project and text) in a folded list, at most
   20.
 - **FR-004**: Each update MUST publish a data file next to the page with the content of FR-005,
