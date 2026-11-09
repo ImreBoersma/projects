@@ -422,9 +422,11 @@ updateTimes();
 setInterval(updateTimes, 60000);
 start(${json(known)});`;
   // Spec 020 page size: only whitespace goes; the names stay (the page calls them by name).
-  const minified = new Bun.Transpiler({ loader: "js", minifyWhitespace: true, minifySyntax: true }).transformSync(
-    updates,
-  );
+  const minified = new Bun.Transpiler({
+    loader: "js",
+    minifyWhitespace: true,
+    minifySyntax: true,
+  }).transformSync(updates);
   return `<!doctype html>
 <html lang="en">
 <head>
