@@ -1,10 +1,12 @@
 import { mkdir, readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
+import { icons, manifest, serviceWorker } from "./app";
 import { readCampaigns } from "./campaign/status";
 import { parseCatalog, parseSecrets, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
 import { checkRepo } from "./conformance/rules";
+import { statusJson } from "./data";
 import {
   certificateProblem,
   daysUntil,
@@ -14,7 +16,7 @@ import {
 } from "./expiry/expiry";
 import { readBootstrap, readCertificate, readRegistryDate } from "./expiry/read";
 import { fetchStatuses, tokenFor } from "./github";
-import { repairTime, since, uptime as uptimeOf } from "./history/stats";
+import { recentChanges, repairTime, since, uptime as uptimeOf } from "./history/stats";
 import { readHistory, resultLine } from "./history/store";
 import {
   closeIssue,
@@ -24,12 +26,12 @@ import {
   parseMarker,
   planIssueActions,
 } from "./issues";
-import { conformanceProblem, evaluateProblems, sortRows } from "./problems";
+import { conformanceProblem, evaluateProblems, PROBLEM_TEXT, sortRows } from "./problems";
 import { renderPage } from "./render";
 import { gaps, type Used, usedSecrets } from "./secrets/compare";
 import { noExpiry, type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
 import { readWorkflowTexts, tokenExpiry } from "./secrets/read";
-import type { Problem, Project, SecretEntry, SecretStatus } from "./types";
+import type { Problem, Project, SecretEntry, SecretStatus, StatusPage } from "./types";
 import { checkAll } from "./uptime";
 
 // Research.md §9: the log shows only the state, never an error text.
@@ -279,27 +281,46 @@ if (args.mode === "page") {
   }
   const issues = await issueNumbers();
   await mkdir(args.out, { recursive: true });
-  await Bun.write(
-    join(args.out, "index.html"),
-    renderPage({
-      generatedAt: now,
-      rows: sortRows(statuses),
-      issues,
-      historyStart: stored.start ?? now.toISOString().slice(0, 10),
-      repair: repairTime(results, now),
-      // Spec 019: the CSS that `bun run css` built (bun run start runs it first).
-      css: await Bun.file(new URL("../build/page.css", import.meta.url)).text(),
-      shared,
-      // Spec 015: the progress of the campaigns.
-      campaigns: await readCampaigns(
-        join(dirname(args.catalog), "campaigns"),
-        allProjects,
-        process.env,
-        now,
+  const page: StatusPage = {
+    generatedAt: now,
+    rows: sortRows(statuses),
+    issues,
+    historyStart: stored.start ?? now.toISOString().slice(0, 10),
+    repair: repairTime(results, now),
+    // Spec 020: the changes of the last 24 hours (the base without a stored visit).
+    changes: recentChanges(
+      results,
+      allProjects,
+      now,
+      PROBLEM_TEXT,
+      new Map(
+        [...statuses.flatMap((s) => s.problems), ...shared.problems].map((p) => [
+          p.key,
+          p.text ?? PROBLEM_TEXT[p.reason],
+        ]),
       ),
-    }),
+    ),
+    // Spec 019: the CSS that `bun run css` built (bun run start runs it first).
+    css: await Bun.file(new URL("../build/page.css", import.meta.url)).text(),
+    shared,
+    // Spec 015: the progress of the campaigns.
+    campaigns: await readCampaigns(
+      join(dirname(args.catalog), "campaigns"),
+      allProjects,
+      process.env,
+      now,
+    ),
+  };
+  await Bun.write(join(args.out, "index.html"), renderPage(page));
+  // Spec 020 US2: the data file next to the page.
+  await Bun.write(join(args.out, "status.json"), statusJson(page));
+  // Spec 020 US3: the files of the installable app.
+  await Bun.write(join(args.out, "manifest.webmanifest"), manifest());
+  await Bun.write(join(args.out, "sw.js"), serviceWorker());
+  for (const [name, svg] of Object.entries(icons())) await Bun.write(join(args.out, name), svg);
+  console.log(
+    `Wrote ${join(args.out, "index.html")} and status.json with ${statuses.length} projects.`,
   );
-  console.log(`Wrote ${join(args.out, "index.html")} with ${statuses.length} projects.`);
 } else {
   await reconcileIssues();
 }

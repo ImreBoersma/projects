@@ -83,3 +83,25 @@ filter; acceptable.
 `client.ts` (pure): items are the projects (name, `#p-<id>`), the 4 tabs and the 4 state filters;
 match = the text is in the label (case-insensitive), projects first, at most 8 results. Arrow keys
 move, Enter runs, Escape closes. ⌘K / Ctrl+K opens it from anywhere (`preventDefault`).
+
+## 8. The icon badge is not live (side note 2026-11-09)
+
+**Decision**: the badge is set only while the page is open. A badge that changes in the
+background needs a push message from a server (Web Push), and the €0 setup has no server.
+Periodic Background Sync (Chromium only, installed apps only, the browser picks the interval,
+often once a day or less) could refresh it without a server, but it is not reliable enough to
+count on; not built. The spec Assumptions say that the badge is a reminder, not an alarm.
+
+## 9. Validation results
+
+| # | Check | Date | Result |
+|---|---|---|---|
+| T021 | Tests, lint, types | 2026-11-09 | 292 tests pass (baseline 268); Biome and `tsc` clean. CSS 57.8 KB. |
+| 1 | Changes line (SC-001) | 2026-11-09 | First visit: "In the last 24 hours: 0 new, 0 fixed". With a stored visit 2 hours old that had `hob-nl/ci-failed`: "Since your visit 2 hours ago: 0 new, 1 fixed", the fixed list "hob.nl: The last CI run failed."; the exact time in the tooltip. The line is at 284 px, above the controls, without scrolling. |
+| 2 | Data file | 2026-11-09 | `status.json` 3.5 KB with 11 projects, version 1. |
+| 3 | App | 2026-11-09 | `manifest.webmanifest` loads; `sw.js` controls the page; the cache holds the page and `status.json` (the offline answer ignores the query). The badge API is present in Chrome; the badge itself needs the installed app (Maintainer). |
+| 4 | Shortcuts | 2026-11-09 | The hob.nl modal has CI runs, Deployments, Renovate dashboard and Issues of `harmonieorkest-brummen/hob-nl`; the header has "Run the status update now". |
+| 5 | ⌘K | 2026-11-09 | Cmd+K opens the box; "hob" shows hob.nl; Enter opens its modal (`#p-hob-nl`). |
+| 6 | Sizes | 2026-11-09 | Page 108.5 KB with live data. Worst case (20 sites, problems, dates) 89.6 KB of HTML + 57.8 KB CSS = 147.4 KB (limit 150 KB): close to the limit. |
+| Found | In the implementation | 2026-11-09 | (1) The shortcuts made the worst case 110 KB: the new-tab mark is now CSS (`a[target=_blank]::after`) and the screen-reader text one hidden element `#nt` for all links (`aria-describedby`), so a copy has no mark either. (2) Uptime bars: one element for each run of equal days with CSS stripes (History 18.6 → 5.6 KB). (3) The inline script is minified (whitespace only; Bun keeps the top-level names, identifier renaming gives nothing). (4) Side note: the icon badge is not live; recorded in the spec Assumptions and §8. (5) The "no files from other sites" test now allows files next to the page (`manifest.webmanifest`). |
+

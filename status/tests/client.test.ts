@@ -103,3 +103,87 @@ describe("compare (data-model.md sort keys)", () => {
     expect(names("expiry")).toEqual(["c", "a", "d", "e", "b"]);
   });
 });
+
+describe("compareVisit and fixedText (spec 020)", () => {
+  const { compareVisit, fixedText } = require("../src/client") as typeof import("../src/client");
+  const changes = {
+    since: "2026-11-06T12:00:00Z",
+    started: [{ key: "two/site-down" }],
+    stopped: [{ key: "one/ci-failed" }],
+  };
+  const ids = ["one", "two"];
+  const at = (h: number) =>
+    new Date(Date.parse("2026-11-07T12:00:00Z") + h * 3600_000).toISOString();
+
+  test("no stored visit: the last 24 hours", () => {
+    const r = compareVisit(null, ["two/site-down"], at(0), changes, ids);
+    expect(r).toMatchObject({
+      base: "24h",
+      since: changes.since,
+      newKeys: ["two/site-down"],
+      fixedKeys: ["one/ci-failed"],
+    });
+    expect(r.next).toEqual({ last: undefined, current: { time: at(0), keys: ["two/site-down"] } });
+  });
+
+  test("a visit 2 hours ago becomes the base", () => {
+    const stored = { current: { time: at(-2), keys: ["one/ci-failed", "gone/x"] } };
+    const r = compareVisit(stored, ["two/site-down"], at(0), changes, ids);
+    expect(r).toMatchObject({
+      base: "visit",
+      since: at(-2),
+      newKeys: ["two/site-down"],
+      fixedKeys: ["one/ci-failed"],
+    });
+    expect(r.next.last).toEqual(stored.current);
+  });
+
+  test("a reload within 10 minutes keeps the old base", () => {
+    const stored = {
+      last: { time: at(-5), keys: [] },
+      current: { time: at(-0.05), keys: ["two/site-down"] },
+    };
+    const r = compareVisit(stored, ["two/site-down"], at(0), changes, ids);
+    expect(r).toMatchObject({ base: "visit", since: at(-5), newKeys: ["two/site-down"] });
+  });
+
+  test("at most 20 fixed keys", () => {
+    const keys = Array.from({ length: 30 }, (_, i) => `one/r${i}`);
+    expect(
+      compareVisit({ current: { time: at(-1), keys } }, [], at(0), changes, ids).fixedKeys,
+    ).toHaveLength(20);
+  });
+
+  test("fixedText", () => {
+    const texts = { "ci-failed": "The last CI run failed.", warning: "A warning." };
+    expect(fixedText("hob-nl/ci-failed", { "hob-nl": "hob.nl" }, texts)).toBe(
+      "hob.nl: The last CI run failed.",
+    );
+    expect(fixedText("hob-nl/warning", { "hob-nl": "hob.nl" }, texts)).toBe("hob.nl: A warning.");
+  });
+});
+
+describe("searchCommands (spec 020 US5)", () => {
+  const { searchCommands } = require("../src/client") as typeof import("../src/client");
+  const items = [
+    ...["hob.nl", "Boek de bus", "Personal website"].map((label, i) => ({
+      label,
+      kind: "project",
+      target: `p${i}`,
+    })),
+    { label: "Tab: Campaigns", kind: "tab", target: "campaigns" },
+    { label: "Filter: Problems", kind: "filter", target: "problems" },
+  ];
+  test("projects first, then tabs and filters, at most 8", () => {
+    expect(searchCommands(items, "hob")[0].label).toBe("hob.nl");
+    expect(searchCommands(items, "camp")[0].target).toBe("campaigns");
+    expect(searchCommands(items, "PROB")[0].target).toBe("problems");
+    expect(searchCommands(items, "")[0].kind).toBe("project");
+    const many = Array.from({ length: 12 }, (_, i) => ({
+      label: `x${i}`,
+      kind: "project",
+      target: `x${i}`,
+    }));
+    expect(searchCommands(many, "x")).toHaveLength(8);
+  });
+});

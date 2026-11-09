@@ -100,6 +100,69 @@ export function compare(a: RowData, b: RowData, sort: string): number {
   return (rank[a.state] ?? 9) - (rank[b.state] ?? 9) || order;
 }
 
+// Spec 020 research.md §3: compare with the last visit on this device, else with the last 24 hours.
+// A load less than 10 minutes after the one before keeps the old base (a reload).
+export function compareVisit(
+  stored: {
+    last?: { time: string; keys: string[] };
+    current?: { time: string; keys: string[] };
+  } | null,
+  nowKeys: string[],
+  nowTime: string,
+  changes: { since: string; started: { key: string }[]; stopped: { key: string }[] },
+  projectIds: string[],
+) {
+  let last = stored?.last;
+  const current = stored?.current;
+  if (current && Date.parse(nowTime) - Date.parse(current.time) > 10 * 60 * 1000) last = current;
+  const next = { last, current: { time: nowTime, keys: nowKeys } };
+  const project = (key: string) => key.split("/")[0];
+  if (last) {
+    const before = new Set(last.keys);
+    const now = new Set(nowKeys);
+    return {
+      base: "visit",
+      since: last.time,
+      newKeys: nowKeys.filter((k) => !before.has(k)),
+      fixedKeys: last.keys
+        .filter((k) => !now.has(k) && projectIds.includes(project(k)))
+        .slice(0, 20),
+      next,
+    };
+  }
+  return {
+    base: "24h",
+    since: changes.since,
+    newKeys: changes.started.map((c) => c.key),
+    fixedKeys: changes.stopped.map((c) => c.key).slice(0, 20),
+    next,
+  };
+}
+
+// Spec 020 analysis U1: the text of a fixed key, from the project name and the reason.
+export function fixedText(
+  key: string,
+  names: Record<string, string>,
+  texts: Record<string, string>,
+): string {
+  const [id, reason] = key.split("/");
+  return `${names[id] ?? id}: ${texts[reason] ?? reason}`;
+}
+
+// Spec 020 US5, research.md §7: the results of the command box. Projects first, at most 8.
+export function searchCommands(
+  items: { label: string; kind: string; target: string }[],
+  text: string,
+): { label: string; kind: string; target: string }[] {
+  const q = text.trim().toLowerCase();
+  const hits = items.filter((i) => i.label.toLowerCase().includes(q));
+  const rank = (i: { kind: string }) => (i.kind === "project" ? 0 : 1);
+  return hits.sort((a, b) => rank(a) - rank(b)).slice(0, 8);
+}
+
+// relTime of view.ts is in the same page script (render.ts puts both in it).
+declare function relTime(iso: string, nowMs: number): string;
+
 // Binds the functions above to the page. Runs only in the browser.
 export function start(known: { stakeholders: string[]; projects: string[] }) {
   const doc = document;
@@ -222,6 +285,185 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
     if (view.project && !next.project) close();
     else if (next.project && next.project !== view.project) open(next.project, false);
   });
+
+  // Spec 020 US1: what changed since the last visit on this device, else in the last 24 hours.
+  const inline = JSON.parse(doc.getElementById("changes")?.textContent ?? "null") as {
+    changes: {
+      since: string;
+      started: { key: string }[];
+      stopped: { key: string; project: string; text: string }[];
+    };
+    texts: Record<string, string>;
+    problems: number;
+  } | null;
+  if (inline) {
+    const keysOf = (li: HTMLElement) => (li.dataset.keys ?? "").split(" ").filter(Boolean);
+    const nowKeys = rows.flatMap(keysOf);
+    const names: Record<string, string> = {};
+    for (const li of rows) {
+      const id = (li.querySelector("a")?.getAttribute("href") ?? "").slice(3);
+      names[id] = li.dataset.title ?? id;
+    }
+    const storeKey = "project-status:visits";
+    let stored = null;
+    let canStore = true;
+    try {
+      stored = JSON.parse(localStorage.getItem(storeKey) ?? "null");
+    } catch {
+      canStore = false;
+    }
+    const result = compareVisit(
+      stored,
+      nowKeys,
+      new Date().toISOString(),
+      inline.changes,
+      known.projects,
+    );
+    if (canStore) {
+      try {
+        localStorage.setItem(storeKey, JSON.stringify(result.next));
+      } catch {
+        // Storage full or blocked: the next visit compares with the last 24 hours.
+      }
+    }
+    const n = result.newKeys.length;
+    const m = result.fixedKeys.length;
+    const when = relTime(result.since, Date.now());
+    const line = doc.querySelector("[data-changes]") as HTMLElement | null;
+    if (line) {
+      line.textContent =
+        result.base === "24h"
+          ? `In the last 24 hours: ${n} new, ${m} fixed`
+          : n + m === 0
+            ? `No change since your visit ${when}`
+            : `Since your visit ${when}: ${n} new, ${m} fixed`;
+      line.title = result.since;
+      line.hidden = false;
+    }
+    const isNew = new Set(result.newKeys);
+    for (const li of rows) {
+      if (keysOf(li).some((k) => isNew.has(k)))
+        li.querySelector("[data-new]")?.removeAttribute("hidden");
+    }
+    const fixed = doc.querySelector("[data-fixed]") as HTMLDetailsElement | null;
+    if (fixed && m > 0) {
+      const stopped: Record<string, string> = {};
+      for (const c of inline.changes.stopped) stopped[c.key] = `${c.project}: ${c.text}`;
+      const summary = fixed.querySelector("summary");
+      if (summary) summary.textContent = `Fixed: ${m}`;
+      const list = fixed.querySelector("ul");
+      for (const key of result.fixedKeys) {
+        const item = doc.createElement("li");
+        item.textContent = stopped[key] ?? fixedText(key, names, inline.texts);
+        list?.appendChild(item);
+      }
+      fixed.hidden = false;
+    }
+  }
+
+  // Spec 020 US5: the command box (⌘K / Ctrl+K).
+  const box = doc.getElementById("command");
+  const input = box?.querySelector("input") as HTMLInputElement | null;
+  const results = box?.querySelector("[role=listbox]") as HTMLElement | null;
+  if (box && input && results) {
+    const items = [
+      ...rows.map((li) => ({
+        label: li.dataset.title ?? "",
+        kind: "project",
+        target: (li.querySelector("a")?.getAttribute("href") ?? "").slice(3),
+      })),
+      ...[
+        ["Projects", "projects"],
+        ["Campaigns", "campaigns"],
+        ["Shared tokens", "tokens"],
+        ["History", "history"],
+      ].map(([label, target]) => ({ label: `Tab: ${label}`, kind: "tab", target })),
+      ...[
+        ["Problems", "problems"],
+        ["Warnings", "warnings"],
+        ["Check not available", "not-available"],
+        ["All correct", "correct"],
+      ].map(([label, target]) => ({ label: `Filter: ${label}`, kind: "filter", target })),
+    ];
+    let found: typeof items = [];
+    let active = 0;
+    let back: HTMLElement | null = null;
+    const draw = () => {
+      found = searchCommands(items, input.value);
+      active = Math.min(active, Math.max(found.length - 1, 0));
+      results.replaceChildren(
+        ...found.map((item, i) => {
+          const option = doc.createElement("li");
+          option.id = `cmd-${i}`;
+          option.setAttribute("role", "option");
+          option.setAttribute("aria-selected", String(i === active));
+          option.className = `cursor-pointer rounded px-2 py-1${i === active ? " bg-base-200" : ""}`;
+          option.textContent = item.label;
+          option.addEventListener("click", () => run(item));
+          return option;
+        }),
+      );
+      input.setAttribute("aria-activedescendant", found.length ? `cmd-${active}` : "");
+    };
+    const hide = () => {
+      box.classList.remove("modal-open");
+      back?.focus();
+    };
+    const run = (item: { kind: string; target: string }) => {
+      hide();
+      if (item.kind === "project") open(item.target, true);
+      else if (item.kind === "tab") {
+        view.tab = item.target;
+        apply();
+        save();
+      } else {
+        view.tab = "projects";
+        view.state = item.target;
+        const state = field("state");
+        if (state) state.value = item.target;
+        apply();
+        save();
+      }
+    };
+    doc.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        back = doc.activeElement as HTMLElement | null;
+        input.value = "";
+        active = 0;
+        draw();
+        box.classList.add("modal-open");
+        input.focus();
+      }
+    });
+    input.addEventListener("input", () => {
+      active = 0;
+      draw();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") active = Math.min(active + 1, found.length - 1);
+      else if (e.key === "ArrowUp") active = Math.max(active - 1, 0);
+      else if (e.key === "Enter" && found[active]) return run(found[active]);
+      else if (e.key === "Escape") return hide();
+      else return;
+      e.preventDefault();
+      draw();
+    });
+    box.querySelector("[data-close-command]")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      hide();
+    });
+  }
+
+  // Spec 020 US3: the app works offline and shows the problem count on its icon where supported.
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  const nav = navigator as Navigator & {
+    setAppBadge?: (n: number) => Promise<void>;
+    clearAppBadge?: () => Promise<void>;
+  };
+  const problems = inline?.problems ?? 0;
+  if (problems > 0) nav.setAppBadge?.(problems).catch(() => {});
+  else nav.clearAppBadge?.().catch(() => {});
 
   apply();
   if (view.project) open(view.project, false);

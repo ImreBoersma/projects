@@ -91,3 +91,22 @@ describe("rowLinks", () => {
     expect([links.ci, links.deploy, links.renovate]).toEqual([null, null, null]);
   });
 });
+
+describe("shortcuts (spec 020 US4)", () => {
+  const { shortcuts, STATUS_WORKFLOW } = require("../src/links") as typeof import("../src/links");
+  test("the 4 GitHub pages of a repo; none without a repo", () => {
+    expect(shortcuts("ImreBoersma/one")).toEqual([
+      { label: "CI runs", url: "https://github.com/ImreBoersma/one/actions" },
+      { label: "Deployments", url: "https://github.com/ImreBoersma/one/deployments" },
+      {
+        label: "Renovate dashboard",
+        url: "https://github.com/ImreBoersma/one/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+%22Dependency+Dashboard%22",
+      },
+      { label: "Issues", url: "https://github.com/ImreBoersma/one/issues" },
+    ]);
+    expect(shortcuts(null)).toEqual([]);
+    expect(STATUS_WORKFLOW).toBe(
+      "https://github.com/ImreBoersma/projects/actions/workflows/status-page.yml",
+    );
+  });
+});

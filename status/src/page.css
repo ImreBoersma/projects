@@ -5,7 +5,7 @@
 @source "./client.ts";
 @plugin "daisyui" {
   themes: false;
-  include: alert, badge, button, input, link, list, modal, select, tab;
+  include: alert, badge, button, input, kbd, link, list, modal, select, tab;
 }
 /* THEMES */
 
@@ -25,10 +25,17 @@
 .nt {
   user-select: none;
 }
-.nt {
+/* Spec 012 FR-008 with less markup (spec 020): the mark is CSS, so it is not in a copy; the text
+   for screen readers is one hidden element that each new-tab link names with aria-describedby. */
+.nt,
+a[target="_blank"]::after {
   font-size: 0.75em;
   margin-left: 2px;
   opacity: 0.7;
+}
+a[target="_blank"]::after {
+  content: "↗";
+  display: inline-block;
 }
 .sep {
   opacity: 0.5;
@@ -55,18 +62,19 @@
   vertical-align: middle;
   margin-left: 6px;
 }
+/* Spec 020: one element for each run of equal days; the stripes show the days (3px, 1px gap). */
 .mark {
+  --mark-color: color-mix(in oklab, var(--color-neutral) 25%, var(--color-base-100));
   display: inline-block;
-  width: 3px;
   height: 12px;
   border-radius: 1px;
-  background: color-mix(in oklab, var(--color-neutral) 25%, var(--color-base-100));
+  background: repeating-linear-gradient(90deg, var(--mark-color) 0 3px, transparent 3px 4px);
 }
 .mark.up {
-  background: var(--color-success);
+  --mark-color: var(--color-success);
 }
 .mark.down {
-  background: var(--color-error);
+  --mark-color: var(--color-error);
 }
 .facts div {
   display: grid;
@@ -85,7 +93,8 @@ a.link-src {
   text-underline-offset: 3px;
 }
 /* FR-008: without the script, the controls do nothing, so they do not show; all panels show. */
-html:not(.js) .controls {
+html:not(.js) .controls,
+html:not(.js) kbd {
   display: none;
 }
 html.js [role="tabpanel"]:not(.active) {

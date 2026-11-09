@@ -23,7 +23,7 @@ secret values). Only the values below; field order free.
       "state": "bad",
       "summary": { "text": "The last CI run failed.", "kind": "bad" },
       "problems": [{ "key": "hob-nl/ci-failed", "text": "The last CI run failed.", "issue": "https://github.com/ImreBoersma/projects/issues/12", "since": "2026-11-06T07:00:00Z" }],
-      "site": { "domain": "harmonieorkestbrummen.nl", "state": "up", "uptime30": 100 },
+      "site": { "domain": "harmonieorkestbrummen.nl", "state": "up", "checkedAt": "2026-11-06T09:00:40Z", "uptime30": 100 },
       "nextExpiry": "2026-12-10",
       "link": "https://imreboersma.github.io/projects/#p-hob-nl"
     }

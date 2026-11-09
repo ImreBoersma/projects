@@ -39,3 +39,20 @@ export function rowLinks(s: ProjectStatus, issues: Map<string, number>): RowLink
     problems,
   };
 }
+
+// Spec 020 US4, research.md §6: GitHub pages that do the work after GitHub's own login.
+export function shortcuts(repo: string | null): { label: string; url: string }[] {
+  if (!repo) return [];
+  const base = `${GITHUB}/${repo}`;
+  return [
+    { label: "CI runs", url: `${base}/actions` },
+    { label: "Deployments", url: `${base}/deployments` },
+    {
+      label: "Renovate dashboard",
+      url: `${base}/issues?q=is%3Aissue+is%3Aopen+in%3Atitle+%22Dependency+Dashboard%22`,
+    },
+    { label: "Issues", url: `${base}/issues` },
+  ];
+}
+
+export const STATUS_WORKFLOW = `${GITHUB}/ImreBoersma/projects/actions/workflows/status-page.yml`;
