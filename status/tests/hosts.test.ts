@@ -1,22 +1,18 @@
 import { describe, expect, test } from "bun:test";
-import { parseCaller } from "../src/conformance/workflows";
+import { parseCaller, sharedWorkflowVars } from "../src/conformance/workflows";
 import { HOSTS, host, secretsFor } from "../src/new-project/hosts";
 
 const TEMPLATE = new URL("../../template/", import.meta.url);
 const read = (path: string) => Bun.file(new URL(path, TEMPLATE)).text();
-const SHARED = "ImreBoersma/projects/.github/workflows/";
-// A shared workflow reads the vars of the caller repo too (deploy-vercel.yml: VERCEL_ORG_ID).
-const sharedVars = async (uses: string[]) => {
-  const out: string[] = [];
-  for (const u of uses.filter((x) => x.startsWith(SHARED))) {
-    const file = new URL(
-      `../../.github/workflows/${u.slice(SHARED.length).replace(/@.*/, "")}`,
-      import.meta.url,
-    );
-    out.push(...parseCaller(await Bun.file(file).text()).vars);
-  }
-  return out;
-};
+const shared = await sharedWorkflowVars(
+  new URL("../../.github/workflows", import.meta.url).pathname,
+);
+const sharedVars = (uses: string[]) =>
+  uses.flatMap(
+    (u) =>
+      shared[u.replace(/^ImreBoersma\/projects\/\.github\/workflows\//, "").replace(/@.*/, "")] ??
+      [],
+  );
 
 describe("host map (spec 011 data-model.md)", () => {
   test("the 5 hosts", () => {
@@ -33,7 +29,7 @@ describe("host map (spec 011 data-model.md)", () => {
     test(`${h.key}: the names equal the names of ${h.ci}`, async () => {
       const c = parseCaller(await read(h.ci));
       expect(c.secrets.sort()).toEqual([...h.secrets].sort());
-      const vars = [...new Set([...c.vars, ...(await sharedVars(c.uses))])];
+      const vars = [...new Set([...c.vars, ...sharedVars(c.uses)])];
       expect(vars.sort()).toEqual([...h.vars].sort());
     });
   }

@@ -13,7 +13,7 @@ Each rule is a pure function on `RepoFacts` (data-model.md). The reads are in re
 | R6 | Issues on | all | issues are off |
 | R7 | Security alerts | all | vulnerability alerts are off, or Dependabot security updates are on |
 | R8 | Default branch | all | the default branch is not `main` |
-| R9 | Secrets and variables | each caller workflow | it uses `secrets.NAME` (not `GITHUB_TOKEN`) that is not a repo secret, or `vars.NAME` that is not a repo variable |
+| R9 | Secrets and variables | each caller workflow | it uses `secrets.NAME` (not `GITHUB_TOKEN`) that is not a repo secret, or `vars.NAME` that is not a repo variable; the `vars.NAME` of each called shared workflow count too (since 2026-11-09: `deploy-vercel.yml` reads `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`) |
 
 A rule that does not apply gives `not-applicable`. An exception in the catalog also gives
 `not-applicable`. A read error gives `not-available` (research.md §5).

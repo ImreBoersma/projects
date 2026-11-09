@@ -137,6 +137,14 @@ The page and the issue do not name the missing value. Find it with these steps:
    grep -ohE '(secrets|vars)\.[A-Za-z0-9_]+' .github/workflows/*.yml | sort -u
    ```
 
+   A shared workflow can also read variables of the repo: `deploy-vercel.yml` reads
+   `vars.VERCEL_ORG_ID` and `vars.VERCEL_PROJECT_ID`. The check adds these names (since
+   2026-11-09). List them in `projects`:
+
+   ```sh
+   grep -oE 'vars\.[A-Za-z0-9_]+' .github/workflows/<shared workflow>.yml | sort -u
+   ```
+
 2. List what the repo has:
 
    ```sh

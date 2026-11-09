@@ -23,10 +23,17 @@ export const RULES: Rule[] = [
   ["R9", "Secrets and variables"],
 ].map(([id, name]) => ({ id, name, anchor: `${id}-${name}`.toLowerCase().replace(/ /g, "-") }));
 
+// `ImreBoersma/projects/.github/workflows/deploy-vercel.yml@main` → `deploy-vercel.yml`.
+const sharedFile = (uses: string) =>
+  uses.startsWith(SHARED) ? uses.slice(SHARED.length).replace(/@.*/, "") : "";
 const na = (v: unknown): v is NA => v === "not-available";
 const state = (failed: boolean): RuleState => (failed ? "fail" : "pass");
 
-export function checkRepo(facts: RepoFacts, exceptions: Record<string, string> = {}): RuleResult[] {
+export function checkRepo(
+  facts: RepoFacts,
+  exceptions: Record<string, string> = {},
+  sharedVars: Record<string, string[]> = {},
+): RuleResult[] {
   const callers = na(facts.workflows)
     ? "not-available"
     : facts.workflows
@@ -74,7 +81,11 @@ export function checkRepo(facts: RepoFacts, exceptions: Record<string, string> =
       const vars = new Set(facts.variableNames);
       return state(
         callers.some(
-          (c) => c.secrets.some((s) => !secrets.has(s)) || c.vars.some((v) => !vars.has(v)),
+          (c) =>
+            c.secrets.some((s) => !secrets.has(s)) ||
+            [...c.vars, ...c.uses.flatMap((u) => sharedVars[sharedFile(u)] ?? [])].some(
+              (v) => !vars.has(v),
+            ),
         ),
       );
     },
