@@ -32,7 +32,7 @@ uses (the same parse as R9).
 |---|---|
 | `check` | always first; read only |
 | `repo` | the repo exists with the template commit |
-| `settings` | issues on, vulnerability alerts on, security fixes off |
+| `settings` | issues on, vulnerability alerts on, security fixes off; for `pages`, Pages on with the source GitHub Actions |
 | `catalog-pr` | an open PR from `new-project/<id>` in `projects` |
 
 State of each step: `done`, `to do`, `failed` (with the message). A dry run shows `to do` and

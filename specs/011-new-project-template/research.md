@@ -43,22 +43,27 @@ from the pushed branch; issues are on by default.
 
 Settings after the push (spec 008 R6 to R8): `PATCH /repos/{repo}` with `has_issues: true`,
 `PUT /repos/{repo}/vulnerability-alerts`, `DELETE /repos/{repo}/automated-security-fixes`. All
-three are idempotent.
+three are idempotent. For the host `pages`: `GET /repos/{repo}/pages`; on 404, `POST
+/repos/{repo}/pages` with `build_type: workflow` (Pages with GitHub Actions as the source). For a
+private repo with `pages`, the output shows "Pages for a private repo needs a paid GitHub plan."
+and continues; when the `POST` fails, the step fails with the GitHub message.
 
 **Alternatives**: the GitHub "generate from template" API needs a template repo (clarified: no);
 creating the repo empty and writing the files through the Git data API (more calls, same result).
 
 ## 4. Resume and refusal (FR-008, FR-009)
 
-**Decision**: before any change, the command reads: the catalog (id, name, `ImreBoersma/<repo>`),
-the repo, and the PR of the branch `new-project/<id>` in `projects`.
+**Decision**: before any change, the command reads: the catalog (id, name, `ImreBoersma/<repo>`)
+from `projects.yaml` on `main` through the API (the same text that the catalog PR changes; not the
+local file, which can be on another branch), the repo, and the PR of the branch
+`new-project/<id>` in `projects`.
 
 | State | Action |
 |---|---|
 | id, name or repo in the catalog | stop: "in the catalog" |
 | repo exists, first commit is not the template commit | stop: "repo exists; use spec 008 and campaigns" |
 | repo exists with the template commit | skip "make repo" |
-| settings already as spec 008 | skip "settings" (the calls are idempotent; the plan shows "done") |
+| settings already as spec 008 (and Pages on for `pages`) | skip "settings" (the calls are idempotent; the plan shows "done") |
 | open PR from `new-project/<id>` | skip "catalog PR" |
 
 The login check: `gh auth status` and a read of the `projects` repo permission (`admin` or

@@ -31,9 +31,14 @@ Run step 3 without `--dry-run`. Expected:
 
 - `ImreBoersma/template-test` exists with one commit, `bun.lock`, the Pages CI variant and the
   board caller; issues on, vulnerability alerts on, security fixes off.
-- The CI run passes (lint and build), the deploy needs Pages on in the repo settings.
+- Pages is on with the source GitHub Actions; the CI run passes (lint and build) and the deploy
+  passes.
 - A PR in `projects` adds the project and a `BOARD_TOKEN` entry with the date of the other
   `BOARD_TOKEN` entries.
+
+Run the conformance rules on the test repo (one-off: `readFacts` then `checkRepo` of
+`status/src/conformance/`). Expected: R1 to R8 pass; R9 fails only for `BOARD_TOKEN` until it is
+set (SC-002). Record the time from the start of the command to the open PR (SC-003: < 5 minutes).
 
 Run the same command again. Expected: `check`, `repo`, `settings` and `catalog` show `[done]`; no
 second repo or PR.
@@ -48,7 +53,8 @@ Maintainer does this).
 
 Open the status page, press ⌘K, type "new", Enter. Fill id `beter-dan-de-midi`: expected "This id
 is in the catalog.". Fill valid values and click "Copy command"; paste in a terminal with
-`--dry-run`: expected the same values as typed.
+`--dry-run`: expected the same values as typed. Record the time from ⌘K to the copied command
+(SC-006: < 1 minute).
 
 ## 6. Record
 

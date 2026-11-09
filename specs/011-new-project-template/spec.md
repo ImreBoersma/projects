@@ -123,15 +123,18 @@ command, run with the dry-run option, shows the same values.
 
 ### Edge Cases
 
-- The repo name exists already (also an archived repo): stop before any change. The command does
+- The repo name exists already (also an archived repo) and was not made by this command: stop
+  before any change. The command does
   not onboard an existing repo; the message points to the conformance check of spec 008 and the
   campaigns of spec 015.
 - The command stops in the middle (network error, no access): it shows which steps are done and
   which are not, and a second run continues from the first step that is not done. It never makes
   a second repo or a second catalog PR.
-- A project without a repo or without a host (a site on a host that is not a shared deploy
-  workflow): the command makes the repo without a deploy caller, and the table says that the
-  Maintainer must add the deploy by hand.
+- A host without a shared deploy workflow (for example WordPress hosting): the command makes the
+  repo without a deploy caller, and the output says that the Maintainer must add the deploy by
+  hand.
+- A private repo with the host GitHub Pages: Pages for private repos needs a paid GitHub plan. The
+  command shows a warning and continues.
 - A repo for an organisation that is not `ImreBoersma` (for example `harmonieorkest-brummen`):
   out of scope. The command refuses it; the Maintainer does not change settings of other owners.
 - A private repo: the board caller rule R2 does not apply (spec 008); the command does not add it.
@@ -151,7 +154,8 @@ command, run with the dry-run option, shows the same values.
   (public or private), the stack and the host, and MUST make the repo from the template in the
   owner `ImreBoersma`.
 - **FR-003**: The command MUST set the repo settings of spec 008: default branch `main`, issues on,
-  vulnerability alerts on, Dependabot security updates off.
+  vulnerability alerts on, Dependabot security updates off. For the host GitHub Pages, it MUST
+  also turn on Pages with GitHub Actions as the source, so the first deploy can pass.
 - **FR-004**: For a host that has a shared deploy workflow (GitHub Pages, Vercel, Firebase, SSH),
   the command MUST add the deploy caller of that workflow to the repo. For other hosts, it MUST
   add no deploy caller and say so in the output.
@@ -164,7 +168,8 @@ command, run with the dry-run option, shows the same values.
   asks for the value). The command MUST NOT ask for or read secret values itself.
 - **FR-007**: The command MUST have a dry run that shows each step, the files, the settings, the
   catalog entry and the table, and makes no change.
-- **FR-008**: The command MUST stop before any change when the repo exists, when the project id or
+- **FR-008**: The command MUST stop before any change when the repo exists and was not made by this
+  command (it has no template commit), when the project id or
   name is in the catalog, when the owner is not `ImreBoersma`, or when the login has not enough
   rights.
 - **FR-009**: When a step fails, the command MUST show the steps that are done and the steps that
@@ -189,8 +194,8 @@ command, run with the dry-run option, shows the same values.
 - **New project input**: id, name, repo name, visibility, stack, host.
 - **Host map**: for each host with a shared deploy workflow, the deploy caller file and the names
   and kinds of the secrets and variables it needs.
-- **Setup step**: one action of the command (make repo, set settings, add deploy caller, open
-  catalog PR), with a state: done, not done, failed.
+- **Setup step**: one action of the command (`check`, `repo` with the deploy caller, `settings`,
+  `catalog-pr`), with a state: done, to do, failed.
 - **Secrets table**: one row for each secret or variable of the new repo: name, kind, repo, set
   command.
 

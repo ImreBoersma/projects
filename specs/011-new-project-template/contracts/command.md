@@ -15,7 +15,10 @@ All options except `--dry-run` are required. A wrong value stops with the rule o
 New project: <name> (ImreBoersma/<repo>, public, Vercel)
 [done]  check     The id, the name and the repo are free.
 [to do] repo      Make ImreBoersma/<repo> from the template (ci: vercel).
+                  Files: .github/workflows/ci.yml, .github/workflows/board.yml, renovate.json,
+                  biome.json, package.json, bun.lock, index.html, .gitignore, README.md
 [to do] settings  Issues on, vulnerability alerts on, Dependabot security updates off.
+                  (host pages: also Pages on, source GitHub Actions)
 [to do] catalog   Open the PR "feat: add <name> to the catalog (spec 011)" in ImreBoersma/projects.
 
 Set these secrets and variables:
