@@ -237,7 +237,22 @@ describe("checkState (spec 011 research §4)", () => {
     expect(await stop({ commits: ["first commit"] })).toContain(
       "use the conformance check (spec 008) and a campaign (spec 015)",
     );
-    expect(await stop({ commits: [] })).toContain("exists.");
+  });
+
+  test("an empty repo (a run stopped between create and push): push into it", async () => {
+    const f = fake({ commits: [] });
+    const pushed: boolean[] = [];
+    const make = f.deps.makeRepo;
+    f.deps.makeRepo = async (i, empty) => {
+      pushed.push(empty);
+      await make(i, empty);
+    };
+    const s = await checkState(input, f.deps);
+    expect(s.stop).toBeNull();
+    expect(s.emptyRepo).toBe(true);
+    expect((await run(f.deps)).code).toBe(0);
+    expect(pushed).toEqual([true]);
+    expect(f.writes).toEqual(["makeRepo", "setSettings", "openPr"]);
   });
 
   test("a repo from an earlier run; settings and the PR", async () => {

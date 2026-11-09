@@ -25,7 +25,8 @@ export interface Deps {
   repoCommits(repo: string): Promise<string[] | null>; // commit messages; null: no repo
   settings(repo: string): Promise<Settings>;
   openCatalogPr(branch: string): Promise<number | null>;
-  makeRepo(input: NewProject): Promise<void>;
+  // empty: the repo exists without commits (a run stopped between create and push).
+  makeRepo(input: NewProject, empty: boolean): Promise<void>;
   setSettings(repo: string, input: NewProject, now: Settings): Promise<void>;
   openPr(
     branch: string,
@@ -110,6 +111,7 @@ export interface State {
   settings: Settings | null;
   catalog: { text: string; sha: string };
   entries: SecretEntry[];
+  emptyRepo: boolean;
 }
 
 const SETTINGS_OK = (s: Settings, input: NewProject) =>
@@ -121,7 +123,15 @@ export async function checkState(input: NewProject, deps: Deps): Promise<State> 
   const projects = parseCatalog(catalog.text);
   const entries = parseSecrets(catalog.text, projects);
   const done: Record<Step, boolean> = { repo: false, settings: false, "catalog-pr": false };
-  const state: State = { stop: null, warnings: [], done, settings: null, catalog, entries };
+  const state: State = {
+    stop: null,
+    warnings: [],
+    done,
+    settings: null,
+    catalog,
+    entries,
+    emptyRepo: false,
+  };
   const stop = (reason: string) => {
     state.stop = reason;
     return state;
@@ -149,7 +159,9 @@ export async function checkState(input: NewProject, deps: Deps): Promise<State> 
   }
 
   const commits = await deps.repoCommits(full(input));
-  if (commits) {
+  // An empty repo has nothing to lose: the command pushes the template into it (research §4).
+  if (commits && commits.length === 0) state.emptyRepo = true;
+  else if (commits) {
     if (!commits.includes(TEMPLATE_COMMIT))
       return stop(
         `${full(input)} exists. To bring an existing repo in line, use the conformance check (spec 008) and a campaign (spec 015).`,
@@ -223,7 +235,7 @@ export async function runNewProject(
       continue;
     }
     try {
-      if (step === "repo") await deps.makeRepo(input);
+      if (step === "repo") await deps.makeRepo(input, state.emptyRepo);
       if (step === "settings") {
         const now = state.settings ?? (await deps.settings(full(input)));
         await deps.setSettings(full(input), input, now);
@@ -241,7 +253,7 @@ export async function runNewProject(
           prTitle(input),
           prBody(input, table),
         );
-        log(`[done]  ${LABEL[step]}Opened the PR #${n} "${prTitle(input)}" in ${OWNER}/projects.`);
+        log(`[done]  ${LABEL[step]} Opened the PR #${n} "${prTitle(input)}" in ${OWNER}/projects.`);
         continue;
       }
       for (const l of line("done", LABEL[step], DESCRIBE[step](input))) log(l);
