@@ -43,7 +43,7 @@ jobs:
       - name: Get the stored results
         run: |
           if git fetch --depth=1 origin data:refs/remotes/origin/data && git worktree add --detach ../_data origin/data; then
-            echo "History: $(ls ../_data/history 2>/dev/null | wc -l) day files."
+            echo "History: $(find ../_data/history -maxdepth 1 -type f 2>/dev/null | wc -l) day files."
           else
             echo "History: no branch data yet."
           fi
