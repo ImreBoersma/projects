@@ -368,7 +368,7 @@ export function renderPage(page: StatusPage): string {
     `<label class="flex flex-col gap-1 text-xs">${label}<select name="${name}" class="select select-sm">${options}</select></label>`;
   const controls = `<details class="filters controls mb-4"><summary class="btn btn-sm mb-2 sm:hidden">Filters</summary>
 <div class="flex flex-wrap items-end gap-3">
-<label class="flex flex-col gap-1 text-xs">Search <kbd class="kbd kbd-xs" title="Open the command box">⌘K</kbd><input name="q" type="search" class="input input-sm" placeholder="Project name"></label>
+<label class="flex flex-col gap-1 text-xs"><span class="flex items-center gap-1">Search <kbd class="kbd kbd-xs" title="Open the command box">⌘K</kbd></span><input name="q" type="search" class="input input-sm" placeholder="Project name"></label>
 ${select("state", "State", option("", "All") + option("problems", "Problems") + option("warnings", "Warnings") + option("not-available", "Check not available") + option("correct", "All correct"))}
 ${select("stakeholder", "Stakeholder", option("", "All") + stakeholders.map((x) => option(x, x)).join(""))}
 ${select("site", "Site", option("", "All") + option("yes", "Has a site") + option("no", "No site"))}
