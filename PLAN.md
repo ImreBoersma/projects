@@ -169,9 +169,12 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 
 ### 011. New-project template and onboarding
 
-- A template repo with the CI caller, the board caller, `renovate.json` and the Biome config.
+- A template folder `template/` in `projects` with the CI caller (one variant for each host), the
+  board caller, `renovate.json` and the Biome config.
 - A command that makes the repo from the template, sets the settings of spec 008, opens the
   catalog PR, and shows the table of secrets and variables to set.
+- The ⌘K box of the status page builds the command ("New project"); the page runs nothing.
+- The page size budget is on the gzip size: < 30 KB for the 20-site worst case.
 - Reason: a new project now needs changes in 4 to 5 repos. Spec 008 finds the deviations; this
   spec prevents them.
 

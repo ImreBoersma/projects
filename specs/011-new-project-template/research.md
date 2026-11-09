@@ -126,3 +126,15 @@ service worker of spec 020 also keeps a copy for the next visit.
 
 **Alternatives**: keep 150 KB raw and build the dialog in the script (works, but each next feature
 must fit a number that does not show the load time); raise the raw limit (same problem).
+
+## 9. Validation results
+
+| # | Check | Date | Result |
+|---|---|---|---|
+| T026 | Tests, lint, types | 2026-11-09 | 360 tests pass (baseline 292); Biome clean. `tsc` has one error that is on `main` too (`render.ts`: `minifySyntax` is not in the `TranspilerOptions` type of `@types/bun`; spec 020); CI does not run `tsc`. |
+| Size | Gzip budget (§8) | 2026-11-09 | Worst case before this spec: 147.7 KB raw, 18.7 KB gzip. With the dialog: 152.9 KB raw (over the old 150 KB limit), 20.2 KB gzip (limit 30 KB). |
+| §2 | Template deviation | 2026-11-09 | Local: without `permissions` in `template/ci/pages.yml`, the test "pages: R3 Caller permissions" fails; the file restored, all pass. `status-page.yml` runs the tests for `template/**` on PRs. |
+| §3 | Dry run against GitHub | 2026-11-09 | `template-test`, host pages: 4 steps, the file list, the `BOARD_TOKEN` row with the shared-token path; no repo, branch or PR made. `--id beter-dan-de-midi`: `id "beter-dan-de-midi" is in the catalog.`, exit code 1. |
+| §5 | Dialog (Chrome, local page) | 2026-11-09 | ⌘K, "new", Enter: the dialog opens with the focus in Id. `beter-dan-de-midi`: "This id is in the catalog.". Valid values: the command with `'Orkest'\''s site'`; "Copy command" with a real click shows "Copied"; Escape closes. The copied command as a dry run shows the same values. Less than 1 minute (SC-006). |
+| T019 | Renovate finds `template/package.json` | 2026-11-09 | No `ignorePaths` in `renovate/default.json` or `renovate.json`. The Dependency Dashboard check is after the merge (T030). |
+| Found | In the implementation | 2026-11-09 | (1) Vercel needs `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`, but the shared workflow reads them, not the caller: the host test reads the `vars.` of the called shared workflow too. Rule R9 of spec 008 has the same gap: it does not see these variables in the Vercel repos (not changed here). (2) `ci-node` stops without a lockfile: the command runs `bun install` before the first commit (§2). (3) The spec 012 test allows one inline data block: the catalog names are the key `catalog` of the `#changes` block, not a second block (contracts/dialog.md). (4) "Write the expiry date" shows only for a secret that gets `never`; a shared token copies the date. |

@@ -1,0 +1,14 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  ci:
+    uses: ImreBoersma/projects/.github/workflows/ci-node.yml@main
+  deploy:
+    needs: ci
+    uses: ImreBoersma/projects/.github/workflows/deploy-ssh.yml@main
+    with: { known-hosts: "${{ vars.SSH_KNOWN_HOSTS }}", target: "${{ vars.SSH_TARGET }}", pattern: "${{ vars.SSH_PATTERN }}" }
+    secrets: { ssh-host: "${{ secrets.SSH_HOST }}", ssh-user: "${{ secrets.SSH_USER }}", ssh-password: "${{ secrets.SSH_PASSWORD }}" }

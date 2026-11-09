@@ -9,11 +9,13 @@ on:
     paths:
       - projects.yaml
       - "status/**"
+      - "template/**"
   # CI for PRs, for example Renovate updates of status/ (spec 003). Only job build runs.
   pull_request:
     paths:
       - projects.yaml
       - "status/**"
+      - "template/**"
 
 concurrency:
   group: status-page-${{ github.ref }}

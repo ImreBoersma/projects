@@ -22,8 +22,8 @@ focus on open.
 
 ## Inline data
 
-`<script type="application/json" id="catalog-names">` with `{ ids, names, repos }` (lower case),
-the `<`-escape of spec 020. Repos are the `ImreBoersma/…` repos of the catalog only.
+The key `catalog` in the inline data block `#changes` of spec 020 (the page keeps one data block):
+`{ ids, names, repos }`, names and repos in lower case, with the `<`-escape of spec 020. Repos are the `ImreBoersma/…` repos of the catalog only.
 
 ## No request
 

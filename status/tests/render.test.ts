@@ -504,35 +504,6 @@ describe("spec 012: total state, sections, times, new tabs", () => {
       expect(a).toEndWith(NT);
     }
   });
-
-  test("a page with 20 sites, problems and dates is less than 90 KB of HTML (spec 019 SC-005)", () => {
-    const rows = Array.from({ length: 20 }, (_, i) =>
-      status({
-        project: {
-          id: `p${i}`,
-          name: `Project ${i}`,
-          repo: `ImreBoersma/p${i}`,
-          status: "active",
-          domain: `p${i}.example`,
-        },
-        problems: [ci(`p${i}`)],
-        uptime: { state: "up", at: generatedAt },
-        expiry: {
-          certificate: { date: "2026-12-19", days: 52 },
-          renewals: [{ name: "Domain", date: "2027-03-01", days: 124, source: "registry" }],
-          registryNotKnown: false,
-        },
-        history: {
-          since: { [`p${i}/ci-failed`]: "2026-10-26T04:00:00Z" },
-          sinceIsHistoryStart: [],
-          uptime: { percent: 99.5, days: Array(30).fill("up") },
-          uptimeEnd: "2026-10-28",
-        },
-      }),
-    );
-    // Spec 019 SC-005: 90 KB for the HTML + 60 KB for the CSS (css.test.ts) < 150 KB.
-    expect(Buffer.byteLength(render(rows))).toBeLessThan(90_000);
-  });
 });
 
 describe("repairText (spec 010)", () => {
@@ -790,5 +761,47 @@ describe("command box (spec 020 US5)", () => {
     expect(html).toContain('role="listbox"');
     expect(html).toContain('<kbd class="kbd kbd-xs" title="Open the command box">⌘K</kbd>');
     expect(html).toContain("function searchCommands(");
+  });
+});
+
+describe("the New project dialog (spec 011 US4)", () => {
+  const { HOSTS } =
+    require("../src/new-project/hosts") as typeof import("../src/new-project/hosts");
+  const html = render([
+    status({ project: { id: "one", name: "One", repo: "ImreBoersma/one", status: "active" } }),
+    status({
+      project: { id: "hob", name: "HOB", repo: "harmonieorkest-brummen/hob-nl", status: "active" },
+    }),
+  ]);
+  const box = html.slice(
+    html.indexOf('<div id="new-project"'),
+    html.indexOf("data-close-new-project"),
+  );
+
+  test("a modal with 6 labelled fields; only the script opens it", () => {
+    expect(box).toContain('class="modal"');
+    expect(box).not.toContain("modal-open");
+    for (const n of ["id", "name", "repo", "visibility", "stack", "host"])
+      expect(box).toMatch(new RegExp(`<label[^>]*>[A-Z][a-z]+<(input|select) name="${n}"`));
+    expect(box).toContain("Copy command");
+  });
+
+  test("the host options are the host map", () => {
+    expect(
+      [...box.matchAll(/<option value="([a-z]+)">/g)]
+        .map((m) => m[1])
+        .filter((v) => !["public", "private"].includes(v)),
+    ).toEqual(HOSTS.map((h) => h.key));
+  });
+
+  test("the catalog names are in the inline data; own repos only", () => {
+    const data = JSON.parse(
+      html.match(/<script type="application\/json" id="changes">(.*?)<\/script>/s)?.[1] ?? "{}",
+    );
+    expect(data.catalog).toEqual({
+      ids: ["one", "hob"],
+      names: ["one", "hob"],
+      repos: ["imreboersma/one"],
+    });
   });
 });
