@@ -84,7 +84,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
   - 2026-11-02: vulnerability alerts on. Dashboards on 2026-11-03: `projects` #6, boek-de-bus #6, Beter-dan-de-MIDI #315 (after issues were turned on), scales-exercises #379. No "Fix Renovate Configuration" issue in any repo. personal-website and Reperatie-Formulier get their dashboard at the next Renovate run (issues turned on 2026-11-02). Note: `gh issue list --author app/renovate` does not find these issues; search by title.
 - [X] T017 [US1] `HomeLab: .github/renovate.json`: add `"github>ImreBoersma/projects//renovate/default"` as the first entry of `extends`. Keep all HomeLab rules. Add one last rule `{ "matchUpdateTypes": ["patch", "minor"], "automerge": false }` with a `description`, so that nothing automerges. Open the PR; `validate` must pass. CAUTION: a merge to `main` of HomeLab starts `deploy` on the Pi. The Maintainer merges this PR. After the merge, run the `renovate` workflow manually; it must pass.
   - 2026-11-02: ImreBoersma/HomeLab#23 open; `renovate-config-validator --strict` and `validate` pass. Merged by the Maintainer. The run passed; Dependency Dashboard #15 shows no config error, and no PR was merged automatically. The preset put three HA integrations in its "minor updates" group; HomeLab#24 adds `"groupName": null` to the `custom_components` rule, and after that run each integration has its own entry again.
-- [ ] T018 [US1] Run the status page workflow. Make sure that the Renovate PR count of HomeLab includes the open PRs of `imreboersma-homelab-renovate`.
+- [X] T018 [US1] Run the status page workflow. Make sure that the Renovate PR count of HomeLab includes the open PRs of `imreboersma-homelab-renovate`.
   - 2026-11-02: the status page runs with the new author rule (unit test in `status/tests/github.test.ts`). HomeLab has 0 open PRs of its Renovate app now, so the live count is 0. Open: check again when the HomeLab app opens a PR.
 
 **Checkpoint**: SC-001 and SC-002: 7 of 7 repos extend the preset, 0 use Dependabot version updates.
@@ -98,7 +98,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 **Independent Test**: quickstart.md §2 step 3.
 
 - [ ] T019 [US2] In one repo with a pending patch update, start the "patch updates" group from the Dependency Dashboard, or wait for the Saturday window. Make sure that Renovate opens one PR "Update patch updates" from `renovate[bot]`, CI runs, and Renovate merges it after CI passes (FR-004). Record the repo and the PR. Before CI passes on that PR, or on the next patch PR: push one commit with a Biome error to the Renovate branch, make sure that CI fails and that Renovate does not merge (US2/AC2), then remove the commit.
-- [ ] T020 [US2] Make sure that no minor, major or security PR was merged by Renovate in any repo (FR-005): `gh search prs --author app/renovate --owner ImreBoersma --merged` shows only "patch updates" PRs. Make sure that no HomeLab PR was merged automatically.
+- [X] T020 [US2] Make sure that no minor, major or security PR was merged by Renovate in any repo (FR-005): `gh search prs --author app/renovate --owner ImreBoersma --merged` shows only "patch updates" PRs. Make sure that no HomeLab PR was merged automatically.
 
 **Checkpoint**: SC-003: 0 patch updates merged by hand.
 
@@ -116,7 +116,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T022 [P] For each of the 7 repos, make sure that the Renovate config (`renovate.json`, or `.github/renovate.json` in HomeLab) extends the preset and that `.github/dependabot.yml` does not exist (SC-001, SC-002). Use `gh api repos/ImreBoersma/<repo>/contents/<path>`.
+- [X] T022 [P] For each of the 7 repos, make sure that the Renovate config (`renovate.json`, or `.github/renovate.json` in HomeLab) extends the preset and that `.github/dependabot.yml` does not exist (SC-001, SC-002). Use `gh api repos/ImreBoersma/<repo>/contents/<path>`.
 - [ ] T023 Record the results in a new section "13. Validation results" in `specs/003-renovate-preset/research.md`: the app installation, the first patch automerge and the failed-CI check, the PR count of the first week, the HomeLab result, and the evidence for US1/AC2: each repo extends the preset from the default branch of `projects`, so a change on `main` reaches all repos at their next run.
 - [ ] T024 [P] In `PLAN.md`, move feature 003 to "Done". In `specs/001-project-status-page/plan.md` the Principle IV exception ends; do not change that file, but write in `PLAN.md` that the exception ended with spec 003.
 

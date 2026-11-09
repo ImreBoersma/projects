@@ -3,7 +3,7 @@
   "description": "Shared Renovate preset for the projects of ImreBoersma. Spec: specs/003-renovate-preset.",
   "extends": ["config:recommended"],
   "timezone": "Europe/Amsterdam",
-  "schedule": ["* 2-5 * * 6"],
+  "schedule": ["* * * * 0,6"],
   "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
   "platformAutomerge": false,

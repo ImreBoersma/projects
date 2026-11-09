@@ -92,7 +92,8 @@ one PR for them, in the weekly time window.
 
 - **FR-001**: The `projects` repo MUST contain the preset `renovate/default.json`.
 - **FR-002**: The preset MUST open update PRs only in one weekly time window, except security
-  updates.
+  updates. Window since 2026-11-09: Saturday and Sunday, all day, Amsterdam time (the Saturday
+  02:00–06:00 window was too short; research.md §14).
 - **FR-003**: The preset MUST put all minor updates of a repo in one PR.
 - **FR-004**: The preset MUST merge patch updates automatically only when CI passes.
 - **FR-005**: The preset MUST NOT merge minor or major updates automatically.
