@@ -124,3 +124,12 @@ visits each repo several times in 48 hours; the HomeLab run lands on both days. 
 of PRs a week, so SC-004 stays. The research decision §2 ("the same window as HomeLab") is
 replaced.
 
+
+**Finding 2** (T019 attempt, 2026-11-09): two ticks on the Dependency Dashboard of
+Reperatie-Formulier (08:57 and 09:09 UTC) gave no "patch updates" branch. Cause: `@biomejs/biome`
+2.6.6 and `tailwindcss` / `@tailwindcss/vite` 4.3.5 were released on Friday 2026-11-06, so the
+group passes `minimumReleaseAge` (3 days) at 15:16 UTC on Monday. With `internalChecksFilter:
+strict`, Renovate makes no branch before that, and a dashboard start does not change this. This
+is the expected result of the preset. It also shows why a Saturday-only window is weak: a release
+from Thursday or Friday is not old enough until Sunday or Monday. With Saturday and Sunday, it is
+in the window on Sunday. T019 continues in the next weekend window.
