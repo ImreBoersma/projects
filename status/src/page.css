@@ -110,3 +110,13 @@ html.js .modal:target:not(.modal-open) {
 html:not(.js) [role="tablist"] {
   display: none;
 }
+/* A subtler focus ring for fields and selects: 1px, the text colour at 45% (about 3.3:1 on white,
+   so it stays visible: WCAG 1.4.11). DaisyUI uses 2px in the full text colour. */
+.input:focus,
+.input:focus-within,
+.select:focus,
+.select:focus-within {
+  --input-color: color-mix(in oklab, var(--color-base-content) 45%, #0000);
+  outline-width: 1px;
+  outline-offset: 1px;
+}
