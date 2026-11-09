@@ -107,6 +107,15 @@ projects:
     domain:
     stakeholder:
     renewal:
+  - id: template-test
+    name: Template test
+    repo: ImreBoersma/template-test
+    status: active
+    stack: Vite
+    host: GitHub Pages
+    domain:
+    stakeholder:
+    renewal:
 
 # Spec 013: each secret that the projects and this repo use. Names, places and dates only.
 # `expires`: a date; `never` when an expiry is possible but not set (the page warns); `none` when
@@ -198,3 +207,8 @@ secrets:
     where: ImreBoersma/HomeLab
     expires: none
     project: homelab
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/template-test
+    expires: 2027-11-05
+    project: template-test
