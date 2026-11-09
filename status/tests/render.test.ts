@@ -10,10 +10,10 @@ const generatedAt = new Date("2026-10-28T05:03:00Z");
 const render = (rows: ProjectStatus[], issues = new Map<string, number>()) =>
   renderPage({ generatedAt, rows, issues });
 // Spec 012: each link opens a new tab.
+// Spec 020: the new-tab mark is CSS; the screen-reader text is the element #nt.
 const A = (url: string) =>
-  `<a class="link" href="${url}" target="_blank" rel="noopener noreferrer">`;
-const NT =
-  '<span class="nt" aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>';
+  `<a class="link" href="${url}" target="_blank" rel="noopener noreferrer" aria-describedby="nt">`;
+const NT = "</a>";
 // The facts line of the first project.
 const facts = (s: ProjectStatus) =>
   render([s]).match(/<dl class="facts[^"]*">(.*?)<\/dl>/)?.[1] ?? "";
@@ -186,7 +186,11 @@ describe("renderPage", () => {
     });
     for (const s of [noRepo, status({ availability: "unavailable" }), status()]) {
       const html = render([s]);
-      const box = html.slice(html.indexOf('<div class="modal-box'), html.indexOf("modal-backdrop"));
+      // The facts only; the shortcuts of spec 020 follow "Act on GitHub".
+      const end = html.includes("Act on GitHub")
+        ? html.indexOf("Act on GitHub")
+        : html.indexOf("modal-backdrop");
+      const box = html.slice(html.indexOf('<div class="modal-box'), end);
       expect(box.match(/target="_blank"/g) ?? []).toHaveLength(
         s.availability === "no-repo" ? 0 : 1,
       );
@@ -208,7 +212,8 @@ describe("renderPage", () => {
   });
 
   test("the page loads no file from another site (spec 007 FR-011)", () => {
-    expect(render([status()])).not.toMatch(/<(script|link|img)[^>]+(src|href)="(?!data:)/);
+    // Files next to the page (manifest.webmanifest, spec 020) are allowed; other sites are not.
+    expect(render([status()])).not.toMatch(/<(script|link|img)[^>]+(src|href)="(https?:)?\/\//);
   });
 });
 
@@ -369,9 +374,13 @@ describe("history on the page (spec 010)", () => {
     expect(html.slice(html.indexOf('id="tab-history"'))).toContain(
       '95.8% in 30 days <span class="bar"',
     );
-    expect(html.match(/<i class="mark /g)).toHaveLength(30);
-    expect(html).toContain('<i class="mark down" title="2026-10-27 down"></i>');
-    expect(html).toContain('<i class="mark no-data" title="2026-10-28 no data"></i>');
+    // Spec 020: one element for each run of equal days (28 up, 1 down, 1 no data).
+    expect(html.match(/<i class="mark /g)).toHaveLength(3);
+    expect(html).toContain('<i class="mark up" style="width:111px"></i>');
+    expect(html).toContain('<i class="mark down" style="width:3px" title="2026-10-27 down"></i>');
+    expect(html).toContain(
+      '<i class="mark no-data" style="width:3px" title="2026-10-28 no data"></i>',
+    );
     expect(html).toContain(
       'aria-label="Uptime of the last 30 days: 1 day down, 1 day without data"',
     );
@@ -457,10 +466,12 @@ describe("spec 012: total state, sections, times, new tabs", () => {
     expect(html).toContain(
       'title="2026-10-25 05:03 UTC">3 days ago</time><span class="sr"> (2026-10-25 05:03 UTC)</span>',
     );
-    expect(html.match(/<script/g)).toHaveLength(1);
+    // One script that runs; spec 020 adds one data block (type application/json) that does not run.
+    expect(html.match(/<script>/g)).toHaveLength(1);
+    expect(html.match(/<script type="application\/json"/g)).toHaveLength(1);
     expect(html).not.toMatch(/<script[^>]*src=/);
     expect(html).toContain("function relTime(");
-    expect(html).toContain("setInterval(updateTimes, 60000)");
+    expect(html).toMatch(/setInterval\(updateTimes,\s*(60000|6e4)\)/);
   });
 
   test("US5: each link opens a new tab and says so (SC-003)", () => {
@@ -699,5 +710,85 @@ describe("campaigns on the page (spec 015)", () => {
   test("no campaigns: no section", () => {
     expect(page([])).not.toContain("<h2>Campaigns <span");
     expect(page([])).toContain("No open campaign.");
+  });
+});
+
+describe("since your last visit (spec 020 US1)", () => {
+  const changes = {
+    since: "2026-10-27T05:03:00Z",
+    started: [{ key: "one/ci-failed", project: "One", text: "The last CI run failed." }],
+    stopped: [{ key: "two/site-down", project: "Two", text: "</script><b>x" }],
+  };
+  const html = renderPage({
+    generatedAt,
+    rows: [
+      status({ problems: [ci()] }),
+      status({
+        project: { id: "w", name: "W", repo: null, status: "active" },
+        expiry: {
+          certificate: { date: "2026-11-17", days: 20 },
+          renewals: [],
+          registryNotKnown: false,
+        },
+      }),
+    ],
+    issues: new Map(),
+    changes,
+  });
+
+  test("rows have their keys; a warn row has the warning key", () => {
+    expect(html).toContain('data-keys="one/ci-failed" data-title="One"');
+    expect(html).toContain('data-keys="w/warning" data-title="W"');
+  });
+
+  test("the inline data parses back, and cannot end the script", () => {
+    const block =
+      html.match(/<script type="application\/json" id="changes">(.*?)<\/script>/s)?.[1] ?? "";
+    expect(block).not.toContain("</script");
+    const data = JSON.parse(block);
+    expect(data.changes).toEqual(changes);
+    expect(data.texts["ci-failed"]).toBe("The last CI run failed.");
+    expect(data.texts.warning).toBe("A warning.");
+    expect(data.problems).toBe(1);
+  });
+
+  test("the changes line, the New marks and the fixed list are hidden without the script", () => {
+    expect(html).toContain("<p data-changes hidden");
+    expect(html).toContain("<details data-fixed hidden");
+    expect(html).toContain(
+      '<span data-new hidden class="badge badge-sm badge-info">New<span class="sr"> since your last visit</span></span>',
+    );
+  });
+});
+
+describe("shortcuts (spec 020 US4)", () => {
+  test("the modal of a project with a repo has the 4 shortcuts; without a repo none", () => {
+    const html = render([status()]);
+    const box = html.slice(html.indexOf('id="p-one"'), html.indexOf("modal-backdrop"));
+    expect(box).toContain("Act on GitHub:");
+    for (const label of ["CI runs", "Deployments", "Renovate dashboard", "Issues"]) {
+      expect(box).toContain(`>${label}</a>`);
+    }
+    const noRepo = render([
+      status({ project: { id: "p", name: "P", repo: null, status: "active" } }),
+    ]);
+    expect(noRepo).not.toContain("Act on GitHub:");
+  });
+
+  test("the header links to the status workflow", () => {
+    expect(render([])).toContain(
+      `${A("https://github.com/ImreBoersma/projects/actions/workflows/status-page.yml")}Run the status update now${NT}`,
+    );
+  });
+});
+
+describe("command box (spec 020 US5)", () => {
+  test("the box, its labelled input and list, and the ⌘K hint", () => {
+    const html = render([status()]);
+    expect(html).toContain('<div id="command" class="modal"');
+    expect(html).toContain('Go to<input type="text"');
+    expect(html).toContain('role="listbox"');
+    expect(html).toContain('<kbd class="kbd kbd-xs" title="Open the command box">⌘K</kbd>');
+    expect(html).toContain("function searchCommands(");
   });
 });

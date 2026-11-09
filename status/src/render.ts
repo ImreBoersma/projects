@@ -1,9 +1,26 @@
-import { compare, matches, readView, start as startClient, writeView } from "./client";
+import { THEME_COLOR } from "./app";
+import {
+  compare,
+  compareVisit,
+  fixedText,
+  matches,
+  readView,
+  searchCommands,
+  start as startClient,
+  writeView,
+} from "./client";
 import { RULES } from "./conformance/rules";
-import { rowLinks } from "./links";
+import { rowLinks, STATUS_WORKFLOW, shortcuts } from "./links";
 import { PROBLEM_TEXT } from "./problems";
 import { FAVICON, ICON } from "./style";
-import type { CampaignSummary, Problem, ProjectStatus, SecretStatus, StatusPage } from "./types";
+import type {
+  CampaignSummary,
+  DayMark,
+  Problem,
+  ProjectStatus,
+  SecretStatus,
+  StatusPage,
+} from "./types";
 import {
   type BadgeKind,
   certificateKind,
@@ -12,6 +29,7 @@ import {
   relTime,
   renewalKind,
   rowData,
+  rowKeys,
   rowKind,
   secretKind,
   summaryFact,
@@ -27,6 +45,8 @@ const DAY = 24 * 60 * 60 * 1000;
 // The page updates each hour, so 3 hours without an update means that the schedule stopped.
 const STALE_MS = 3 * 60 * 60 * 1000;
 
+// Inline JSON: each "<" as the escape \u003c, so that the text cannot end the script (spec 020 T008).
+const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
 const html = (text: string) =>
   text.replace(
     /[&<>"']/g,
@@ -54,7 +74,7 @@ function timeTag(iso: string, now: Date): string {
 // Spec 012 FR-007, FR-008: each link opens a new tab. `inner` is HTML.
 const link = (inner: string, url: string | null) =>
   url
-    ? `<a class="link" href="${html(url)}" target="_blank" rel="noopener noreferrer">${inner}<span class="nt" aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>`
+    ? `<a class="link" href="${html(url)}" target="_blank" rel="noopener noreferrer" aria-describedby="nt">${inner}</a>`
     : inner;
 
 // Spec 008: the failed rules under the problem text, each a link to its repair steps.
@@ -81,16 +101,26 @@ function uptime(s: ProjectStatus, withBar = true): string[] {
   const u = s.history.uptime;
   if (!u) return [];
   const first = Date.parse(`${s.history.uptimeEnd ?? ""}T00:00:00Z`);
-  const marks = u.days
-    .map((d, i) => {
-      const date = Number.isNaN(first)
-        ? ""
-        : new Date(first - (29 - i) * DAY).toISOString().slice(0, 10);
-      // Spec 019 page size: only the marks that need attention have a tooltip; the bar's
-      // aria-label gives the totals.
-      return d === "up"
-        ? '<i class="mark up"></i>'
-        : `<i class="mark ${d}" title="${date} ${MARK_TEXT[d]}"></i>`;
+  // Spec 020 page size: one element for each run of equal days; the stripes of the CSS show the
+  // days. Only the runs that need attention have a tooltip (the aria-label has the totals).
+  const runs: { d: DayMark; from: string; to: string; n: number }[] = [];
+  u.days.forEach((d, i) => {
+    const date = Number.isNaN(first)
+      ? ""
+      : new Date(first - (29 - i) * DAY).toISOString().slice(0, 10);
+    const run = runs.at(-1);
+    if (run && run.d === d) {
+      run.n++;
+      run.to = date;
+    } else runs.push({ d, from: date, to: date, n: 1 });
+  });
+  const marks = runs
+    .map((r) => {
+      const title =
+        r.d === "up"
+          ? ""
+          : ` title="${r.from === r.to ? r.from : `${r.from} – ${r.to}`} ${MARK_TEXT[r.d]}"`;
+      return `<i class="mark ${r.d}" style="width:${r.n * 4 - 1}px"${title}></i>`;
     })
     .join("");
   const down = u.days.filter((d) => d === "down").length;
@@ -212,9 +242,9 @@ function row(s: ProjectStatus, order: number): string {
   const data = Object.entries(rowData(s, order))
     .map(([k, v]) => ` data-${k}="${html(v)}"`)
     .join("");
-  return `<li class="project ${kind}"${data}><a class="list-row items-center rounded-box py-2 hover:bg-base-200" href="#p-${s.project.id}">
+  return `<li class="project ${kind}"${data} data-keys="${html(rowKeys(s).join(" "))}" data-title="${html(s.project.name)}"><a class="list-row items-center rounded-box py-2 hover:bg-base-200" href="#p-${s.project.id}">
 <span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>
-<span class="font-semibold">${html(s.project.name)}</span>
+<span class="font-semibold">${html(s.project.name)} <span data-new hidden class="badge badge-sm badge-info">New<span class="sr"> since your last visit</span></span></span>
 <span class="list-col-grow text-sm">${badge(fact.kind, html(fact.text))}</span>
 <span aria-hidden="true" class="opacity-50">›</span>
 </a></li>`;
@@ -235,11 +265,16 @@ function modal(s: ProjectStatus, now: Date, issues: Map<string, number>): string
     .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
     .join("");
   const id = s.project.id;
+  // Spec 020 US4: the GitHub pages to act on this project.
+  const go = shortcuts(s.project.repo);
+  const act = go.length
+    ? `\n<p class="mt-3 text-sm"><span class="opacity-75">Act on GitHub:</span> ${go.map((g) => link(g.label, g.url)).join(SEP)}</p>`
+    : "";
   return `<div id="p-${id}" class="modal" role="dialog" aria-modal="true" aria-labelledby="t-${id}">
 <div class="modal-box max-w-2xl">
 <a href="#" data-close class="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" aria-label="Close">✕</a>
 <h2 id="t-${id}" tabindex="-1" class="mb-3 flex items-center gap-3 pr-10 text-lg font-semibold"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>${link(html(s.project.name), links.project)}${tag}</h2>
-${problems.length ? `<ul class="problems mb-3 space-y-2 text-error">${problems.join("")}</ul>\n` : ""}${list ? `<dl class="facts space-y-1 text-sm">${list}</dl>` : ""}
+${problems.length ? `<ul class="problems mb-3 space-y-2 text-error">${problems.join("")}</ul>\n` : ""}${list ? `<dl class="facts space-y-1 text-sm">${list}</dl>` : ""}${act}
 </div>
 <a href="#" data-close class="modal-backdrop">Close</a>
 </div>`;
@@ -330,7 +365,7 @@ export function renderPage(page: StatusPage): string {
     `<label class="flex flex-col gap-1 text-xs">${label}<select name="${name}" class="select select-sm">${options}</select></label>`;
   const controls = `<details class="filters controls mb-4"><summary class="btn btn-sm mb-2 sm:hidden">Filters</summary>
 <div class="flex flex-wrap items-end gap-3">
-<label class="flex flex-col gap-1 text-xs">Search<input name="q" type="search" class="input input-sm" placeholder="Project name"></label>
+<label class="flex flex-col gap-1 text-xs">Search <kbd class="kbd kbd-xs" title="Open the command box">⌘K</kbd><input name="q" type="search" class="input input-sm" placeholder="Project name"></label>
 ${select("state", "State", option("", "All") + option("problems", "Problems") + option("warnings", "Warnings") + option("not-available", "Check not available") + option("correct", "All correct"))}
 ${select("stakeholder", "Stakeholder", option("", "All") + stakeholders.map((x) => option(x, x)).join(""))}
 ${select("site", "Site", option("", "All") + option("yes", "Has a site") + option("no", "No site"))}
@@ -342,20 +377,54 @@ ${select("sort", "Sort", option("state", "State") + option("name", "Name") + opt
 <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide opacity-70">${title}</h2>
 ${body}
 </section>`;
-  const projectsBody = `${controls}
+  // Spec 020 contracts/page.md: the changes line and the fixed list (filled by the script).
+  const changesPart = `<p data-changes hidden class="mb-1 text-sm font-semibold"></p>
+<details data-fixed hidden class="mb-3 text-sm"><summary></summary><ul class="ml-4 list-disc"></ul></details>`;
+  const projectsBody = `${changesPart}
+${controls}
 <p data-note hidden class="mb-2 text-sm">Some filters in the link are not known.</p>
 <ul class="list rounded-box" data-rows>
 ${ordered.map(({ s, i }) => row(s, i)).join("\n")}
 </ul>
 <div data-empty hidden class="py-6 text-center"><p class="mb-2">No project matches the filter.</p><button type="button" data-clear class="btn btn-sm">Clear the filter</button></div>
 ${page.rows.map((s) => modal(s, now, page.issues)).join("\n")}`;
+  // Spec 020 US5: the command box; only the script opens it.
+  const commandBox = `<div id="command" class="modal" role="dialog" aria-modal="true" aria-label="Command box">
+<div class="modal-box max-w-md">
+<label class="flex flex-col gap-1 text-sm">Go to<input type="text" class="input w-full" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="command-list" placeholder="Project, tab or filter"></label>
+<ul id="command-list" role="listbox" class="mt-2 text-sm"></ul>
+</div>
+<a href="#" data-close-command class="modal-backdrop">Close</a>
+</div>`;
   const history = page.historyStart ? ` · History from ${timeTag(page.historyStart, now)}` : "";
   const totalClass = { correct: "alert-success", problems: "alert-error", "not-available": "" }[
     total.kind
   ];
-  const script = [readView, writeView, matches, compare, startClient, relTime]
+  const script = [
+    readView,
+    writeView,
+    matches,
+    compare,
+    compareVisit,
+    fixedText,
+    searchCommands,
+    startClient,
+    relTime,
+  ]
     .map((f) => f.toString())
     .join("\n");
+  const updates = `if (Date.now() - Date.parse("${iso}") > ${STALE_MS}) document.getElementById("stale").hidden = false;
+${script}
+function updateTimes() {
+  for (const t of document.querySelectorAll("time[data-rel]")) t.textContent = relTime(t.getAttribute("datetime"), Date.now());
+}
+updateTimes();
+setInterval(updateTimes, 60000);
+start(${json(known)});`;
+  // Spec 020 page size: only whitespace goes; the names stay (the page calls them by name).
+  const minified = new Bun.Transpiler({ loader: "js", minifyWhitespace: true, minifySyntax: true }).transformSync(
+    updates,
+  );
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -363,15 +432,18 @@ ${page.rows.map((s) => modal(s, now, page.issues)).join("\n")}`;
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${total.title}</title>
 <link rel="icon" href="${FAVICON[total.kind]}">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="${THEME_COLOR}">
 <style>
 ${page.css ?? ""}
 </style>
 </head>
 <body class="bg-base-100 text-base-content">
+<span id="nt" hidden>opens in a new tab</span>
 <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
 <header class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
 <h1 class="text-xl font-semibold">Project status</h1>
-<nav class="flex gap-4 text-sm">${link("Roadmap", ROADMAP)}${link("Project board", BOARD)}</nav>
+<nav class="flex flex-wrap gap-4 text-sm">${link("Roadmap", ROADMAP)}${link("Project board", BOARD)}${link("Run the status update now", STATUS_WORKFLOW)}</nav>
 </header>
 <section class="total ${total.kind} alert ${totalClass} mb-6 flex flex-col items-start gap-1">
 <p class="state flex items-center gap-3 text-xl font-semibold"><span aria-hidden="true" class="size-6">${ICON[total.kind]}</span>${total.text}</p>
@@ -384,16 +456,15 @@ ${panel("projects", "Projects", projectsBody, true)}
 ${panel("campaigns", "Campaigns", campaignSection(campaigns, now) || "<p>No open campaign.</p>")}
 ${panel("tokens", "Shared tokens", sharedSection(shared, now, page.issues) || "<p>No shared tokens with a date.</p>")}
 ${panel("history", "History", historyPanel(page.rows, repairText(page.repair ?? null)))}
+${commandBox}
 </div>
+<script type="application/json" id="changes">${json({
+    changes: page.changes ?? { since: iso, started: [], stopped: [] },
+    texts: { ...PROBLEM_TEXT, warning: "A warning." },
+    problems: total.problems,
+  })}</script>
 <script>
-if (Date.now() - Date.parse("${iso}") > ${STALE_MS}) document.getElementById("stale").hidden = false;
-${script}
-function updateTimes() {
-  for (const t of document.querySelectorAll("time[data-rel]")) t.textContent = relTime(t.getAttribute("datetime"), Date.now());
-}
-updateTimes();
-setInterval(updateTimes, 60000);
-start(${JSON.stringify(known).replace(/</g, "\\u003c")});
+${minified}
 </script>
 </body>
 </html>

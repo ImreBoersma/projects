@@ -162,3 +162,11 @@ export function rowData(s: ProjectStatus, order: number): Record<string, string>
     order: String(order),
   };
 }
+
+// Spec 020 research.md §2: the keys of a row for "new" and "fixed".
+export function rowKeys(s: ProjectStatus): string[] {
+  return [
+    ...s.problems.map((p) => p.key),
+    ...(rowKind(s) === "warn" ? [`${s.project.id}/warning`] : []),
+  ];
+}

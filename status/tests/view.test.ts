@@ -224,3 +224,22 @@ describe("spec 019: summaryFact, nextExpiry, rowData", () => {
     });
   });
 });
+
+describe("rowKeys (spec 020)", () => {
+  const { rowKeys } = require("../src/view") as typeof import("../src/view");
+  test("problem keys, and one warning key for a warn row", () => {
+    expect(rowKeys(status({ problems: [problem] }))).toEqual(["one/ci-failed"]);
+    expect(rowKeys(status({ secretsNoExpiry: ["X"] }))).toEqual([]);
+    expect(
+      rowKeys(
+        status({
+          expiry: {
+            certificate: { date: "2026-12-01", days: 20 },
+            renewals: [],
+            registryNotKnown: false,
+          },
+        }),
+      ),
+    ).toEqual(["one/warning"]);
+  });
+});

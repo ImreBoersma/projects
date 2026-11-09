@@ -125,3 +125,66 @@ describe("repairTime (US4)", () => {
     expect(repairTime(results, now)).toBeNull();
   });
 });
+
+describe("recentChanges (spec 020 research.md §1)", () => {
+  const { recentChanges } =
+    require("../src/history/stats") as typeof import("../src/history/stats");
+  const now = new Date("2026-11-07T12:00:00Z");
+  const line = (time: string, projects: Record<string, string[]>): HistoryResult => ({
+    time,
+    projects: Object.fromEntries(
+      Object.entries(projects).map(([id, problems]) => [id, { site: "up" as SiteState, problems }]),
+    ),
+  });
+  const projects = [
+    { id: "one", name: "One" },
+    { id: "two", name: "Two" },
+  ];
+  const texts = {
+    "ci-failed": "The last CI run failed.",
+    "site-down": "The site does not respond correctly.",
+  };
+
+  test("started and stopped against the result of 24 hours ago", () => {
+    const results = [
+      line("2026-11-06T06:00:00Z", { one: ["one/ci-failed"], two: [] }),
+      line("2026-11-06T11:00:00Z", { one: ["one/ci-failed"], two: [] }),
+      line("2026-11-07T09:00:00Z", { one: [], two: ["two/site-down"] }),
+      line("2026-11-07T12:00:00Z", { one: [], two: ["two/site-down"] }),
+    ];
+    const r = recentChanges(results, projects, now, texts);
+    expect(r.since).toBe("2026-11-06T11:00:00Z");
+    expect(r.started).toEqual([
+      { key: "two/site-down", project: "Two", text: "The site does not respond correctly." },
+    ]);
+    expect(r.stopped).toEqual([
+      { key: "one/ci-failed", project: "One", text: "The last CI run failed." },
+    ]);
+  });
+
+  test("a short history compares with the first result", () => {
+    const results = [
+      line("2026-11-07T08:00:00Z", { one: [] }),
+      line("2026-11-07T12:00:00Z", { one: ["one/ci-failed"] }),
+    ];
+    const r = recentChanges(results, projects, now, texts);
+    expect(r.since).toBe("2026-11-07T08:00:00Z");
+    expect(r.started.map((x) => x.key)).toEqual(["one/ci-failed"]);
+  });
+
+  test("a project that left the catalog is not fixed; a current text wins", () => {
+    const results = [
+      line("2026-11-06T10:00:00Z", { gone: ["gone/ci-failed"], one: [] }),
+      line("2026-11-07T12:00:00Z", { one: ["one/renewal-due/domain"] }),
+    ];
+    const r = recentChanges(
+      results,
+      projects,
+      now,
+      texts,
+      new Map([["one/renewal-due/domain", "Renewal of Domain is due in 20 days."]]),
+    );
+    expect(r.stopped).toEqual([]);
+    expect(r.started[0].text).toBe("Renewal of Domain is due in 20 days.");
+  });
+});

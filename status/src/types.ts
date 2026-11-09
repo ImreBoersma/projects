@@ -80,6 +80,8 @@ export interface StatusPage {
   repair?: { averageMs: number; count: number } | null;
   generatedAt: Date;
   rows: ProjectStatus[];
+  // Spec 020: the problems that started and stopped in the last 24 hours.
+  changes?: RecentChanges;
   // Spec 019: the built DaisyUI CSS (build/page.css); tests pass a small fake.
   css?: string;
   // Spec 015: the campaigns to show.
@@ -195,4 +197,11 @@ export interface CampaignSummary {
   done: boolean;
   doneAt: string | null;
   url: string;
+}
+
+// Spec 020 data-model.md "Recent changes".
+export interface RecentChanges {
+  since: string;
+  started: { key: string; project: string; text: string }[];
+  stopped: { key: string; project: string; text: string }[];
 }

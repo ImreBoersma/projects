@@ -74,3 +74,41 @@ export function repairTime(
     count: durations.length,
   };
 }
+
+// Spec 020 research.md §1: the problems that started and stopped in the last 24 hours. The old
+// result is the newest one at or before now − 24 h, else the first one. The history stores keys
+// only; a text comes from `texts` (the current problems) or from the reason of the key.
+export function recentChanges(
+  results: HistoryResult[],
+  projects: { id: string; name: string }[],
+  now: Date,
+  reasonText: Record<string, string>,
+  texts: Map<string, string> = new Map(),
+): {
+  since: string;
+  started: { key: string; project: string; text: string }[];
+  stopped: { key: string; project: string; text: string }[];
+} {
+  const current = results.at(-1);
+  const limit = now.getTime() - DAY;
+  const older = results.filter((r) => Date.parse(r.time) <= limit);
+  const old = older.at(-1) ?? results[0];
+  const keys = (r: HistoryResult | undefined) =>
+    new Set(Object.values(r?.projects ?? {}).flatMap((p) => p.problems));
+  const before = keys(old);
+  const nowKeys = keys(current);
+  const names = new Map(projects.map((p) => [p.id, p.name]));
+  const item = (key: string) => {
+    const [id, reason] = key.split("/");
+    return {
+      key,
+      project: names.get(id) ?? id,
+      text: texts.get(key) ?? reasonText[reason] ?? reason,
+    };
+  };
+  return {
+    since: old?.time ?? now.toISOString(),
+    started: [...nowKeys].filter((k) => !before.has(k)).map(item),
+    stopped: [...before].filter((k) => !nowKeys.has(k) && names.has(k.split("/")[0])).map(item),
+  };
+}

@@ -227,6 +227,10 @@ opens.
   own "last visit". That is acceptable; no account is added.
 - Icon badges work in some systems only (for example installed apps in Chrome and Edge on
   desktop); elsewhere there is no badge.
+- The icon badge shows the count of the last time the app was open; nothing updates it in the
+  background, because that needs push messages from a server (side note 2026-11-09). It is a
+  reminder, not an alarm: the alarm is the GitHub issue of each problem (spec 001), or a pushed
+  digest later.
 - The Renovate dependency dashboard is the "Dependency Dashboard" issue of each repo; a repo
   without it gets the link to its open Renovate PRs (spec 007) in its place.
 - The text of the page stays English, in ASD-STE100.
