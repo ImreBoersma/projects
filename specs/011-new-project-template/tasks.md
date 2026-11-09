@@ -99,9 +99,9 @@ contracts/command.md, contracts/dialog.md, quickstart.md
 - [X] T026 Run `cd status && bun run css && bun test && bun run lint && bunx tsc --noEmit -p .`. All pass; more tests than the baseline; record the gzip size of the worst case.
 - [X] T027 Run quickstart.md §2 (CI fails on a template deviation; do not merge that branch), §3 (dry run and refusal) and §5 (dialog in Chrome, from a local page build, with the time to the copied command for SC-006), and record each result in a table "Validation results" at the end of `specs/011-new-project-template/research.md`.
 - [X] T028 Commit (`feat: new-project template and command (spec 011)`), push, open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
-- [ ] T029 Ask the Maintainer to merge the PR.
-- [ ] T030 After the merge and with the Maintainer's approval (it makes a repo), run quickstart.md §4 (real run, conformance rules R1 to R8 on the test repo with `readFacts` and `checkRepo` (SC-002), the time to the open PR (SC-003), second run, interrupt) with `template-test`, and add the results to the table of T027. The Maintainer removes the test repo and closes the test PR.
-- [ ] T031 [P] In `PLAN.md`, mark spec 011 as done in the feature table and the Done list.
+- [X] T029 Ask the Maintainer to merge the PR.
+- [X] T030 After the merge and with the Maintainer's approval (it makes a repo), run quickstart.md §4 (real run, conformance rules R1 to R8 on the test repo with `readFacts` and `checkRepo` (SC-002), the time to the open PR (SC-003), second run, interrupt) with `template-test`, and add the results to the table of T027. The Maintainer removes the test repo and closes the test PR.
+- [X] T031 [P] In `PLAN.md`, mark spec 011 as done in the feature table and the Done list.
 
 ---
 

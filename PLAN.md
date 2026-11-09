@@ -28,6 +28,9 @@ roadmap.
 - Spec 008: each status run checks the own catalog repos against the shared setup (rules R1 to R9,
   repair steps in `docs/conformance.md`). Token `CONFORMANCE_READ_TOKEN` (fine-grained, read
   only).
+- Spec 011: `bun run new-project` makes a repo from `template/` (one CI variant for each host),
+  sets the settings of spec 008, opens the catalog PR and prints the secrets table; ⌘K "New
+  project" on the status page builds the command. The page size budget is < 30 KB gzip.
 - Spec 009: the status page shows the days until each TLS certificate expires and the next
   renewal of the catalog field `renewal`. Issues 14 days (certificate) and 30 days (renewal) before
   the date. The `.nl` registry gives no expiry date: add the domain dates to the catalog.
@@ -77,7 +80,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 008 | Repo conformance check (done) | 002, 003, 004 |
 | 009 | Renewals and certificate expiry (done) | 005 |
 | 010 | Status history on a data branch (done) | 007 |
-| 011 | New-project template and onboarding | 008 |
+| 011 | New-project template and onboarding (done) | 008 |
 | 012 | Status page visual polish (done) | 007 |
 | 013 | Expiry of tokens and secrets (done) | 009 |
 | 014 | Free-tier usage warnings | 005 |

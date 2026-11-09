@@ -74,7 +74,7 @@ export function realDeps(token: string): Deps {
       const pr = await gh.findPr(PROJECTS, branch);
       return pr?.state === "open" ? pr.number : null;
     },
-    async makeRepo(input: NewProject) {
+    async makeRepo(input: NewProject, empty) {
       const dir = await mkdtemp(join(tmpdir(), "new-project-"));
       try {
         for (const [path, text] of await templateFiles(input)) {
@@ -85,21 +85,36 @@ export function realDeps(token: string): Deps {
         await sh(["git", "init", "-b", "main"], dir);
         await sh(["git", "add", "-A"], dir);
         await sh(["git", "commit", "-m", TEMPLATE_COMMIT], dir);
-        await sh(
-          [
-            "gh",
-            "repo",
-            "create",
-            `${OWNER}/${input.repo}`,
-            `--${input.visibility}`,
-            "--description",
-            input.name,
-            "--source",
+        if (empty) {
+          // The URL in the protocol of the gh login (ssh or https), as `gh repo create` does.
+          const meta = await (
+            await must(api("GET", `/repos/${OWNER}/${input.repo}`), "read the repo")
+          ).json();
+          const protocol = (
+            await Bun.$`gh config get git_protocol -h github.com`.nothrow().text()
+          ).trim();
+          await sh(
+            ["git", "remote", "add", "origin", protocol === "ssh" ? meta.ssh_url : meta.clone_url],
             dir,
-            "--push",
-          ],
-          dir,
-        );
+          );
+          await sh(["git", "push", "-u", "origin", "main"], dir);
+        } else {
+          await sh(
+            [
+              "gh",
+              "repo",
+              "create",
+              `${OWNER}/${input.repo}`,
+              `--${input.visibility}`,
+              "--description",
+              input.name,
+              "--source",
+              dir,
+              "--push",
+            ],
+            dir,
+          );
+        }
       } finally {
         await rm(dir, { recursive: true, force: true });
       }
