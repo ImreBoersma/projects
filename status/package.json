@@ -10,6 +10,7 @@
     "board:sync": "bun run src/board/sync.ts",
     "campaign": "bun run src/campaign/run.ts",
     "secret-set": "bun run src/secret-set.ts",
+    "new-project": "bun run src/new-project/run.ts",
     "css": "bun run scripts/build-css.ts"
   },
   "dependencies": {

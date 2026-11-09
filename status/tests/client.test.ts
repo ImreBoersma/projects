@@ -187,3 +187,58 @@ describe("searchCommands (spec 020 US5)", () => {
     expect(searchCommands(many, "x")).toHaveLength(8);
   });
 });
+
+describe("the New project dialog (spec 011 US4, contracts/dialog.md)", () => {
+  const { nameTaken, newProjectCommand, searchCommands } =
+    require("../src/client") as typeof import("../src/client");
+  const f = {
+    id: "orkest-site",
+    name: "Orkest's site",
+    repo: "orkest-site",
+    visibility: "private",
+    stack: "Vite, React",
+    host: "vercel",
+  };
+
+  test("the command, with POSIX quotes", () => {
+    expect(newProjectCommand(f)).toBe(
+      "cd status && bun run new-project --id orkest-site --name 'Orkest'\\''s site' --repo orkest-site --visibility private --stack 'Vite, React' --host vercel",
+    );
+  });
+
+  test("no command until the id, the name and the repo are valid", () => {
+    expect(newProjectCommand({ ...f, id: "" })).toBeNull();
+    expect(newProjectCommand({ ...f, id: "Orkest" })).toBeNull();
+    expect(newProjectCommand({ ...f, name: " " })).toBeNull();
+    expect(newProjectCommand({ ...f, repo: "ImreBoersma/x" })).toBeNull();
+  });
+
+  test("the messages for values in the catalog", () => {
+    const names = { ids: ["hob-nl"], names: ["hob.nl"], repos: ["imreboersma/boek-de-bus"] };
+    expect(nameTaken({ id: "hob-nl", name: "HOB.nl", repo: "Boek-de-bus" }, names)).toEqual({
+      id: "This id is in the catalog.",
+      name: "This name is in the catalog.",
+      repo: "ImreBoersma/Boek-de-bus is in the catalog.",
+    });
+    expect(nameTaken({ id: "A b", repo: "a/b" }, names)).toEqual({
+      id: "Use a-z, 0-9 and -.",
+      repo: "Use A-Z, a-z, 0-9, ., _ and -.",
+    });
+    expect(nameTaken(f, names)).toEqual({});
+  });
+
+  test('"new" finds the item after the projects, tabs and filters', () => {
+    const items = [
+      { label: "Tab: Projects", kind: "tab", target: "projects" },
+      { label: "New project", kind: "action", target: "new-project" },
+      { label: "New site", kind: "project", target: "new-site" },
+    ];
+    expect(searchCommands(items, "new").map((i) => i.label)).toEqual(["New site", "New project"]);
+  });
+
+  test("the page sends no request (spec 020 FR-010)", async () => {
+    const text = await Bun.file(new URL("../src/client.ts", import.meta.url)).text();
+    expect(text).not.toContain("fetch(");
+    expect(text).not.toContain("XMLHttpRequest");
+  });
+});

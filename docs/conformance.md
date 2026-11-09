@@ -4,6 +4,10 @@ The status page checks each own repo of the catalog against these rules each hou
 repo that fails a rule gets the problem "The repo does not follow the shared setup." and one issue.
 The page and the issue link to the section of each failed rule.
 
+A new project starts with `cd status && bun run new-project … --dry-run` (spec 011): it makes a
+repo from `template/` that passes R1 to R8, and prints the secrets and variables to set; R9 passes
+when they are set. Use the rules below for a repo that exists already.
+
 A rule that does not apply to a repo can get an exception in `projects.yaml`, with a reason:
 
 ```yaml

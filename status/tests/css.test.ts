@@ -9,10 +9,8 @@ beforeAll(async () => {
 });
 
 describe("build/page.css (spec 019)", () => {
-  test("small, and loads no file", () => {
+  test("loads no file (the size: size.test.ts)", () => {
     expect(css.length).toBeGreaterThan(1000);
-    // Spec 019 SC-005: 60 KB for the CSS + 90 KB for the HTML (render.test.ts) < 150 KB.
-    expect(css.length).toBeLessThan(60_000);
     expect(css).not.toContain("@import");
     expect(css).not.toMatch(/url\(\s*["']?(https?:)?\/\//);
   });

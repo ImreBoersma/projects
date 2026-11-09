@@ -194,6 +194,8 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
   opening.
 - **SC-004**: 100% of the controls work with the keyboard only.
 - **SC-005**: The page stays less than 150 KB and loads 0 files from other sites.
+  Since spec 011: HTML with CSS of the 20-site worst case < 30 KB gzip (research §8 of spec
+  011); the raw limit is removed.
 - **SC-006**: At 360 pixels wide, the page has 0 pixels of horizontal scroll.
 - **SC-007**: The feature costs €0 each month to operate.
 

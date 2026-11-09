@@ -4,6 +4,8 @@ import {
   compareVisit,
   fixedText,
   matches,
+  nameTaken,
+  newProjectCommand,
   readView,
   searchCommands,
   start as startClient,
@@ -11,6 +13,7 @@ import {
 } from "./client";
 import { RULES } from "./conformance/rules";
 import { rowLinks, STATUS_WORKFLOW, shortcuts } from "./links";
+import { HOSTS } from "./new-project/hosts";
 import { PROBLEM_TEXT } from "./problems";
 import { FAVICON, ICON } from "./style";
 import type {
@@ -396,6 +399,30 @@ ${page.rows.map((s) => modal(s, now, page.issues)).join("\n")}`;
 </div>
 <a href="#" data-close-command class="modal-backdrop">Close</a>
 </div>`;
+  // Spec 011 US4, contracts/dialog.md: the "New project" dialog; only the script opens it.
+  const npField = (name: string, label: string) =>
+    `<label class="flex flex-col gap-1 text-sm">${label}<input name="${name}" type="text" class="input input-sm w-full" autocomplete="off"><span data-msg="${name}" aria-live="polite" class="text-xs text-error"></span></label>`;
+  const newProject = `<div id="new-project" class="modal" role="dialog" aria-modal="true" aria-labelledby="np-title">
+<div class="modal-box flex max-w-md flex-col gap-2">
+<h2 id="np-title" class="font-semibold">New project</h2>
+${npField("id", "Id")}${npField("name", "Name")}${npField("repo", "Repo")}
+<label class="flex flex-col gap-1 text-sm">Visibility<select name="visibility" class="select select-sm w-full"><option value="public">Public</option><option value="private">Private</option></select></label>
+<label class="flex flex-col gap-1 text-sm">Stack<input name="stack" type="text" class="input input-sm w-full" autocomplete="off" placeholder="Vite, React"></label>
+<label class="flex flex-col gap-1 text-sm">Host<select name="host" class="select select-sm w-full">${HOSTS.map((h) => `<option value="${h.key}">${html(h.label)}</option>`).join("")}</select></label>
+<pre class="overflow-x-auto rounded bg-base-200 p-2 text-xs"><code></code></pre>
+<button type="button" data-copy class="btn btn-sm">Copy command</button>
+<p class="text-xs">Run it in a terminal in the projects repo. Add --dry-run to see the steps first.</p>
+</div>
+<a href="#" data-close-new-project class="modal-backdrop">Close</a>
+</div>`;
+  const lower = (v: string) => v.toLowerCase();
+  const catalogNames = {
+    ids: page.rows.map((s) => s.project.id),
+    names: page.rows.map((s) => lower(s.project.name)),
+    repos: page.rows.flatMap((s) =>
+      s.project.repo?.startsWith("ImreBoersma/") ? [lower(s.project.repo)] : [],
+    ),
+  };
   const history = page.historyStart ? ` · History from ${timeTag(page.historyStart, now)}` : "";
   const totalClass = { correct: "alert-success", problems: "alert-error", "not-available": "" }[
     total.kind
@@ -408,6 +435,8 @@ ${page.rows.map((s) => modal(s, now, page.issues)).join("\n")}`;
     compareVisit,
     fixedText,
     searchCommands,
+    newProjectCommand,
+    nameTaken,
     startClient,
     relTime,
   ]
@@ -459,11 +488,13 @@ ${panel("campaigns", "Campaigns", campaignSection(campaigns, now) || "<p>No open
 ${panel("tokens", "Shared tokens", sharedSection(shared, now, page.issues) || "<p>No shared tokens with a date.</p>")}
 ${panel("history", "History", historyPanel(page.rows, repairText(page.repair ?? null)))}
 ${commandBox}
+${newProject}
 </div>
 <script type="application/json" id="changes">${json({
     changes: page.changes ?? { since: iso, started: [], stopped: [] },
     texts: { ...PROBLEM_TEXT, warning: "A warning." },
     problems: total.problems,
+    catalog: catalogNames,
   })}</script>
 <script>
 ${minified}

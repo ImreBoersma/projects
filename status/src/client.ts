@@ -160,6 +160,37 @@ export function searchCommands(
   return hits.sort((a, b) => rank(a) - rank(b)).slice(0, 8);
 }
 
+// Spec 011 US4, contracts/dialog.md: the command of the "New project" dialog. Null until the id,
+// the name and the repo are valid. Values go in POSIX single quotes.
+export function newProjectCommand(f: Record<string, string>): string | null {
+  const id = (f.id ?? "").trim();
+  const name = (f.name ?? "").trim();
+  const repo = (f.repo ?? "").trim();
+  if (!/^[a-z0-9-]+$/.test(id) || !/^[A-Za-z0-9._-]+$/.test(repo)) return null;
+  if (name === "" || name.length > 60) return null;
+  const q = (v: string) => `'${v.replace(/'/g, "'\\''")}'`;
+  const stack = (f.stack ?? "").trim() || "-";
+  return `cd status && bun run new-project --id ${id} --name ${q(name)} --repo ${repo} --visibility ${f.visibility || "public"} --stack ${q(stack)} --host ${f.host || "none"}`;
+}
+
+// The messages of the dialog for a value that is in the catalog or not valid.
+export function nameTaken(
+  f: Record<string, string>,
+  names: { ids: string[]; names: string[]; repos: string[] },
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  const id = (f.id ?? "").trim();
+  const name = (f.name ?? "").trim().toLowerCase();
+  const repo = (f.repo ?? "").trim();
+  if (id && !/^[a-z0-9-]+$/.test(id)) out.id = "Use a-z, 0-9 and -.";
+  else if (names.ids.includes(id)) out.id = "This id is in the catalog.";
+  if (name && names.names.includes(name)) out.name = "This name is in the catalog.";
+  if (repo && !/^[A-Za-z0-9._-]+$/.test(repo)) out.repo = "Use A-Z, a-z, 0-9, ., _ and -.";
+  else if (repo && names.repos.includes(`imreboersma/${repo.toLowerCase()}`))
+    out.repo = `ImreBoersma/${repo} is in the catalog.`;
+  return out;
+}
+
 // relTime of view.ts is in the same page script (render.ts puts both in it).
 declare function relTime(iso: string, nowMs: number): string;
 
@@ -295,6 +326,7 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
     };
     texts: Record<string, string>;
     problems: number;
+    catalog?: { ids: string[]; names: string[]; repos: string[] };
   } | null;
   if (inline) {
     const keysOf = (li: HTMLElement) => (li.dataset.keys ?? "").split(" ").filter(Boolean);
@@ -384,6 +416,7 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
         ["Check not available", "not-available"],
         ["All correct", "correct"],
       ].map(([label, target]) => ({ label: `Filter: ${label}`, kind: "filter", target })),
+      { label: "New project", kind: "action", target: "new-project" },
     ];
     let found: typeof items = [];
     let active = 0;
@@ -412,6 +445,7 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
     const run = (item: { kind: string; target: string }) => {
       hide();
       if (item.kind === "project") open(item.target, true);
+      else if (item.kind === "action") openNewProject();
       else if (item.kind === "tab") {
         view.tab = item.target;
         apply();
@@ -425,6 +459,66 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
         save();
       }
     };
+    // Spec 011 US4: the "New project" dialog.
+    const np = doc.getElementById("new-project");
+    const npNames = inline?.catalog ?? { ids: [], names: [], repos: [] };
+    const npValues = () => {
+      const f: Record<string, string> = {};
+      for (const el of np?.querySelectorAll("[name]") ?? [])
+        f[(el as HTMLInputElement).name] = (el as HTMLInputElement).value;
+      return f;
+    };
+    const npDraw = () => {
+      if (!np) return;
+      const f = npValues();
+      const msg = nameTaken(f, npNames);
+      for (const key of ["id", "name", "repo"]) {
+        const out = np.querySelector(`[data-msg=${key}]`);
+        if (out) out.textContent = msg[key] ?? "";
+      }
+      const code = np.querySelector("code");
+      if (code) code.textContent = Object.keys(msg).length ? "" : (newProjectCommand(f) ?? "");
+    };
+    const openNewProject = () => {
+      if (!np) return;
+      np.classList.add("modal-open");
+      npDraw();
+      (np.querySelector("[name=id]") as HTMLInputElement | null)?.focus();
+    };
+    if (np) {
+      np.addEventListener("input", npDraw);
+      np.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          np.classList.remove("modal-open");
+          back?.focus();
+        }
+      });
+      np.querySelector("[data-close-new-project]")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        np.classList.remove("modal-open");
+        back?.focus();
+      });
+      const copy = np.querySelector("[data-copy]") as HTMLButtonElement | null;
+      copy?.addEventListener("click", () => {
+        const code = np.querySelector("code");
+        const text = code?.textContent ?? "";
+        if (!text || !code) return;
+        const done = () => {
+          copy.textContent = "Copied";
+          setTimeout(() => {
+            copy.textContent = "Copy command";
+          }, 2000);
+        };
+        const select = () => {
+          const range = doc.createRange();
+          range.selectNodeContents(code);
+          getSelection()?.removeAllRanges();
+          getSelection()?.addRange(range);
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, select);
+        else select();
+      });
+    }
     doc.addEventListener("keydown", (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();

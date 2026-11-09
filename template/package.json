@@ -1,0 +1,11 @@
+{
+  "name": "{{id}}",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html dist/"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4"
+  }
+}
