@@ -51,6 +51,10 @@ roadmap.
   each project with a pop-up for the details (`#p-<id>` is a link to it), filters, sort and tabs
   in the page address (`?stakeholder=Harmonieorkest+Brummen` is the HOB view). Works without
   scripts. Organisation names may show on the page; names of people may not.
+- Spec 020: the status page is an installable app (manifest, service worker, offline last state)
+  with `status.json` next to it; "since your last visit" (this device, else the last 24 hours),
+  shortcuts to the GitHub pages that act, and a command box (⌘K). The icon badge is a reminder,
+  not an alarm (it updates only when the app is open).
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -82,7 +86,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
-| 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (planned) | 019 |
+| 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (done) | 019 |
 | 021 | History charts | 010, 019, 020 |
 | 022 | Stakeholder view and status badges | 019, 020 |
 

@@ -105,9 +105,9 @@ contracts/app.md, contracts/page.md, quickstart.md
 - [X] T021 Run `cd status && bun run css && bun test && bun run lint && bunx tsc --noEmit -p .`. All pass; more tests than the baseline; the page size test of spec 019 still passes (HTML < 90 KB for 20 sites); its 20-project fixture has repos, so the 4 shortcuts of each modal, the keys and the New badges count (analysis C2).
 - [X] T022 Run quickstart.md §2 in Chrome and record each item in a table "Validation results" at the end of `specs/020-status-app-basics/research.md`: the changes line is visible without scrolling, above the controls (SC-001, analysis C1); changes line on a first visit and after a changed stored visit; New mark; `status.json`; install; offline with DevTools; app badge with a fixture problem; shortcuts; ⌘K; page size.
 - [X] T023 Commit (`feat: status app basics (spec 020)`), push, open a PR to `main`. The PR body ends with the line of the Claude Code attribution.
-- [ ] T024 Ask the Maintainer to merge the PR.
-- [ ] T025 After the merge, run quickstart.md §3 (the live `status.json`, install from the live page) and add the result to the table of T022.
-- [ ] T026 [P] In `PLAN.md`, mark spec 020 as done in the feature table and the Done list.
+- [X] T024 Ask the Maintainer to merge the PR.
+- [X] T025 After the merge, run quickstart.md §3 (the live `status.json`, install from the live page) and add the result to the table of T022.
+- [X] T026 [P] In `PLAN.md`, mark spec 020 as done in the feature table and the Done list.
 
 ---
 
