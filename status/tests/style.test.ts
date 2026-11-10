@@ -51,6 +51,23 @@ describe("theme (spec 019 FR-010)", () => {
     expect(fails).toEqual([]);
   });
 
+  // Spec 016: the drift mark, color-mix(in oklab, warning 35%, base-100), under the base text.
+  test.each([
+    ["light", THEME],
+    ["dark", THEME_DARK],
+  ])("base text on the drift mark has 4.5 or more (%s)", (_, theme) => {
+    const lab = (v: string) => {
+      const m = v.match(/oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)/) as RegExpMatchArray;
+      const h = (Number(m[3]) * Math.PI) / 180;
+      return [Number(m[1]), Number(m[2]) * Math.cos(h), Number(m[2]) * Math.sin(h)];
+    };
+    const [w, b] = [lab(theme["--color-warning"]), lab(theme["--color-base-100"])];
+    const [L, A, B] = w.map((x, i) => x * 0.35 + b[i] * 0.65);
+    const hue = ((Math.atan2(B, A) * 180) / Math.PI + 360) % 360;
+    const mix = `oklch(${L}% ${Math.hypot(A, B)} ${hue})`;
+    expect(contrast(theme["--color-base-content"], mix)).toBeGreaterThanOrEqual(4.5);
+  });
+
   test("three favicons in the page itself", () => {
     expect(Object.keys(FAVICON)).toEqual(["correct", "problems", "not-available"]);
     for (const url of Object.values(FAVICON)) expect(url).toStartWith("data:image/svg+xml,");

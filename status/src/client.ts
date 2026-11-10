@@ -52,7 +52,7 @@ export function readView(
   view.stakeholder = pick("stakeholder", known.stakeholders) ?? "";
   view.site = pick("site", ["yes", "no"]) ?? "";
   view.sort = pick("sort", ["state", "name", "commit", "expiry"]) ?? "state";
-  view.tab = pick("tab", ["projects", "campaigns", "tokens", "history"]) ?? "projects";
+  view.tab = pick("tab", ["projects", "campaigns", "tokens", "versions", "history"]) ?? "projects";
   const id = hash.startsWith("#p-") ? hash.slice(3) : "";
   view.project = known.projects.includes(id) ? id : "";
   return view;
@@ -408,6 +408,7 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
         ["Projects", "projects"],
         ["Campaigns", "campaigns"],
         ["Shared tokens", "tokens"],
+        ["Versions", "versions"],
         ["History", "history"],
       ].map(([label, target]) => ({ label: `Tab: ${label}`, kind: "tab", target })),
       ...[

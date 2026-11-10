@@ -90,6 +90,24 @@ export interface StatusPage {
   shared?: { secrets: SecretStatus[]; problems: Problem[]; gaps: string[]; noExpiry?: string[] };
   // Marker key `<project id>/<reason>` to the number of the open status-problem issue.
   issues: Map<string, number>;
+  // Spec 016: the versions of the tools in each repo, after the drift step.
+  versions?: VersionRow[];
+}
+
+// Spec 016, data-model.md: the tools of the table, in column order.
+export type Tool = "node" | "bun" | "next" | "react" | "typescript" | "biome" | "types-node";
+export interface ToolVersion {
+  text: string;
+  source: string;
+  major: number | null;
+  behind?: number;
+  highest?: number;
+}
+export interface VersionRow {
+  projectId: string;
+  repo: string;
+  state: "ok" | "not-available";
+  tools: Partial<Record<Tool, ToolVersion>>;
 }
 
 // Spec 008, data-model.md. A value that could not be read is "not-available".
