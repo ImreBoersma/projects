@@ -23,6 +23,13 @@ describe("build/page.css (spec 019)", () => {
     expect(THEME["--color-error-content"]).toBe("oklch(28% 0.141 25.723)");
   });
 
+  test("the dark theme follows the browser setting, with no switch", () => {
+    expect(css).toMatch(
+      /@media \(prefers-color-scheme:\s*dark\)\s*\{\s*:root:not\(\[data-theme\]\)\s*\{\s*color-scheme:\s*dark/,
+    );
+    expect(css).toContain("--color-base-100:oklch(22% 0 0)");
+  });
+
   test("without the script: no controls, all panels (FR-008)", () => {
     expect(css).toContain("html:not(.js) .controls");
     expect(css).toMatch(/html\.js \[role=["']?tabpanel["']?\]:not\(\.active\)/);

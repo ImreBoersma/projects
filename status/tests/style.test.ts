@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { FAVICON, THEME } from "../src/style";
+import { FAVICON, THEME, THEME_DARK } from "../src/style";
 
 // oklch() to linear sRGB (CSS Color 4), then WCAG 2.1 relative luminance and contrast.
 function linear(value: string): number[] {
@@ -39,9 +39,12 @@ const PAIRS: [string, string][] = [
 ];
 
 describe("theme (spec 019 FR-010)", () => {
-  test("contrast is 4.5 or more for each text pair", () => {
-    const fails = PAIRS.filter(([fg, bg]) => contrast(THEME[fg], THEME[bg]) < 4.5).map(
-      ([fg, bg]) => `${fg}/${bg} ${contrast(THEME[fg], THEME[bg]).toFixed(2)}`,
+  test.each([
+    ["light", THEME],
+    ["dark", THEME_DARK],
+  ])("contrast is 4.5 or more for each text pair (%s)", (_, theme) => {
+    const fails = PAIRS.filter(([fg, bg]) => contrast(theme[fg], theme[bg]) < 4.5).map(
+      ([fg, bg]) => `${fg}/${bg} ${contrast(theme[fg], theme[bg]).toFixed(2)}`,
     );
     expect(fails).toEqual([]);
   });
