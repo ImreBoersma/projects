@@ -220,13 +220,15 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
     access: about 250 minutes each month of 2000 (12%), almost all from HomeLab.
   - Vercel: no usage API, and a token cannot be read-only. At a Hobby limit, Vercel stops the
     feature for up to 30 days; it does not bill. The usage emails are on by default.
-  - Firebase (scales-exercises): the usage is in Cloud Monitoring, but it needs a new service
-    account (one more secret). At a Spark limit, the service stops; it does not bill.
-  - So: no free tier can make a bill, and the one value that we can read is far from its limit.
-- Do these checks once: in Vercel, Settings → Notifications, the usage emails are on; in the
-  Firebase console, scales-exercises is on Spark.
+  - Firebase (scales-exercises, project `imre-boersma`): the usage is in Cloud Monitoring, but it
+    needs a new service account (one more secret). The project is on Blaze (pay as you go), so
+    usage above the free quota makes a bill. The app uses only Hosting and Firestore Lite. Until
+    2026-11-10 there was no bill; the Maintainer accepts this risk (2026-11-10).
+  - So: only Firebase can make a bill, and the one value that we can read is far from its limit.
+- Checked on 2026-11-10: the Vercel usage emails are on. Optional: a budget alert in Google Cloud
+  Billing for `imre-boersma` (an alert only; it does not stop the spend).
 - Start the spec again when a private repo uses more than 1000 minutes in a month, or when a
-  project moves to a paid plan.
+  project moves to a paid plan, or when Firebase makes a bill.
 
 ### 015. Changes in all repos at once (campaigns)
 
