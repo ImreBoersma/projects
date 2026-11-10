@@ -120,3 +120,7 @@ html:not(.js) [role="tablist"] {
   outline-width: 1px;
   outline-offset: 1px;
 }
+/* Red text on the base uses the darker red of the theme (spec 019 FR-010, src/style.ts). */
+.text-error {
+  color: var(--color-error-text);
+}
