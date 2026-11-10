@@ -35,10 +35,10 @@ bun run typecheck
 
 ## Secrets
 
-| Secret | Contents |
-|---|---|
-| `STATUS_READ_TOKEN` | Fine-grained PAT. Owner `ImreBoersma`. All repos. Read access: Metadata, Contents, Pull requests, Commit statuses, Actions, Deployments. |
-| `STATUS_READ_TOKEN_HOB` | Optional. The same permissions, owner `harmonieorkest-brummen`. The organisation must approve it. |
+| Secret                   | Contents                                                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `STATUS_READ_TOKEN`      | Fine-grained PAT. Owner `ImreBoersma`. All repos. Read access: Metadata, Contents, Pull requests, Commit statuses, Actions, Deployments.                                       |
+| `STATUS_READ_TOKEN_HOB`  | Optional. The same permissions, owner `harmonieorkest-brummen`. The organisation must approve it.                                                                              |
 | `CONFORMANCE_READ_TOKEN` | Fine-grained PAT. Owner `ImreBoersma`. All repos. Read access: Metadata, Contents, Administration, Secrets, Variables (spec 008). Also used for the versions table (spec 016). |
 
 Without a token for an owner, the page shows "Data not available" for the repos of that owner.
