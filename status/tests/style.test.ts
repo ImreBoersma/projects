@@ -33,6 +33,8 @@ const PAIRS: [string, string][] = [
   ["--color-base-content", "--color-base-100"],
   ["--color-base-content", "--color-base-200"],
   ["--color-error-content", "--color-error"],
+  ["--color-error-text", "--color-base-100"],
+  ["--color-error-text", "--color-base-200"],
   ["--color-warning-content", "--color-warning"],
   ["--color-success-content", "--color-success"],
   ["--color-neutral-content", "--color-neutral"],

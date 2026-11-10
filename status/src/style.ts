@@ -24,6 +24,9 @@ export const THEME: Record<string, string> = {
   "--color-warning-content": "oklch(41% 0.112 45.904)",
   "--color-error": "oklch(70% 0.191 22.216)",
   "--color-error-content": "oklch(28% 0.141 25.723)",
+  // Red text on the base (the class text-error): the error colour at 54% (5.6:1 on white; the
+  // error colour gives 2.9:1). Badges and alerts keep --color-error.
+  "--color-error-text": "oklch(54% 0.191 22.216)",
   "--radius-selector": "2rem",
   "--radius-field": "2rem",
   "--radius-box": "2rem",
@@ -46,6 +49,7 @@ export const THEME_DARK: Record<string, string> = {
   "--color-accent-content": "oklch(0% 0 0)",
   "--color-neutral": "oklch(42% 0.01 67.558)",
   "--color-neutral-content": "oklch(97% 0.003 48.717)",
+  "--color-error-text": "oklch(70% 0.191 22.216)",
 };
 
 // Research.md §7: a different shape for each total state (FR-003).
