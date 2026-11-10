@@ -67,7 +67,7 @@ bun run css          builds build/page.css (start runs it first)
 ### CI only
 
 ```text
-bun run board:add               adds a new issue to the project board (workflow add-to-board.yml)
+bun run board:add              adds a new issue to the project board (workflow add-to-board.yml)
 bun run board:sync [--dry-run]   makes the board agree with the catalog (workflow board-sync.yml)
 ```
 
