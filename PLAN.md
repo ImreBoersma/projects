@@ -83,7 +83,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 011 | New-project template and onboarding (done) | 008 |
 | 012 | Status page visual polish (done) | 007 |
 | 013 | Expiry of tokens and secrets (done) | 009 |
-| 014 | Free-tier usage warnings | 005 |
+| 014 | Free-tier usage warnings (shelved) | 005 |
 | 015 | Changes in all repos at once (campaigns) (done) | 008 |
 | 016 | Version drift between projects | 008 |
 | 017 | Delivery numbers for each project | 010 |
@@ -214,6 +214,19 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - Reason: Principle VIII (€0 each month). Now the first sign of a limit is a failed deploy or a
   bill.
 - Open question for the spec: which usage APIs work with a read-only token on the free plans.
+- **Shelved on 2026-11-10** after the API check:
+  - GitHub: the billing usage API needs a classic token with the `user` scope (it can change the
+    profile); fine-grained tokens do not work. An estimate from job times works with the current
+    access: about 250 minutes each month of 2000 (12%), almost all from HomeLab.
+  - Vercel: no usage API, and a token cannot be read-only. At a Hobby limit, Vercel stops the
+    feature for up to 30 days; it does not bill. The usage emails are on by default.
+  - Firebase (scales-exercises): the usage is in Cloud Monitoring, but it needs a new service
+    account (one more secret). At a Spark limit, the service stops; it does not bill.
+  - So: no free tier can make a bill, and the one value that we can read is far from its limit.
+- Do these checks once: in Vercel, Settings → Notifications, the usage emails are on; in the
+  Firebase console, scales-exercises is on Spark.
+- Start the spec again when a private repo uses more than 1000 minutes in a month, or when a
+  project moves to a paid plan.
 
 ### 015. Changes in all repos at once (campaigns)
 
