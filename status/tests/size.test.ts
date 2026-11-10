@@ -1,9 +1,11 @@
 import { beforeAll, expect, test } from "bun:test";
 import { renderPage } from "../src/render";
-import { worstCaseRows } from "./helpers";
+import { markDrift } from "../src/versions/drift";
+import { versionsWorstCase, worstCaseRows } from "./helpers";
 
 // Spec 011 research §8 (replaces the raw budgets of spec 019 SC-005): GitHub Pages sends the page
 // with gzip, so the budget is on the gzip size. 2026-11-09: 147.7 KB raw, 18.7 KB gzip.
+// Spec 016: with the versions table of 20 repos.
 let css = "";
 beforeAll(async () => {
   await Bun.$`bun run css`.cwd(new URL("..", import.meta.url).pathname).quiet();
@@ -16,6 +18,7 @@ test("the 20-site worst case with its CSS is less than 30 KB gzip", () => {
     rows: worstCaseRows(),
     issues: new Map(),
     css,
+    versions: markDrift(versionsWorstCase()),
   });
   expect(html).toContain(css.slice(0, 200));
   const gzip = Bun.gzipSync(html).length;

@@ -2,7 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { mapRepo } from "../src/github";
 import { renderPage, repairText, summary } from "../src/render";
 import { FAVICON } from "../src/style";
-import type { CampaignSummary, Problem, ProjectStatus, SecretStatus } from "../src/types";
+import type {
+  CampaignSummary,
+  Problem,
+  ProjectStatus,
+  SecretStatus,
+  VersionRow,
+} from "../src/types";
+import { markDrift } from "../src/versions/drift";
 import fixture from "./fixtures/graphql-response.json";
 import { status } from "./helpers";
 
@@ -803,5 +810,110 @@ describe("the New project dialog (spec 011 US4)", () => {
       names: ["one", "hob"],
       repos: ["imreboersma/one"],
     });
+  });
+});
+
+describe("the tab Versions (spec 016, contracts/page.md)", () => {
+  const v = (text: string, major: number | null, source = "devDependencies") => ({
+    text,
+    source,
+    major,
+  });
+  const rows: VersionRow[] = markDrift([
+    {
+      projectId: "bus",
+      repo: "ImreBoersma/boek-de-bus",
+      state: "ok",
+      tools: {
+        node: { text: "24 (default)", source: "default", major: 24 },
+        bun: { text: "newest (CI)", source: "bun.lock", major: null },
+        typescript: v("^5", 5),
+        "types-node": v("^25", 25),
+      },
+    },
+    {
+      projectId: "six",
+      repo: "ImreBoersma/six",
+      state: "ok",
+      tools: { typescript: v("^6.0.3", 6) },
+    },
+    {
+      projectId: "seven",
+      repo: "ImreBoersma/seven",
+      state: "ok",
+      tools: { typescript: v("^7.0.2", 7), "types-node": v("^26", 26) },
+    },
+    { projectId: "x", repo: "harmonieorkest-brummen/x", state: "not-available", tools: {} },
+  ]);
+  const page = (versions?: VersionRow[]) =>
+    renderPage({ generatedAt, rows: [status()], issues: new Map(), versions });
+  const panel = (html: string) =>
+    html.match(/<section id="tab-versions"[\s\S]*?<\/section>/)?.[0] ?? "";
+
+  test("the tab between Shared tokens and History, with the number of marked repos", () => {
+    const html = page(rows);
+    const tabs = [...html.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1]);
+    expect(tabs).toEqual(["projects", "campaigns", "tokens", "versions", "history"]);
+    expect(html).toContain('href="?tab=versions"');
+    expect(html).toMatch(
+      /data-tab="versions"[^>]*>Versions <span class="badge badge-sm badge-warning ml-1">2<\/span><\/a>/,
+    );
+    expect(page([rows[2]])).toMatch(/data-tab="versions"[^>]*>Versions<\/a>/);
+  });
+
+  test("the table: header, one row for each repo, the sources and the empty cells", () => {
+    const p = panel(page(rows));
+    expect(p).toContain("The versions that each repo asks for.");
+    expect(p).toContain('<table class="versions text-sm">');
+    expect([...p.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map((m) => m[1])).toEqual([
+      "Repo",
+      "Node",
+      "Bun",
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Biome",
+      "@types/node",
+    ]);
+    expect(p.match(/<tr><th scope="row">/g)?.length).toBe(4);
+    expect(p).toContain(
+      `<th scope="row">${A("https://github.com/ImreBoersma/boek-de-bus")}boek-de-bus${NT}</th>`,
+    );
+    expect(p).toContain(
+      '<td title="default of ci-node.yml">24 <span class="opacity-60">(default)</span></td>',
+    );
+    expect(p).toContain('<td title="bun.lock">newest (CI)</td>');
+    expect(p).toContain('<td title="devDependencies">^7.0.2</td>');
+    expect(p).toContain("<td>—</td>");
+    expect(p).toContain('<td colspan="7">Not available</td>');
+  });
+
+  test("a marked cell: class, title and text for screen readers", () => {
+    const p = panel(page(rows));
+    expect(p).toContain(
+      '<td class="drift" title="devDependencies; 2 major versions behind 7">^5<span class="sr"> (2 major versions behind 7)</span></td>',
+    );
+    expect(p).toContain(
+      '<td class="drift" title="devDependencies; 1 major version behind 7">^6.0.3<span class="sr"> (1 major version behind 7)</span></td>',
+    );
+    expect(p).toContain("1 major version behind 26");
+    expect(p).not.toContain('behind 7">^7.0.2');
+  });
+
+  test("the marks change nothing outside the tab (FR-008)", () => {
+    const outside = (html: string) =>
+      html
+        .replace(/<section id="tab-versions"[\s\S]*?<\/section>/, "")
+        .replace(/data-tab="versions"[^>]*>.*?<\/a>/, "");
+    expect(outside(page(rows))).toBe(outside(page()));
+  });
+
+  test("without data, and the escape of the texts", () => {
+    expect(panel(page())).toContain("<p>No version data.</p>");
+    expect(panel(page([]))).toContain("<p>No version data.</p>");
+    const odd = [
+      { projectId: "o", repo: "a/o", state: "ok" as const, tools: { react: v("<19 & >1", null) } },
+    ];
+    expect(panel(page(odd))).toContain("&lt;19 &amp; &gt;1");
   });
 });

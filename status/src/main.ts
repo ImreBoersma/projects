@@ -32,8 +32,11 @@ import { renderPage } from "./render";
 import { gaps, type Used, usedSecrets } from "./secrets/compare";
 import { noExpiry, type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
 import { readWorkflowTexts, tokenExpiry } from "./secrets/read";
-import type { Problem, Project, SecretEntry, SecretStatus, StatusPage } from "./types";
+import type { Problem, Project, SecretEntry, SecretStatus, StatusPage, VersionRow } from "./types";
 import { checkAll } from "./uptime";
+import { markDrift, markedCount } from "./versions/drift";
+import { sharedNodeDefault } from "./versions/parse";
+import { readVersions } from "./versions/read";
 
 // Research.md §9: the log shows only the state, never an error text.
 const LOG_TEXT = {
@@ -143,6 +146,8 @@ async function checkSecrets(): Promise<{
       const token = tokenFor(repo.split("/")[0], process.env);
       texts = token ? await readWorkflowTexts(repo, token) : null;
       if (!texts) console.log(`Secrets compare ${repo}: workflows not available`);
+      // Spec 016: keep them for the Node version of the CI caller.
+      else workflowTexts.set(s.project.id, texts);
     }
     if (texts) used.push({ owner: s.project.id, repo, names: texts.flatMap(usedSecrets) });
   }
@@ -286,6 +291,7 @@ if (args.mode === "page") {
     console.log(`Wrote the result line to ${args["history-out"]}.`);
   }
   const issues = await issueNumbers();
+  const versions = await checkVersions();
   await mkdir(args.out, { recursive: true });
   const page: StatusPage = {
     generatedAt: now,
@@ -309,6 +315,7 @@ if (args.mode === "page") {
     // Spec 019: the CSS that `bun run css` built (bun run start runs it first).
     css: await Bun.file(new URL("../build/page.css", import.meta.url)).text(),
     shared,
+    versions,
     // Spec 015: the progress of the campaigns.
     campaigns: await readCampaigns(
       join(dirname(args.catalog), "campaigns"),
@@ -329,6 +336,32 @@ if (args.mode === "page") {
   );
 } else {
   await reconcileIssues();
+}
+
+// Spec 016: the versions of the tools in each repo, in catalog order, after the drift step.
+// Page mode only; logs the repo and the result, never a file text.
+async function checkVersions(): Promise<VersionRow[]> {
+  const shared = await Bun.file(new URL("../../.github/workflows/ci-node.yml", import.meta.url))
+    .text()
+    .then(sharedNodeDefault)
+    .catch(() => null);
+  const rows = await Promise.all(
+    statuses.map(async (s): Promise<VersionRow | null> => {
+      const { id, repo } = s.project;
+      if (!repo) return null;
+      const owner = repo.split("/")[0];
+      const token =
+        owner === "ImreBoersma" ? process.env.CONFORMANCE_READ_TOKEN : tokenFor(owner, process.env);
+      const row = token
+        ? await readVersions(id, repo, token, workflowTexts.get(id) ?? [], shared)
+        : { projectId: id, repo, state: "not-available" as const, tools: {} };
+      if (row) console.log(`Versions ${repo}: ${row.state === "ok" ? "read" : "not available"}`);
+      return row;
+    }),
+  );
+  const marked = markDrift(rows.filter((r) => r !== null));
+  console.log(`Versions: ${markedCount(marked)} repos behind`);
+  return marked;
 }
 
 // Spec 007: issue numbers for the problem links. Without them, the page shows problems without links.

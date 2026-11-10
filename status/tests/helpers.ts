@@ -1,4 +1,4 @@
-import type { ProjectStatus } from "../src/types";
+import type { ProjectStatus, VersionRow } from "../src/types";
 
 export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
   return {
@@ -51,4 +51,23 @@ export function worstCaseRows(): ProjectStatus[] {
       },
     }),
   );
+}
+
+// Spec 016: the versions of the 20-site worst case: all 7 tools, a mix of marks.
+export function versionsWorstCase(): VersionRow[] {
+  const v = (text: string, major: number, source = "devDependencies") => ({ text, source, major });
+  return Array.from({ length: 20 }, (_, i) => ({
+    projectId: `p${i}`,
+    repo: `ImreBoersma/p${i}`,
+    state: "ok" as const,
+    tools: {
+      node: { text: "24 (default)", source: "default", major: 24 },
+      bun: { text: "newest (CI)", source: "bun.lock", major: null },
+      next: v(`^${15 + (i % 2)}.4.2`, 15 + (i % 2), "dependencies"),
+      react: v("^19.3.1", 19, "dependencies"),
+      typescript: v(`^${5 + (i % 3)}.0.3`, 5 + (i % 3)),
+      biome: v("^2.6.3", 2),
+      "types-node": v(`^${20 + (i % 7)}.6.5`, 20 + (i % 7)),
+    },
+  }));
 }

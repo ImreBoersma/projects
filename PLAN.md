@@ -58,6 +58,10 @@ roadmap.
   with `status.json` next to it; "since your last visit" (this device, else the last 24 hours),
   shortcuts to the GitHub pages that act, and a command box (⌘K). The icon badge is a reminder,
   not an alarm (it updates only when the app is open).
+- Spec 016: the tab "Versions" of the status page shows the versions of Node, Bun, Next.js,
+  React, TypeScript, Biome and `@types/node` in each repo with a `package.json`. A version that is
+  one or more major versions behind the newest repo is marked (no issue). A campaign of spec 015
+  repairs the drift.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -85,7 +89,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 013 | Expiry of tokens and secrets (done) | 009 |
 | 014 | Free-tier usage warnings (shelved) | 005 |
 | 015 | Changes in all repos at once (campaigns) (done) | 008 |
-| 016 | Version drift between projects | 008 |
+| 016 | Version drift between projects (done) | 008 |
 | 017 | Delivery numbers for each project | 010 |
 | 018 | Archive suggestions for old projects | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |

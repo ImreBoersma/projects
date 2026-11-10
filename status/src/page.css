@@ -124,3 +124,19 @@ html:not(.js) [role="tablist"] {
 .text-error {
   color: var(--color-error-text);
 }
+/* Spec 016: the table of the tool versions; it scrolls in its own box on a small screen. */
+.versions th,
+.versions td {
+  padding: 4px 6px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-base-300);
+}
+/* A version that is behind: an amber background mix (the text keeps the base colour, 4.5:1 or
+   more in both themes, tests/style.test.ts) and a mark that is not only a colour (WCAG 1.4.1). */
+.drift {
+  background: color-mix(in oklab, var(--color-warning) 35%, var(--color-base-100));
+}
+.drift::before {
+  content: "▼ ";
+}

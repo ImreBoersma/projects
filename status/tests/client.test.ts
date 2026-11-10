@@ -242,3 +242,12 @@ describe("the New project dialog (spec 011 US4, contracts/dialog.md)", () => {
     expect(text).not.toContain("XMLHttpRequest");
   });
 });
+
+describe("the tab Versions (spec 016)", () => {
+  test("?tab=versions opens it, and the command box has Tab: Versions", () => {
+    const { start } = require("../src/client") as typeof import("../src/client");
+    expect(readView("?tab=versions", "", known).tab).toBe("versions");
+    expect(writeView(readView("?tab=versions", "", known))).toBe("?tab=versions");
+    expect(start.toString()).toMatch(/\["Versions",\s*"versions"\]/);
+  });
+});

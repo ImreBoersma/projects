@@ -23,7 +23,11 @@ import type {
   ProjectStatus,
   SecretStatus,
   StatusPage,
+  ToolVersion,
+  VersionRow,
 } from "./types";
+import { markedCount } from "./versions/drift";
+import { TOOLS } from "./versions/parse";
 import {
   type BadgeKind,
   certificateKind,
@@ -350,12 +354,14 @@ export function renderPage(page: StatusPage): string {
     projects: page.rows.filter((s) => s.problems.length > 0).length,
     campaigns: campaigns.filter((c) => c.counts["failed-ci"] > 0).length,
     tokens: shared.problems.length + (shared.noExpiry ?? []).length,
+    versions: markedCount(page.versions ?? []),
     history: 0,
   };
   const TABS: [keyof typeof tabCount, string][] = [
     ["projects", "Projects"],
     ["campaigns", "Campaigns"],
     ["tokens", "Shared tokens"],
+    ["versions", "Versions"],
     ["history", "History"],
   ];
   const tabs = TABS.map(
@@ -485,6 +491,7 @@ ${page.css ?? ""}
 ${panel("projects", "Projects", projectsBody, true)}
 ${panel("campaigns", "Campaigns", campaignSection(campaigns, now) || "<p>No open campaign.</p>")}
 ${panel("tokens", "Shared tokens", sharedSection(shared, now, page.issues) || "<p>No shared tokens with a date.</p>")}
+${panel("versions", "Versions", versionsSection(page.versions))}
 ${panel("history", "History", historyPanel(page.rows, repairText(page.repair ?? null)))}
 ${commandBox}
 ${newProject}
@@ -501,6 +508,42 @@ ${minified}
 </body>
 </html>
 `;
+}
+
+// Spec 016, contracts/page.md: one table of the tool versions; a marked cell is behind.
+function versionsSection(rows: VersionRow[] | undefined): string {
+  if (!rows?.length) return "<p>No version data.</p>";
+  const behind = (n: number, top: number) =>
+    `${n} major version${n === 1 ? "" : "s"} behind ${top}`;
+  const cell = (v: ToolVersion | undefined) => {
+    if (!v) return "<td>—</td>";
+    const title = html(v.source === "default" ? "default of ci-node.yml" : v.source);
+    const text =
+      v.source === "default"
+        ? `${html(v.text.replace(/ \(default\)$/, ""))} <span class="opacity-60">(default)</span>`
+        : html(v.text);
+    if (!v.behind || v.highest === undefined) return `<td title="${title}">${text}</td>`;
+    const note = behind(v.behind, v.highest);
+    return `<td class="drift" title="${title}; ${note}">${text}<span class="sr"> (${note})</span></td>`;
+  };
+  const head = TOOLS.map(([, label]) => `<th scope="col">${html(label)}</th>`).join("");
+  const body = rows
+    .map((r) => {
+      const name = link(html(r.repo.split("/")[1] ?? r.repo), `https://github.com/${r.repo}`);
+      const cells =
+        r.state === "ok"
+          ? TOOLS.map(([tool]) => cell(r.tools[tool])).join("")
+          : `<td colspan="${TOOLS.length}">Not available</td>`;
+      return `<tr><th scope="row">${name}</th>${cells}</tr>`;
+    })
+    .join("\n");
+  return `<p class="mb-2 text-sm">The versions that each repo asks for. A marked version is one or more major versions behind the newest repo.</p>
+<div class="overflow-x-auto">
+<table class="versions text-sm">
+<thead><tr><th scope="col">Repo</th>${head}</tr></thead>
+<tbody>
+${body}
+</tbody></table></div>`;
 }
 
 // Spec 013, contracts/page-issue.md: the group "Shared tokens" for the secrets of this repo.
