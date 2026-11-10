@@ -1,16 +1,21 @@
-// Spec 019, research.md §1 and §4: build the DaisyUI CSS with the theme THEME of src/style.ts.
+// Spec 019, research.md §1 and §4: build the DaisyUI CSS with the themes THEME and THEME_DARK of src/style.ts.
 import { mkdir } from "node:fs/promises";
-import { THEME } from "../src/style";
+import { THEME, THEME_DARK } from "../src/style";
 
-const theme = `@plugin "daisyui/theme" {
-  name: "bumblebee";
-  default: true;
-  prefersdark: true;
-  color-scheme: light;
-${Object.entries(THEME)
+const block = (
+  name: string,
+  scheme: string,
+  vars: Record<string, string>,
+) => `@plugin "daisyui/theme" {
+  name: "${name}";
+  default: ${scheme === "light"};
+  prefersdark: ${scheme === "dark"};
+  color-scheme: ${scheme};
+${Object.entries(vars)
   .map(([k, v]) => `  ${k}: ${v};`)
   .join("\n")}
 }`;
+const theme = `${block("bumblebee", "light", THEME)}\n${block("bumblebee-dark", "dark", THEME_DARK)}`;
 
 const input = (await Bun.file("src/page.css").text()).replace("/* THEMES */", theme);
 await mkdir("build", { recursive: true });

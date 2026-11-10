@@ -34,6 +34,20 @@ export const THEME: Record<string, string> = {
   "--noise": "1",
 };
 
+// The dark theme: the colours of THEME on a dark base. The page uses it when the browser asks
+// for a dark scheme (prefers-color-scheme); the page has no switch.
+export const THEME_DARK: Record<string, string> = {
+  ...THEME,
+  "--color-base-100": "oklch(22% 0 0)",
+  "--color-base-200": "oklch(19% 0 0)",
+  "--color-base-300": "oklch(30% 0 0)",
+  "--color-base-content": "oklch(93% 0 0)",
+  "--color-accent": "oklch(100% 0 0)",
+  "--color-accent-content": "oklch(0% 0 0)",
+  "--color-neutral": "oklch(42% 0.01 67.558)",
+  "--color-neutral-content": "oklch(97% 0.003 48.717)",
+};
+
 // Research.md §7: a different shape for each total state (FR-003).
 export const ICON = {
   correct:
