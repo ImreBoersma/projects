@@ -18,9 +18,11 @@ export function client(token: string, fetch: typeof globalThis.fetch = globalThi
     });
     return res;
   };
-  const json = async (method: string, path: string, body?: unknown) => {
+  // `access`: a 403 or 404 means that the token cannot see the repo (only for the repo read,
+  // spec 015 T030); for other calls it is a normal error.
+  const json = async (method: string, path: string, body?: unknown, access = false) => {
     const res = await call(method, path, body);
-    if (res.status === 403 || res.status === 404)
+    if (access && (res.status === 403 || res.status === 404))
       throw new NoAccess(`${method} ${path}: HTTP ${res.status}`);
     if (!res.ok) throw new Error(`${method} ${path}: HTTP ${res.status}`);
     return res.status === 204 ? null : res.json();
@@ -28,7 +30,7 @@ export function client(token: string, fetch: typeof globalThis.fetch = globalThi
 
   return {
     async defaultHead(repo: string) {
-      const meta = await json("GET", `/repos/${repo}`);
+      const meta = await json("GET", `/repos/${repo}`, undefined, true);
       const ref = await json("GET", `/repos/${repo}/git/ref/heads/${meta.default_branch}`);
       return { branch: meta.default_branch as string, sha: ref.object.sha as string };
     },
@@ -52,12 +54,18 @@ export function client(token: string, fetch: typeof globalThis.fetch = globalThi
       const list = (await json(
         "GET",
         `/repos/${repo}/pulls?head=${owner}:${branch}&state=all&sort=created&direction=desc&per_page=1`,
-      )) as { number: number; state: string; merged_at: string | null }[];
+      )) as {
+        number: number;
+        state: string;
+        merged_at: string | null;
+        labels?: { name: string }[];
+      }[];
       const pr = list[0];
       if (!pr) return null;
       return {
         number: pr.number,
         state: pr.merged_at ? "merged" : (pr.state as "open" | "closed"),
+        labelled: (pr.labels ?? []).some((l) => l.name === "campaign"),
       };
     },
     // True when the branch has only the one commit that the command makes (message = title).

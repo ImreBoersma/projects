@@ -140,7 +140,7 @@ All four go in one PR. The real run (T030) is after the merge, with the Maintain
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T032 Catch a failed `gh auth token` in `status/src/new-project/run.ts` and print "The gh login cannot make repos or change settings: <reason>." per contracts/command.md Errors (partial)
-- [ ] T033 Print "Dry run: no change." also when a dry run stops at the check step (`status/src/new-project/steps.ts`) per contracts/command.md (partial)
-- [ ] T034 Check the scopes of the `gh` token (header `X-OAuth-Scopes`: `repo`, and admin rights) in `login()` before the first change per FR-008 (partial)
+- [X] T032 Catch a failed `gh auth token` in `status/src/new-project/run.ts` and print "The gh login cannot make repos or change settings: <reason>." per contracts/command.md Errors (partial)
+- [X] T033 Print "Dry run: no change." also when a dry run stops at the check step (`status/src/new-project/steps.ts`) per contracts/command.md (partial)
+- [X] T034 Check the scopes of the `gh` token (header `X-OAuth-Scopes`: `repo`, and admin rights) in `login()` before the first change per FR-008 (partial)
 - [ ] T035 In the New project dialog, show "Write a stack." for an empty Stack instead of `--stack '-'`, and a message for a name over 60 characters, in `status/src/client.ts` and contracts/dialog.md per FR-005 (partial)

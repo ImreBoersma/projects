@@ -20,7 +20,8 @@ export interface Settings {
 
 // The calls of the command. Reads first, then writes; a dry run calls only the reads.
 export interface Deps {
-  login(): Promise<{ user: string; projectsAdmin: boolean }>;
+  // scopes: the scopes of a classic token; null for a fine-grained token (no scopes header).
+  login(): Promise<{ user: string; projectsAdmin: boolean; scopes: string[] | null }>;
   catalog(): Promise<{ text: string; sha: string }>; // projects.yaml on main of projects
   repoCommits(repo: string): Promise<string[] | null>; // commit messages; null: no repo
   settings(repo: string): Promise<Settings>;
@@ -35,6 +36,23 @@ export interface Deps {
     title: string,
     body: string,
   ): Promise<number>;
+}
+
+// contracts/command.md Errors: the token of the `gh` login, or the message for no login.
+export async function ghToken(read: () => Promise<string>): Promise<string> {
+  const fail = (reason: string) =>
+    new Error(
+      `The gh login cannot make repos or change settings: ${reason}${reason.endsWith(".") ? "" : "."}`,
+    );
+  let token: string;
+  try {
+    token = (await read()).trim();
+  } catch (e) {
+    const text = ((e as { stderr?: { toString(): string } }).stderr?.toString() ?? "").trim();
+    throw fail(text || (e as Error).message);
+  }
+  if (!token) throw fail("no token");
+  return token;
 }
 
 const ID = /^[a-z0-9-]+$/;
@@ -146,6 +164,8 @@ export async function checkState(input: NewProject, deps: Deps): Promise<State> 
     return stop(
       "The gh login cannot make repos or change settings: no admin right on ImreBoersma/projects.",
     );
+  if (login.scopes && !login.scopes.includes("repo"))
+    return stop("The gh login cannot make repos or change settings: the token has no scope repo.");
 
   const prNumber = await deps.openCatalogPr(branchOf(input));
   done["catalog-pr"] = prNumber !== null;
@@ -222,6 +242,7 @@ export async function runNewProject(
   const state = await checkState(input, deps);
   if (state.stop) {
     log(`[failed] check     ${state.stop}`);
+    if (opts.dryRun) log("Dry run: no change.");
     return 1;
   }
   log("[done]  check     The id, the name and the repo are free.");

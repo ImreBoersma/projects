@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { classify, summarize } from "../src/campaign/status";
+import { mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { classify, readCampaigns, summarize } from "../src/campaign/status";
 import type { ApplyResult } from "../src/types";
 
 const needed: ApplyResult = { kind: "needed", files: new Map([["a", "b"]]) };
@@ -45,5 +48,32 @@ describe("summarize", () => {
     const times = ["2026-11-10T10:00:00Z", "2026-11-11T10:00:00Z"];
     expect(summarize(c, [...states], times, now)).toMatchObject({ done: true, doneAt: times[1] });
     expect(summarize(c, [...states], times, new Date("2026-11-18T11:00:00Z"))).toBeNull();
+  });
+});
+
+// Spec 015 T026 and T027.
+describe("old campaigns and repos that cannot be read", () => {
+  const now = new Date("2026-11-12T12:00:00Z");
+  test("a repo that cannot be read makes the campaign not done", () => {
+    const s = summarize(
+      { id: "x", title: "X", started: "2026-11-01" },
+      ["merged", "not-available"],
+      [],
+      now,
+    );
+    expect(s?.done).toBe(false);
+    expect(s?.counts["not-available"]).toBe(1);
+  });
+
+  test("a campaign older than 180 days shows while it is not done", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "campaigns-"));
+    await writeFile(
+      join(dir, "old.yaml"),
+      "id: old\ntitle: Old change\nreason: A test.\nstarted: 2025-01-01\nrepos: all\nchanges:\n  - write: { path: a.txt, content: x }\n",
+    );
+    const projects = [{ id: "a", name: "A", repo: "ImreBoersma/a", status: "active" as const }];
+    // No token: the repo cannot be read, so the campaign is not done and stays on the page.
+    const out = await readCampaigns(dir, projects, {}, now);
+    expect(out.map((c) => [c.id, c.done, c.counts["not-available"]])).toEqual([["old", false, 1]]);
   });
 });

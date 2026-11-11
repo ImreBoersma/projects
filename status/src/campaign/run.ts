@@ -93,6 +93,8 @@ export async function runCampaign(
       if (action === "update") {
         const onBranch = await gh.readFiles(t.repo, branch, [...apply.files.keys()]);
         if ([...apply.files].every(([path, text]) => onBranch.get(path) === text)) {
+          if (!opts.dryRun && pr && !pr.labelled)
+            await gh.addLabel(t.repo, pr.number, t.repo.startsWith(OWN));
           results.set(t.repo, { kind: "up-to-date", pr: pr?.number as number });
           line(`up to date #${pr?.number}`);
           continue;
@@ -109,8 +111,10 @@ export async function runCampaign(
       if (action === "open") {
         number = await gh.openPr(t.repo, branch, head.branch, campaign.title, prBody(campaign));
         await gh.addLabel(t.repo, number, t.repo.startsWith(OWN));
-      } else if (action === "reopen") {
-        await gh.reopenPr(t.repo, number);
+      } else {
+        if (action === "reopen") await gh.reopenPr(t.repo, number);
+        // T029: an earlier run that failed after the PR was opened can have left it without label.
+        if (!pr?.labelled) await gh.addLabel(t.repo, number, t.repo.startsWith(OWN));
       }
       const kind = action === "open" ? "opened" : "updated";
       results.set(t.repo, { kind, pr: number });

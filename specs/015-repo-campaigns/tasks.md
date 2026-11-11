@@ -119,9 +119,9 @@ All three go in one PR.
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T026 Skip a campaign older than 180 days on the page only when no target repo is open, failed-ci or to-do (`status/src/campaign/status.ts:120`) per FR-007 (contradicts; Maintainer decision 2026-11-11)
-- [ ] T027 Do not mark a campaign done when a target repo could not be read; show "not available" for it (`status/src/campaign/status.ts`) per FR-007, SC-004 (partial)
-- [ ] T028 Print `failed: <gh exit text>` in `secret-set` (capture the stderr of `gh secret set`) per contracts/commands.md (partial)
-- [ ] T029 Add the campaign label on the update and up-to-date paths when it is missing (`status/src/campaign/run.ts`) per FR-002 (partial)
-- [ ] T030 Raise NoAccess only for the repo read in `defaultHead`, not for every 403/404 (`status/src/campaign/github.ts`) per Edge Cases (partial)
-- [ ] T031 Ignore archived ids in an explicit `repos` list instead of a parse error (`status/src/campaign/parse.ts:36`) per Edge Cases (contradicts)
+- [X] T026 Skip a campaign older than 180 days on the page only when no target repo is open, failed-ci or to-do (`status/src/campaign/status.ts:120`) per FR-007 (contradicts; Maintainer decision 2026-11-11)
+- [X] T027 Do not mark a campaign done when a target repo could not be read; show "not available" for it (`status/src/campaign/status.ts`) per FR-007, SC-004 (partial)
+- [X] T028 Print `failed: <gh exit text>` in `secret-set` (capture the stderr of `gh secret set`) per contracts/commands.md (partial)
+- [X] T029 Add the campaign label on the update and up-to-date paths when it is missing (`status/src/campaign/run.ts`) per FR-002 (partial)
+- [X] T030 Raise NoAccess only for the repo read in `defaultHead`, not for every 403/404 (`status/src/campaign/github.ts`) per Edge Cases (partial)
+- [X] T031 Ignore archived ids in an explicit `repos` list instead of a parse error (`status/src/campaign/parse.ts:36`) per Edge Cases (contradicts)
