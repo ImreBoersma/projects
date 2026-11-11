@@ -11,6 +11,24 @@ on `@main`, `renovate.json` extends the preset, no `dependabot.yml`, issues on, 
 alerts on and Dependabot security updates off, default branch `main`, the secret names exist), and
 show a deviation as a problem on the status page."
 
+## Clarifications
+
+### Session 2026-11-11 (review)
+
+- Q: Which variables does R9 count for a caller that calls a shared workflow? → A: Also the
+  `vars.NAME` that the called shared workflow reads from the caller repo (change of 2026-11-09:
+  `deploy-vercel.yml` reads `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`). The run reads these names
+  from the checkout of `projects` at run time, for each shared file that a caller uses (with any
+  ref).
+- Q: Does R9 see environment values or `secrets: inherit`? → A: No. R9 reads only the repo-level
+  Actions secrets and variables, and only the forms `${{ secrets.X` and `${{ vars.X`. A value that
+  is stored only in an environment (for example `production`) gives a fail. This is a known limit.
+- Q: Where does the note "Setup check not available" show? → A: As plain text in the group "Code"
+  of the project (spec 019 layout), not in a Problems cell.
+- Q: What does a missing `CONFORMANCE_READ_TOKEN` do to the open issues? → A: The check is not
+  available for each own repo, so their not-conformant issues MUST stay open (FR-007; tasks.md
+  T024 repairs the code, which closes them now).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See which repo does not follow the shared setup (Priority: P1)
@@ -111,8 +129,10 @@ a repair instruction.
   - **R7 Security alerts**: vulnerability alerts are on, and Dependabot security updates are off
     (spec 003).
   - **R8 Default branch**: the default branch is `main`.
-  - **R9 Secrets and variables**: each secret and each variable that a caller workflow uses
-    exists in the repo, with the correct kind (secret or variable).
+  - **R9 Secrets and variables**: each secret and each variable that a caller workflow uses, and
+    each variable that a called shared workflow of `projects` reads from the caller repo, exists in
+    the repo as a repo-level secret or variable of the correct kind. Environment values are not
+    read.
 - **FR-003**: The Maintainer MUST be able to mark a rule as not applicable for one repo in the
   catalog, with a reason.
 - **FR-004**: A repo that fails one or more rules MUST be a problem with the reason
@@ -121,7 +141,8 @@ a repair instruction.
 - **FR-006**: The page and the issue MUST NOT show file content, secret values or setting values
   (spec 001 FR-018).
 - **FR-007**: When the check cannot read a rule, the result of that rule MUST be "Check not
-  available", and it MUST NOT make a problem.
+  available", and it MUST NOT make a problem. An open not-conformant issue MUST stay open while the
+  check of its repo is not available, also when the token is missing.
 - **FR-008**: The check MUST run a minimum of one time each day.
 - **FR-009**: Each rule MUST have a repair instruction in one document, and the issue MUST link to
   the instruction of each failed rule.

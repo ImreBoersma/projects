@@ -5,9 +5,9 @@
 | Field | Type | Rule |
 |---|---|---|
 | `name` | string | Required. `A-Z`, `a-z`, `0-9`, `_`, `-`, space; 1 to 60 characters. |
-| `kind` | enum | `actions-secret`, `environment-secret`, `actions-variable`. Not `account` (public repo). |
+| `kind` | enum | `actions-secret`, `environment-secret`, `actions-variable`. Not `account` (public repo; a catalog error). |
 | `where` | string | `owner/repo`. |
-| `expires` | `YYYY-MM-DD` or `never` | Required. A real date. |
+| `expires` | `YYYY-MM-DD`, `never` or `none` | Required. A real date; `never`: an expiry is possible but not set (warning, FR-010); `none`: the value cannot expire (not shown). |
 | `project` | string | Optional. Must be a catalog project id. Empty: shared. |
 
 Unique: `name` + `where` (case-insensitive). A second entry with the same pair is a catalog error.
@@ -17,7 +17,7 @@ Unique: `name` + `where` (case-insensitive). A second entry with the same pair i
 | Field | Type | Rule |
 |---|---|---|
 | `entry` | SecretEntry | From the catalog, or made from a read token (research.md §3). |
-| `date` | string or null | Earlier of the catalog date and the read date; null for `never` without a read date. |
+| `date` | string or null | Earlier of the catalog date and the read date; null for `never` or `none` without a read date. |
 | `days` | number | `daysUntil(date)` of spec 009. |
 | `source` | `catalog` \| `token` \| `both` | Where the date comes from. |
 | `owner` | project id or `shared` | |

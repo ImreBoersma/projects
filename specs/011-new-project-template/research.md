@@ -61,15 +61,16 @@ local file, which can be on another branch), the repo, and the PR of the branch
 | State | Action |
 |---|---|
 | id, name or repo in the catalog | stop: "in the catalog" |
-| repo exists, first commit is not the template commit | stop: "repo exists; use spec 008 and campaigns" |
-| repo exists with the template commit | skip "make repo" |
+| repo exists, no template commit in its newest 100 commits | stop: "repo exists; use spec 008 and campaigns" |
+| repo exists with the template commit (in its newest 100 commits) | skip "make repo" |
 | repo exists without any commit (a run stopped between create and push) | push the template into it; an empty repo has nothing to lose |
 | settings already as spec 008 (and Pages on for `pages`) | skip "settings" (the calls are idempotent; the plan shows "done") |
-| open PR from `new-project/<id>` | skip "catalog PR" |
+| open PR from `new-project/<id>` | skip "catalog PR", and skip the id, name and repo checks against the catalog (the PR adds them) |
 
-The login check: `gh auth status` and a read of the `projects` repo permission (`admin` or
-`maintain`); the `gh` token needs the scope `repo` (classic) or a fine-grained token with
-Administration write. A failed check stops before the first change.
+The login check: `gh auth token`, the login must be `ImreBoersma`, and a read of the `projects`
+repo permission must give `admin` (not `maintain`). The `gh` token needs the scope `repo`
+(classic) or a fine-grained token with Administration write; the command does not check the
+scopes yet (tasks.md T034). A failed check stops before the first change.
 
 ## 5. The catalog PR
 

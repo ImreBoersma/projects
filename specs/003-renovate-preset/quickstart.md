@@ -9,7 +9,7 @@
 ## 1. Validate the configuration
 
 ```sh
-npx --yes --package renovate@<version> -- renovate-config-validator renovate/default.json renovate.json
+npx --yes --package renovate@<version> -- renovate-config-validator --strict --no-global renovate/default.json renovate.json
 ```
 
 Expected: "Config validated successfully" for both files.
@@ -39,7 +39,9 @@ Dependency Dashboard issue appears after the merge.
 
 ## 5. HomeLab
 
-Add the preset to `.github/renovate.json`. Run the Renovate workflow manually. Expected: the run
+Add the preset to `.github/renovate.json`. HomeLab keeps its own window (Saturday 02:00–06:00
+Amsterdam); a cron-job.org job starts its run in that window (research §14). Run the Renovate
+workflow manually. Expected: the run
 passes, and no PR has automerge.
 
 ## 6. Status page
@@ -50,4 +52,4 @@ Run the status page. Expected: the Renovate PR counts include the HomeLab PRs of
 ## 7. Security update
 
 Not testable on request. When GitHub reports a vulnerability in a repo, expected: a PR with the
-label `security` on the same day, also outside the Saturday window.
+label `security` on the same day, also outside the weekend window.

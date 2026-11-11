@@ -144,3 +144,11 @@ its runs 5 to 8 hours late. The Maintainer chose an external trigger on 2026-11-
 - [X] T026 Add a last step to job `issues` of `.github/workflows/status-page.yml` that pings healthchecks.io: `curl -fsS -m 10 --retry 3 "$STATUS_HEALTHCHECK_URL"` with `env: STATUS_HEALTHCHECK_URL: ${{ secrets.STATUS_HEALTHCHECK_URL }}` and `if: env.STATUS_HEALTHCHECK_URL != ''` on the step, so that a missing secret does not fail the run. The job `issues` runs only outside pull requests, so a PR does not ping. Run actionlint. Manual (Maintainer) first: a healthchecks.io check with cron `0 * * * *`, time zone UTC, grace 60 minutes, and its ping URL as the Actions secret `STATUS_HEALTHCHECK_URL` of `ImreBoersma/projects` per SC-002 (missing) Done: the step checks the secret in the shell (`[ -z "$STATUS_HEALTHCHECK_URL" ] || curl ...`), because a step cannot use its own `env` or `secrets` in `if`. It runs only when the steps before it passed, so a failed run sends no ping. The Maintainer set the secret on 2026-11-05.
 - [X] T027 After T025 and T026, make sure that 3 runs in a row start within 10 minutes after minute 0 of their hour (`gh run list --workflow status-page.yml`), and that healthchecks.io shows the check as up per SC-002, research.md §2 (partial) Done 2026-11-05: see research.md §10.
 - [X] T028 [P] Add to `specs/005-uptime-checks/research.md` §2 the result of the GitHub schedule (no run in 3 hourly slots; 5 to 8 hours late before), the decision for the external trigger and the healthchecks.io watchdog, and the exception to Principle I: cron-job.org only starts the run and keeps no project data; the token can only start workflows of `projects` per plan: schedule decision (partial) Done.
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T029 Show the time of the site check as a visible relative time (`timeTag()`) next to the Up/Down state in `status/src/render.ts`, or record in FR-006 that the update time stands for it per FR-006 (partial)

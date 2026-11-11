@@ -144,7 +144,8 @@ US4 (P2), US3 (P3). Each story can be tested independently.
 
 ## Phase 6: User Story 3 - Know if the data is current (Priority: P3)
 
-**Goal**: show the update time and a warning when the data is more than 48 hours old.
+**Goal**: show the update time and a warning when the data is more than 48 hours old (3 hours since
+spec 005).
 
 **Independent Test**: quickstart.md step 5.
 

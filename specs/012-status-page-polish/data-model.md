@@ -31,7 +31,7 @@ Nothing is stored.
 | Deploy `succeeded` / `failed` / `in-progress` / unknown | good / bad / unknown / unknown |
 | Certificate days: ≤ 14 / 15–28 / > 28 / not known | bad / warn / good / unknown |
 | Renewal days: ≤ 30 / 31–60 / > 60 | bad / warn / good |
-| `Data not available`, `No repo`, `Unknown` | unknown |
+| `Data not available`, `No repo`, `Unknown` | unknown (design revision 2026-11-05: "No repo" and "not known" dates are plain text; an unknown fact is not shown) |
 
 Limits come from `CERT_LIMIT` and `RENEWAL_LIMIT` of `expiry/expiry.ts`; the warning limit is two
 times that value.

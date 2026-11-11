@@ -28,8 +28,8 @@ bun run campaign test-readme
 bun run campaign test-readme
 ```
 
-Expected: first run `opened #n` for both; second run `updated` with 0 new PRs and the same diff
-(SC-003). The local status run shows the section "Campaigns" with `2 open`. Close both PRs and
+Expected: first run `opened #n` for both; second run `up to date #n` with 0 new PRs and no new
+commit (SC-003). The local status run shows the section "Campaigns" with `2 open`. Close both PRs and
 delete the branches; the campaign shows `Done` and then goes away after 7 days.
 
 ## 4. Secret command

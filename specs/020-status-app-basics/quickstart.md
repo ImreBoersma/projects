@@ -27,7 +27,7 @@ Serve `<scratchpad>/site` on localhost and check in Chrome:
   shows, with the stale warning when older than 3 hours;
 - the app badge shows the problem count (with a fixture problem);
 - a pop-up has the 4 shortcuts; ⌘K, "hob", Enter opens hob.nl;
-- the page is < 150 KB.
+- the page is < 150 KB (since spec 011: < 30 KB gzip for the 20-site worst case).
 
 ## 3. Live
 

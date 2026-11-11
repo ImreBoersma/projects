@@ -89,6 +89,12 @@ known" in this run (as `site-down` in spec 005). A `renewal-due` issue follows t
 registry: it closes when the date is more than 30 days away, for example after the Maintainer
 enters the next date. A registry "Domain" renewal that becomes "not known" keeps its issue open.
 
+Implementation (2026-11-11 review): `main.ts` builds a set `keepKeys` that `planIssueActions` reads:
+`<id>/cert-expiring` when the certificate is "not known", and `<id>/renewal-due/domain` when the
+registry date is "not known" and the catalog has no "Domain" renewal. Registry check: a host name
+that the registry does not know (HTTP 400 or 404) is "not registered", so each subdomain has no
+registry check.
+
 ## 8. Where on the page
 
 **Decision**: a new column "Expiry", after "Site". Cell lines: `Certificate: <n> days` (or

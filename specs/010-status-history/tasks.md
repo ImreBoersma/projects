@@ -136,3 +136,12 @@ status/tests/history-stats.test.ts     (T009)
 3. **US3 and US4**: uptime and repair time; they become useful after some days of history.
 
 All four go in one PR.
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T024 Store the keys of the checks without data in the result line (repo data unavailable, site check not-available, `keepKeys`), or mark them as unknown, and make `since()` and `repairTime()` (`status/src/history/stats.ts`) skip them, so that one failed read does not reset "Started" or add a short repair per FR-005, FR-007 (contradicts)
+- [ ] T025 In `.github/workflows/status-page.yml` "Get the stored results", tell a missing branch `data` apart from a failed fetch (`git ls-remote`); on a failed fetch, warn and do not write "History from <today>" per Edge Cases (partial)

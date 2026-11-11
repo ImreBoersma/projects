@@ -306,6 +306,11 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 
 ## Ongoing (no spec)
 
+- Review of all specs (2026-11-11): 36 Convergence tasks in the `tasks.md` of 16 specs (the
+  last phase of each). Do them by spec with `/speckit-implement`; the most important are 008
+  T024 (a missing token closes conformance issues), 010 T024 (a run without data resets
+  "Started"), 020 T027 (contrast of the "New" badge) and 003 T025 (cron-job.org trigger for the
+  HomeLab Renovate window).
 - Static Vite apps (Beter-dan-de-MIDI, Reperatie-Formulier, scales-exercises): move them to one
   static host only when you change them for a different reason (Principle V).
 - Next.js apps (boek-de-bus, personal-website) and pretband-backend stay on Vercel.

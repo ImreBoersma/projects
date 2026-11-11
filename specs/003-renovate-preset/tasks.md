@@ -15,8 +15,9 @@ The status page change in T007 and T008 extends the existing `bun test` suite.
 
 **Organization**: the full preset is foundational, because all stories read the same file. US1
 rolls it out. US2 and US3 check the automerge, grouping and schedule on real Renovate runs. These
-checks can complete only after the first Saturday window (2026-11-07, 02:00–06:00 Amsterdam), or
-earlier with a start from the Dependency Dashboard.
+checks can complete only after the first weekend window (since 2026-11-09: Saturday and Sunday,
+all day, research §14; first planned as Saturday 02:00–06:00), or earlier with a start from the
+Dependency Dashboard.
 
 **Repos**: paths without a prefix are in this repo (`ImreBoersma/projects`). Paths with a prefix,
 for example `scales-exercises: renovate.json`, are in that repo. Make each repo change in a PR.
@@ -32,7 +33,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 - [X] T001 Create the branch `003-renovate-preset` in this repo. The preset stays on this branch until T011.
 - [X] T002 [P] Manual (Maintainer): install the Mend Renovate GitHub App on the account `ImreBoersma` with "Only select repositories": Beter-dan-de-MIDI, boek-de-bus, personal-website, Reperatie-Formulier, scales-exercises, projects. Do NOT select HomeLab: it has its own Renovate, and the app would make each update two times (research.md §2). If the app is already installed for all repositories, change it to these six.
-- [X] T003 [P] Create `.github/workflows/lint-renovate.yml`. Triggers: `push` and `pull_request` with paths `renovate/**` and `renovate.json`. One job, permissions `contents: read`: checkout with `actions/checkout@v7`, `actions/setup-node@v7` with Node 24, then `npx --yes --package renovate@<exact version> -- renovate-config-validator renovate/default.json renovate.json`. Use the newest `renovate` version from npm. Step names in ASD-STE100.
+- [X] T003 [P] Create `.github/workflows/lint-renovate.yml`. Triggers: `push` and `pull_request` with paths `renovate/**` and `renovate.json`. One job, permissions `contents: read`: checkout with `actions/checkout@v7`, `actions/setup-node@v7` with Node 24, then `npx --yes --package renovate@<exact version> -- renovate-config-validator --strict --no-global renovate/default.json renovate.json`. Use the newest `renovate` version from npm. Step names in ASD-STE100.
 
 ---
 
@@ -42,7 +43,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 - [X] T004 Create `renovate/default.json` with exactly the settings of `specs/003-renovate-preset/contracts/preset.md`:
   - `"$schema": "https://docs.renovatebot.com/renovate-schema.json"`, a `description` in ASD-STE100.
-  - `"extends": ["config:recommended"]`, `"timezone": "Europe/Amsterdam"`, `"schedule": ["* 2-5 * * 6"]`.
+  - `"extends": ["config:recommended"]`, `"timezone": "Europe/Amsterdam"`, `"schedule": ["* 2-5 * * 6"]` (changed to `["* * * * 0,6"]` on 2026-11-09, research §14).
   - `"minimumReleaseAge": "3 days"`, `"internalChecksFilter": "strict"`, `"platformAutomerge": false`.
   - `packageRules`, in this order: `{ "matchUpdateTypes": ["patch"], "groupName": "patch updates", "automerge": true }`; `{ "matchUpdateTypes": ["minor"], "groupName": "minor updates", "automerge": false }`; `{ "matchPackageNames": ["ImreBoersma/projects"], "enabled": false }`. Give each rule a `description` in ASD-STE100.
   - `"vulnerabilityAlerts": { "labels": ["security"] }`. Do not set `schedule` or `minimumReleaseAge` in it; the Renovate defaults (none) apply.
@@ -97,7 +98,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 **Independent Test**: quickstart.md §2 step 3.
 
-- [ ] T019 [US2] In one repo with a pending patch update, start the "patch updates" group from the Dependency Dashboard, or wait for the Saturday window. Make sure that Renovate opens one PR "Update patch updates" from `renovate[bot]`, CI runs, and Renovate merges it after CI passes (FR-004). Record the repo and the PR. Before CI passes on that PR, or on the next patch PR: push one commit with a Biome error to the Renovate branch, make sure that CI fails and that Renovate does not merge (US2/AC2), then remove the commit.
+- [ ] T019 [US2] In one repo with a pending patch update, start the "patch updates" group from the Dependency Dashboard, or wait for the weekend window. Make sure that Renovate opens one PR "Update patch updates" from `renovate[bot]`, CI runs, and Renovate merges it after CI passes (FR-004). Record the repo and the PR. Before CI passes on that PR, or on the next patch PR: push one commit with a Biome error to the Renovate branch, make sure that CI fails and that Renovate does not merge (US2/AC2), then remove the commit.
 - [X] T020 [US2] Make sure that no minor, major or security PR was merged by Renovate in any repo (FR-005): `gh search prs --author app/renovate --owner ImreBoersma --merged` shows only "patch updates" PRs. Make sure that no HomeLab PR was merged automatically.
 
 **Checkpoint**: SC-003: 0 patch updates merged by hand.
@@ -108,9 +109,9 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 **Goal**: one minor group for each repo, and PRs only in the weekly window.
 
-**Independent Test**: quickstart.md §2 step 4, after the first Saturday window.
+**Independent Test**: quickstart.md §2 step 4, after the first weekend window.
 
-- [ ] T021 [US3] After the Saturday window, for each repo with the hosted app (not HomeLab): count the non-security Renovate PRs opened in that week (`gh pr list --author app/renovate --state all --search "created:>=<date>"`). Each repo must have a maximum of 2, plus majors (SC-004). Make sure that each non-security PR was created on Saturday between 02:00 and 06:00 Amsterdam time, or from a start on the Dependency Dashboard (FR-002).
+- [ ] T021 [US3] After the weekend window, for each repo with the hosted app (not HomeLab): count the non-security Renovate PRs opened in that week (`gh pr list --author app/renovate --state all --search "created:>=<date>"`). Each repo must have a maximum of 2, plus majors (SC-004). Make sure that each non-security PR was created on Saturday or Sunday (Amsterdam time), or from a start on the Dependency Dashboard (FR-002; the window until 2026-11-09 was Saturday 02:00–06:00).
 
 ---
 
@@ -127,7 +128,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 - Setup: T002 (Maintainer) before T010. T003 before T006.
 - Foundational: T004 and T005 before T006. T007 before T008. T009 after T001. All before US1.
 - US1: T010 before T011. T012 to T016 after T011, in parallel. T017 after T011 (HomeLab reads the preset from `main`). T018 after T008 and T017.
-- US2 and US3: after US1 and after the first Saturday window, or a start from the Dependency Dashboard.
+- US2 and US3: after US1 and after the first weekend window, or a start from the Dependency Dashboard.
 - Polish: T022 after US1. T023 after US2 and US3. T024 last.
 
 ## Parallel Example: US1 roll-out
@@ -157,3 +158,11 @@ Task: "T015 [US1] boek-de-bus renovate.json"
 
 - T002: install or change the Mend Renovate app (GitHub settings of the account).
 - T017: merge the HomeLab PR (deploy on the Pi).
+
+---
+
+## Phase 7: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T025 Start the HomeLab Renovate workflow on time: a cron-job.org job sends `workflow_dispatch` to `ImreBoersma/HomeLab` `renovate.yml` each Saturday 02:30 Europe/Amsterdam (GitHub starts its schedule 6 to 7 hours late, so each run is after the 02:00-06:00 window of HomeLab) per FR-002 (contradicts)

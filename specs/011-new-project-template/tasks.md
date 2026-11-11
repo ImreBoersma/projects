@@ -85,7 +85,7 @@ contracts/command.md, contracts/dialog.md, quickstart.md
 
 - [X] T020 [P] [US4] In `status/tests/client.test.ts`, add tests for `newProjectCommand(fields)`: the command text of contracts/dialog.md (`cd status && bun run new-project --id … --name '…' --repo … --visibility … --stack '…' --host …`); a `'` in the name becomes `'\''`; `null` when the id, name or repo is empty or does not match the rules of data-model.md; and for `nameTaken(fields, names)`: the messages of contracts/dialog.md for an id, a name (case-insensitive) and an `ImreBoersma/<repo>` in the catalog. Add a test for `searchCommands`: "new" gives the item "New project" after the projects, tabs and filters.
 - [X] T021 [US4] Add `newProjectCommand`, `nameTaken` and the "New project" item to `status/src/client.ts`; in `start()`: Enter on the item opens `#new-project` with the focus in the Id field; input updates the messages and the command; "Copy command" uses `navigator.clipboard.writeText` (else select the text) and shows "Copied" for 2 s; Escape closes and gives the focus back.
-- [X] T022 [US4] In `status/src/render.ts`, add the modal `#new-project` of contracts/dialog.md (labelled fields; the host options from `HOSTS` of `status/src/new-project/hosts.ts`, with the label of the catalog host and "Other (no deploy)" for `none`; `aria-live="polite"` messages; `<pre><code>`; the copy button; the note), hidden without the script, and `<script type="application/json" id="catalog-names">` with `{ ids, names, repos }` in lower case (only `ImreBoersma/…` repos), with the `<` escape of spec 020.
+- [X] T022 [US4] In `status/src/render.ts`, add the modal `#new-project` of contracts/dialog.md (labelled fields; the host options from `HOSTS` of `status/src/new-project/hosts.ts`, with the label of the catalog host and "Other (no deploy)" for `none`; `aria-live="polite"` messages; `<pre><code>`; the copy button; the note), hidden without the script, and the key `catalog` (`{ ids, names, repos }` in lower case, only `ImreBoersma/…` repos) in the inline data block `#changes`, with the `<` escape of spec 020 (first planned as a second block `#catalog-names`; the spec 012 test allows one data block, research §9 Found 3).
 - [X] T023 [US4] In `status/tests/render.test.ts`, add tests: the modal and its 6 labelled fields exist and are hidden without the script; the host options equal the `HOSTS` keys; the inline names JSON parses back; `client.ts` contains no `fetch(` and no `XMLHttpRequest` (FR-013). The gzip test of T005 still passes.
 
 **Checkpoint**: all stories work.
@@ -133,3 +133,14 @@ status/tests/client.test.ts        (T020, after T004)
 4. **US4**: the dialog, last; the command works without it.
 
 All four go in one PR. The real run (T030) is after the merge, with the Maintainer's approval.
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T032 Catch a failed `gh auth token` in `status/src/new-project/run.ts` and print "The gh login cannot make repos or change settings: <reason>." per contracts/command.md Errors (partial)
+- [ ] T033 Print "Dry run: no change." also when a dry run stops at the check step (`status/src/new-project/steps.ts`) per contracts/command.md (partial)
+- [ ] T034 Check the scopes of the `gh` token (header `X-OAuth-Scopes`: `repo`, and admin rights) in `login()` before the first change per FR-008 (partial)
+- [ ] T035 In the New project dialog, show "Write a stack." for an empty Stack instead of `--stack '-'`, and a message for a name over 60 characters, in `status/src/client.ts` and contracts/dialog.md per FR-005 (partial)

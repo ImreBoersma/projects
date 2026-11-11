@@ -6,7 +6,7 @@
 |---|---|---|
 | `extends` | `config:recommended` | — |
 | `timezone` | `Europe/Amsterdam` | FR-002 |
-| `schedule` | `* 2-5 * * 6` (Saturday 02:00 to 06:00) | FR-002 |
+| `schedule` | `* * * * 0,6` (Saturday and Sunday, all day; was `* 2-5 * * 6` until 2026-11-09, research §14) | FR-002 |
 | `minimumReleaseAge` | `3 days` | FR-007 |
 | `internalChecksFilter` | `strict` | FR-007 |
 | `platformAutomerge` | `false` | FR-004 (research.md §3) |
@@ -31,7 +31,9 @@ The preset MUST NOT set `ignoreTests` (FR-006).
 - `projects` adds one rule: `matchManagers: ["github-actions"]`, `automerge: false`.
 - HomeLab keeps `.github/renovate.json` with its own rules and adds the preset as the first entry in
   `extends`. It adds one rule at the end: `matchUpdateTypes: ["patch", "minor"]`,
-  `automerge: false`, so that nothing automerges there (research.md §1).
+  `automerge: false`, so that nothing automerges there (research.md §1). HomeLab also keeps its
+  own `schedule` (Saturday 02:00–06:00 Amsterdam), which replaces the window of the preset
+  (research.md §14, correction 2026-11-11).
 
 ## Per repo
 

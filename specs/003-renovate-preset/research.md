@@ -43,7 +43,8 @@ Facts about the repos are from the GitHub API on 2026-11-02.
 
 - **Decision**: one group "patch updates" (automerge) and one group "minor updates" (no automerge).
   Major updates are separate PRs (`config:recommended` default). Schedule `* 2-5 * * 6` with
-  timezone `Europe/Amsterdam`: Saturday 02:00 to 06:00, the same window as HomeLab.
+  timezone `Europe/Amsterdam`: Saturday 02:00 to 06:00, the same window as HomeLab. (Replaced on
+  2026-11-09 by `* * * * 0,6`, §14.)
 - **Rationale**: SC-004 allows a maximum of 2 non-security PRs each week. A patch group makes one
   CI run, not one for each patch.
 - **Risk accepted**: one bad patch stops the automerge of the full patch group. The PR stays open,
@@ -123,6 +124,15 @@ Amsterdam), after the window.
 visits each repo several times in 48 hours; the HomeLab run lands on both days. Still one batch
 of PRs a week, so SC-004 stays. The research decision §2 ("the same window as HomeLab") is
 replaced.
+
+**Correction** (review, 2026-11-11): the HomeLab run does not land in the new window either.
+`.github/renovate.json` of HomeLab sets its own `"schedule": ["after 2am and before 6am on
+saturday"]`, which replaces the window of the preset. Its workflow cron (`17 1 * * *` and
+`17 3 * * 6`, inside that window on paper) starts 6 to 7 hours late (runs at 07:18–10:23 UTC,
+2026-11-07 to 2026-11-11), so each run is after 06:00 and the Dependency Dashboard (HomeLab#15)
+stays in "Awaiting Schedule". **Decision** (Maintainer, 2026-11-11): HomeLab keeps its own window,
+because a merge to `main` changes the live environment. A cron-job.org job starts the HomeLab
+Renovate workflow (`workflow_dispatch`) at 02:30 Amsterdam each Saturday (tasks.md T025).
 
 
 **Finding 2** (T019 attempt, 2026-11-09): two ticks on the Dependency Dashboard of

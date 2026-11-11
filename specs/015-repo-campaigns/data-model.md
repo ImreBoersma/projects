@@ -20,8 +20,10 @@
 
 ## Repo result (command)
 
-`opened` (PR number) · `updated` (PR number) · `not-needed` · `merged` (PR number, no new change)
-· `closed` (PR number, not reopened) · `failed` (reason) · `no-access`.
+`opened` (PR number) · `updated` (PR number) · `up-to-date` (PR number, the branch already has the
+change; no commit) · `changed-by-hand` (PR number, not updated) · `not-needed` (also for a closed PR
+when the change is not needed any more) · `merged` (PR number, no new change) · `closed` (PR
+number, change still needed, not reopened) · `failed` (reason) · `no-access`.
 
 ## Campaign state (status run, one for each target repo)
 

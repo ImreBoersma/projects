@@ -23,6 +23,17 @@ blackbox-exporter for this. Principle VI: the HomeLab monitoring monitors only t
 - Q: When does the page warn that its data is old? → A: After 3 hours, not 48 hours, because the
   page now updates each hour. This changes FR-013 and US2 AC2 of spec 001.
 
+### Session 2026-11-11 (review)
+
+- Q: How does the run start each hour? → A: cron-job.org sends `workflow_dispatch` at minute 0 of
+  each hour. The GitHub schedule `17 * * * *` is only a backup. The last step of job `issues`
+  pings healthchecks.io, which gives an alert when a ping does not come (research.md §2).
+- Q: How long is "a short time" in FR-004? → A: 5 seconds. Each attempt sends the fixed
+  `User-Agent: ImreBoersma-projects-status-check`.
+- Q: What is a valid host name (FR-009)? → A: Lower-case labels of `a-z`, `0-9` and `-`, separated
+  by dots, at most 253 characters, with a top-level domain of letters only (2 to 63). So a
+  punycode top-level domain (`xn--…`) is rejected.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See if each site is up (Priority: P1)
@@ -43,7 +54,8 @@ sure that the page shows "Down" for that project and "Up" for a working site.
 2. **Given** a project with a `domain` that does not respond correctly, **When** the check runs,
    **Then** the page shows "Down" and marks the project as a problem.
 3. **Given** a project with no `domain`, **When** the check runs, **Then** the page shows "No
-   domain" and does not mark the project.
+   domain" and does not mark the project. (Superseded by spec 012 FR-011: the page shows no Site
+   group for a project without a domain.)
 4. **Given** an `archived` project, **When** the check runs, **Then** the check ignores it.
 
 ---
@@ -110,15 +122,19 @@ the page shows "Up" and that no issue opens.
 - **FR-002**: The system MUST check each `domain` of each project that is not archived.
 - **FR-003**: A site is "Up" when it gives a success response over HTTPS, after redirects, within
   10 seconds. All other results are "Down".
-- **FR-004**: The system MUST try a second time, a short time after a failed attempt. The site is
+- **FR-004**: The system MUST try a second time, 5 seconds after a failed attempt. The site is
   "Down" only when both attempts fail.
-- **FR-005**: The system MUST check the sites each hour, on a schedule.
+- **FR-005**: The system MUST check the sites each hour, on a schedule. An external trigger
+  (cron-job.org) starts the run at minute 0; the GitHub schedule is a backup; healthchecks.io
+  watches the runs (research.md §2, exception to Principle I).
 - **FR-006**: The status page MUST show the result and the time of the last check for each project.
 - **FR-007**: A "Down" result MUST be a problem with the reason `site-down`, with the problem rules,
   sort order and issue rules of spec 001.
 - **FR-008**: If the catalog has 2 or more domains and all sites are "Down" in one check, the system MUST show "Check not available" and
   MUST NOT open or close issues for this reason.
-- **FR-009**: The catalog validation MUST reject a `domain` that is not a host name.
+- **FR-009**: The catalog validation MUST reject a `domain` that is not a host name: lower-case
+  labels of `a-z`, `0-9` and `-`, separated by dots, at most 253 characters, and a top-level domain
+  of 2 to 63 letters.
 - **FR-010**: The check MUST NOT use the HomeLab or a service on the HomeLab (Principle VI).
 - **FR-011**: The page and the issues MUST NOT show content or error text from a site.
 
@@ -139,7 +155,8 @@ the page shows "Up" and that no issue opens.
 ## Assumptions
 
 - The check runs in GitHub Actions in the public `projects` repo. Scheduled runs can start some
-  minutes late. This is sufficient for sites of orchestras and small clients.
+  minutes late, so cron-job.org starts each run and the GitHub schedule is a backup (research.md
+  §2). This is sufficient for sites of orchestras and small clients.
 - This feature does not measure response time or calculate an uptime percentage. Spec 010 adds the
   uptime percentage of 30 days from the stored results.
 - Certificate expiry warnings before the expiry date are not in the scope of this feature.
@@ -150,7 +167,7 @@ the page shows "Up" and that no issue opens.
 
 | Principle | How this feature affects it |
 |---|---|
-| I. GitHub for all project work | Actions, Pages and Issues only. |
+| I. GitHub for all project work | Actions, Pages and Issues. Exception: cron-job.org starts the hourly run and healthchecks.io watches it; they keep no project data (research.md §2). |
 | II. Catalog as the only project list | The domains come only from `projects.yaml`. |
 | VI. Sites off the HomeLab | The check does not use the HomeLab. PLAN.md item 3 is changed for this reason. |
 | VII. Read-only views for stakeholders | Stakeholders see if their site is up on the public page. |

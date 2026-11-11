@@ -24,5 +24,5 @@ public own catalog repos. Each repo needs the secret `BOARD_TOKEN` (scope `proje
 research.md §3).
 
 No caller in: HomeLab and Reperatie-Formulier (private: the sync adds their issues), and
-`pretband-backend` (other owner: the sync adds its issues, research.md §1). When a repo changes from private
+`pretband-backend` and `hob-nl` (other owner: the sync adds their issues, research.md §1). When a repo changes from private
 to public, add the caller.

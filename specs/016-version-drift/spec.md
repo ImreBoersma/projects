@@ -23,6 +23,20 @@ drift apart. Works well with spec 015 (a campaign repairs the drift)."
 - Change during the plan (spec 001 FR-018): a version text that is not a number range shows only
   when it matches the safe text rule; else "Other" (Edge Cases).
 
+### Session 2026-11-11 (review)
+
+- Q: Where does the run find the `node-version` of the CI caller? → A: In any workflow file of the
+  repo: the job that calls the shared `ci-node.yml` (the file name does not matter). The source
+  name stays `ci.yml`.
+- Q: Is the shared Node default compared with the Node versions of other repos? → A: Yes. A repo
+  with `.nvmrc` 22 is marked when the other repos use the default 24.
+- Q: What is the text for screen readers for 1 major version? → A: "1 major version behind
+  <highest>", for example "1 major version behind 7".
+- Q: What happens when one of the optional files cannot be read (`.nvmrc`, `.node-version`,
+  `bun.lock`, `bun.lockb`)? → A: The full row shows "Not available" (not only that cell).
+- Q: How does an alias such as `lts/*` show? → A: As "Other": the safe text rule does not allow
+  `/`. An alias without `/` (`node`) shows as text. Neither is compared.
+
 ## Current state (2026-11-10)
 
 Read from the catalog repos on 2026-11-10, to show the problem:
@@ -104,7 +118,8 @@ the cells with 5 and 6 are marked, the cell with 7 is not marked, and the tab la
   FR-018).
 - A range with two bounds (`>=18 <21`) or with `||`: the lowest version of the range is compared.
 - A version with a `v` (`v20` in `.nvmrc`) or with an alias (`lts/*`, `node`): `v20` is 20; an
-  alias shows as text and is not compared.
+  alias is not compared. `node` shows as text; `lts/*` shows "Other" (the safe text rule does not
+  allow `/`).
 - Two sources for one tool in one repo (for example `.nvmrc` 22 and `engines.node` `>=20`): the
   source with the highest priority is used (FR-003), and the cell names the source in its title.
 - A `package.json` that is not valid JSON: the row shows "Not available" in one cell over the
@@ -123,15 +138,16 @@ the cells with 5 and 6 are marked, the cell with 7 is not marked, and the tab la
 ### Functional Requirements
 
 - **FR-001**: Each status run MUST read, for each repo of a catalog project that is not archived, the
-  `package.json` at the root, `.nvmrc`, `.node-version` and the CI caller
-  `.github/workflows/ci.yml`. A repo without a `package.json` MUST NOT be in the table.
+  `package.json` at the root, `.nvmrc`, `.node-version`, `bun.lock` (and `bun.lockb` when there
+  is no `bun.lock`), and the workflow files of the repo (for the job that calls `ci-node.yml`). A repo without a `package.json` MUST NOT be in the table.
 - **FR-002**: For Next.js (`next`), React (`react`), TypeScript (`typescript`), Biome
   (`@biomejs/biome`) and the Node types (`@types/node`), the version MUST be the range in `dependencies`, else in
   `devDependencies`, of the `package.json`.
 - **FR-003**: For Node, the version MUST come from the first of these sources that has a value:
-  the `node-version` input of the CI caller, `.nvmrc`, `.node-version`, `engines.node`. When no
+  the `node-version` input of the job that calls `ci-node.yml` (in any workflow file), `.nvmrc`, `.node-version`, `engines.node`. When no
   source has a value, the cell MUST show the default `node-version` of the shared workflow
-  `ci-node.yml`, read from this repo, with the note "default".
+  `ci-node.yml`, read from this repo, with the note "default". The default is compared as the
+  other Node versions.
 - **FR-004**: For Bun, the version MUST come from `packageManager` (`bun@<version>`), else
   `engines.bun`. A repo with a `bun.lock` file and no version MUST show "newest (CI)". A repo
   without Bun MUST show "—". The text "newest (CI)" MUST NOT be compared.
@@ -143,12 +159,13 @@ the cells with 5 and 6 are marked, the cell with 7 is not marked, and the tab la
   019. The tab label MUST show the number of repos with one or more marked cells, as the
   Projects tab shows its number of problems.
 - **FR-007**: A marked cell MUST use the warning colour of spec 012 (amber) and MUST have a text
-  for screen readers: "<n> major versions behind <highest>" (1: "1 major version behind").
+  for screen readers: "<n> major versions behind <highest>" (1: "1 major version behind <highest>").
   The colour MUST NOT be the only sign: the cell MUST also show a mark symbol.
 - **FR-008**: A marked cell MUST NOT make a problem or an issue, and MUST NOT change the dot of a
   project, the detail view of a project or the total state of the page. The drift shows only in
   the tab "Versions".
-- **FR-009**: A repo that the run cannot read MUST show "Not available" in its row, and MUST NOT
+- **FR-009**: A repo that the run cannot read MUST show "Not available" in its row (also when
+  only one of the optional files gives an error other than 404), and MUST NOT
   stop the run or the other rows.
 - **FR-010**: The table MUST be in the HTML of the page, so that it shows without the script
   (all panels show, spec 019 FR-008). The ⌘K box of spec 020 MUST have the item "Tab: Versions".

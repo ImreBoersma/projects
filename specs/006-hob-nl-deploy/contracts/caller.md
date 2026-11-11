@@ -37,5 +37,5 @@ jobs:
 | `HOB_SSH_KNOWN_HOSTS` | Actions **variable** (public) | `512403.eu13.ssh.myftpupload.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILwQwncFCRpxxYViJR+ogl8E73kt/A2c+4QA7q9Qd5r4` | same |
 
 The caller has 18 lines without blank lines. Principle IV asks for approximately 10 lines and
-spec 002 accepted 16. A caller in a repo of another owner cannot use `secrets: inherit`, so it
+spec 002 accepted 16; plan.md Complexity Tracking records this deviation. A caller in a repo of another owner cannot use `secrets: inherit`, so it
 names each of the 3 secrets.

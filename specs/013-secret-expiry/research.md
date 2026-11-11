@@ -41,6 +41,11 @@ Rejected: two places for one kind of data.
 with `kind: actions-secret`, `where: ImreBoersma/projects`. The compare (§4) still asks for a
 catalog entry for it, so the full list stays complete.
 
+Implementation (2026-11-11 review): a read date matches a catalog entry on the exact name
+(case-sensitive) and only for entries with `where: ImreBoersma/projects`. The status tokens are in
+the catalog with `expires: never`; the read date replaces that. When the read fails or gives no
+date, the entry shows the "No expiry" warning.
+
 ## 4. Compare the workflow files with the list (FR-009)
 
 **Decision**:
@@ -49,7 +54,8 @@ catalog entry for it, so the full list stays complete.
   already reads, and `parseCaller().secrets` (it already leaves out `GITHUB_TOKEN`).
 - Repos of other owners (`harmonieorkest-brummen/hob-nl`): read `.github/workflows/*.yml` with
   the status token of that owner, with the same read function. When that fails (no `Contents:
-  read` permission), log it and show no note (spec edge case).
+  read` permission), log it and show no note (spec edge case). A repo without the folder
+  `.github/workflows` (404) gives an empty list and no notes.
 - This repo: read `../.github/workflows/*.yml` from the checkout of the run. Skip the secrets of a
   shared workflow (`on: workflow_call`): the names under `on.workflow_call.secrets` and the
   `secrets.<name>` uses of those names are set in the calling repo, not here. The other uses in

@@ -61,8 +61,9 @@ All facts about the project repos are from the GitHub API on 2026-10-30.
 ## 6. Deploy only from the default branch
 
 - **Decision**: rename the default branch of Beter-dan-de-MIDI from `pwa` to `main`, so that all
-  repos use `main` (FR-007). Each deploy workflow runs its deploy job only when the event is `push`
-  and the ref is the default branch of the repo. The callers start CI on `push` to `main` and on
+  repos use `main` (FR-007). Each deploy workflow runs its deploy job for each event except
+  `pull_request` (so also `schedule` and `workflow_dispatch`, for the status page) and only when the
+  ref is the default branch of the repo. The callers start CI on `push` to `main` and on
   `pull_request`.
 - **Rationale**: one branch name in all repos and in the callers. The default-branch check stays
   generic, and PRs never deploy (US2/AC4). A `push` trigger only on `main` prevents two CI runs
@@ -112,7 +113,8 @@ All facts about the project repos are from the GitHub API on 2026-10-30.
 
 ## 11. Concurrency
 
-- **Decision**: CI: group `ci-<ref>`, cancel in progress. Deploy: group `deploy-<repo>`, no cancel.
+- **Decision**: CI: group `ci-<repo>-<ref>` (`ci-${{ github.repository }}-${{ github.ref }}`),
+  cancel in progress. Deploy: group `deploy-<repo>`, no cancel.
 - **Rationale**: a new push makes an old CI run useless. A deploy must complete, and the second
   deploy waits (edge case "two pushes").
 

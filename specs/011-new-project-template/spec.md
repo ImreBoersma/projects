@@ -23,6 +23,19 @@ now needs changes in 4 to 5 repos. Spec 008 finds the deviations; this spec prev
   "New project", which opens a dialog that builds the command from the fields for the Maintainer
   to copy. The page runs nothing (spec 020 FR-010).
 
+### Session 2026-11-11 (review)
+
+- Q: When does a repo count as "made by the command"? → A: When one of its newest 100 commits has
+  the message of the template commit (`chore: start from the project template (spec 011)`), not
+  only the first commit.
+- Q: What does the command do when the catalog PR is already open? → A: It skips the checks of id,
+  name and repo against the catalog (the PR itself adds them) and continues with the other steps.
+- Q: Which rights does the login check ask for? → A: The login must be `ImreBoersma` and must have
+  `admin` on `projects`. The token scopes are not checked yet (tasks.md T034).
+- Q: What does the dialog do with an empty Stack or a name over 60 characters? → A: Now it puts
+  `--stack '-'` in the command, and it gives no command and no message for a long name. Both are
+  wrong: a stack is required and each invalid field needs a message (tasks.md T035).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Start a new project in one command (Priority: P1)
@@ -169,7 +182,7 @@ command, run with the dry-run option, shows the same values.
 - **FR-007**: The command MUST have a dry run that shows each step, the files, the settings, the
   catalog entry and the table, and makes no change.
 - **FR-008**: The command MUST stop before any change when the repo exists and was not made by this
-  command (it has no template commit), when the project id or
+  command (none of its newest 100 commits is the template commit), when the project id or
   name is in the catalog, when the owner is not `ImreBoersma`, or when the login has not enough
   rights.
 - **FR-009**: When a step fails, the command MUST show the steps that are done and the steps that

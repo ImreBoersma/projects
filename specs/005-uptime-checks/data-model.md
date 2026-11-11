@@ -16,7 +16,7 @@ One result for each row of the page.
 |---|---|---|
 | `up` | an attempt gives status 200–299 after redirects, within 10 seconds | Up |
 | `down` | both attempts fail (research.md §3, §4) | Down |
-| `no-domain` | the project has no `domain` | No domain |
+| `no-domain` | the project has no `domain` | No domain (superseded by spec 012 FR-011: no Site group) |
 | `not-available` | 2 or more domains and all are down in this run (FR-008) | Check not available |
 
 Field on `ProjectStatus`: `uptime: { state: "up" | "down" | "no-domain" | "not-available"; at: Date | null }`.

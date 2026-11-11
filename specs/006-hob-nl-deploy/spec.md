@@ -34,6 +34,24 @@ a workflow on push to `main`."
   `/wp-admin/`; on HTTP 5xx or the WordPress "critical error" page, it copies the `hob-*` files of
   the previous commit back and marks the deploy as failed.
 
+### Session 2026-11-11 (review)
+
+- Q: Which version does a failed check put back? → A: The last commit that passed the check, read
+  from the marker file `~/.deploy-last-good-<repo>` on the server. Without a marker, the previous
+  commit (`github.event.before` on a push, else `HEAD~1`). FR-013 is changed to this.
+- Q: Does the deploy write a file outside `mu-plugins`? → A: Yes, one: the marker file
+  `~/.deploy-last-good-<repo>` in the home folder of the SSH user, outside the site. FR-005 permits
+  it.
+- Q: Which HTTP answers pass the check? → A: Each answer from 200 to 499. Only HTTP 5xx, no answer,
+  or the WordPress "critical error" text fail. A 4xx (for example a 403 challenge page) is
+  accepted on purpose: it does not show a broken plugin.
+- Q: How much history does the checkout get? → A: The full history (`fetch-depth: 0`), so that the
+  commit of the marker is always available.
+- Q: Is the SSH host a secret? → A: The host name is not secret data (it is also in the known-hosts
+  variable), but it is stored as the Actions secret `HOB_SSH_HOST`. The password and the user are
+  secret data.
+- Q: Is the caller of 18 lines a deviation? → A: Yes, recorded in plan.md Complexity Tracking.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - The custom code of hob.nl is in git (Priority: P1)
@@ -132,7 +150,8 @@ that the row of hob.nl shows the last commit and the last deploy.
 - **FR-005**: The deploy MUST change only the `hob-*` files and folders in
   `wp-content/mu-plugins` on the hosting. It MUST remove a `hob-*` file or folder that is not in
   git. It MUST NOT change or remove any other file, also not the files of GoDaddy in the same
-  folder.
+  folder. The only exception is the marker file `~/.deploy-last-good-<repo>` in the home folder of
+  the SSH user, outside the site (FR-013).
 - **FR-006**: The deploy job MUST use `environment: production` (constitution, Development
   Workflow).
 - **FR-007**: The SSH login data (host, user, password or key) MUST be Actions secrets
@@ -147,8 +166,9 @@ that the row of hob.nl shows the last commit and the last deploy.
   (`.vscode/sftp.json` on the computer of the Maintainer) MUST contain `wp-content/mu-plugins/hob-*`,
   so that a sync cannot upload them.
 - **FR-013**: After each deploy, the workflow MUST check the home page and `/wp-admin/`. On HTTP
-  5xx, or on the WordPress "critical error" page, it MUST copy the `hob-*` files of the previous
-  commit back to the hosting and MUST mark the deploy as failed.
+  5xx, no answer, or the WordPress "critical error" page, it MUST copy back the `hob-*` files of the
+  last commit that passed the check (the marker file; without a marker, the previous commit), and
+  MUST mark the deploy as failed. HTTP 200 to 499 passes.
 - **FR-014**: The deploy MUST stop before the copy when a `hob-*` PHP file has a syntax error.
 
 ### Key Entities
@@ -190,7 +210,7 @@ that the row of hob.nl shows the last commit and the last deploy.
 | Principle | How this feature affects it |
 |---|---|
 | II. Catalog as the only project list | The `hob-nl` entry gets its `repo`. |
-| III. No secrets or private data | `wp-config.php` and keys stay out of git. SSH data are Actions secrets. |
+| III. No secrets or private data | `wp-config.php` and keys stay out of git. The SSH password and user are Actions secrets; the host name is not secret data but is also stored as a secret. |
 | Repos of other owners | The repo is in `harmonieorkest-brummen`. Its setup is manual, not from this repo. |
 | V. One pipeline | hob.nl deploys through a shared workflow on push to `main`. |
 | VI. Sites off the HomeLab | hob.nl stays on its WordPress hosting. |

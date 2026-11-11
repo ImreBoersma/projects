@@ -115,6 +115,12 @@ yellow primary, 2rem radius, noise. Three changes, for FR-010:
   (39% gives 3.5:1).
 
 `prefersdark: true` keeps the same light theme in a dark system: there is no dark scheme now.
+
+**Change 2026-11-10 (Maintainer request)**: a second theme `bumblebee-dark` (`THEME_DARK` in
+`status/src/style.ts`): the same colours on a dark base (base 22%, text 93%), `color-scheme:
+dark`, `prefersdark: true`; the light theme is the default. No switch: the browser setting
+chooses. A theme colour `--color-error-text` (54% light, 70% dark) is the colour of red text on the
+base (the error colour gives 2.9:1 on white). `style.test.ts` checks the pairs of both themes.
 `style.test.ts` checks the theme pairs (oklch to sRGB, ≥ 4.5); the browser gave error 4.94,
 warning 5.24, neutral 8.24, total block 16.6. CSS 55.8 KB.
 

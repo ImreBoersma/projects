@@ -34,7 +34,7 @@ dark, 360 px, keyboard only and scripts off.
 
 **Project Type**: change to the existing static page generator, plus a CSS build step.
 
-**Performance Goals**: page < 150 KB (SC-005); CSS build < 2 s in the run (spike: 0.9 s).
+**Performance Goals**: page < 150 KB (SC-005; since spec 011: < 30 KB gzip for the 20-site worst case); CSS build < 2 s in the run (spike: 0.9 s).
 
 **Constraints**: €0. No files from other sites (spec 007 FR-011). Works without scripts (FR-008).
 Keyboard and contrast (FR-009, FR-010). The content and privacy rules of specs 001, 007, 012, 013.

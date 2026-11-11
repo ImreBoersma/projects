@@ -118,3 +118,12 @@ T016  STATUS_READ_TOKEN_HOB access (Maintainer, GitHub settings)
 3. Each deploy test is a real deploy to the live site, from `main`, followed by a revert commit.
    The tests change only comment lines, a test file and a guarded test call; visitors do not see
    them. The syntax error of T011 never reaches the server.
+
+---
+
+## Phase 6: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T023 Add a step "Check the secrets" to `.github/workflows/deploy-ssh.yml` that names each empty `ssh-host`, `ssh-user`, `ssh-password` and `known-hosts`, as `deploy-firebase.yml` and `deploy-vercel.yml` per spec 002 Edge Cases (missing)
+- [ ] T024 Check the server of hob.nl for custom `hob-*` files outside `mu-plugins` (for example `hob-cf-purge.php`, in the SFTP ignore list); add them to `harmonieorkest-brummen/hob-nl` or record them as out of scope per FR-001 (partial)

@@ -14,7 +14,7 @@ contracts/address.md, quickstart.md
 ## Phase 1: Setup
 
 - [X] T001 Make the branch `019-dashboard-filters` from `main`. Run `cd status && bun test` and record the baseline. Done: 259. Add the dev dependencies `tailwindcss@4.3.4`, `@tailwindcss/cli@4.3.4` and `daisyui@5.7.50` to `status/package.json` (`bun add -d`), and `status/build/` to `.gitignore`.
-- [X] T002 Make `status/scripts/build-css.ts`: write `status/build/page-input.css` from `status/src/page.css` with the two theme blocks filled from `TOKENS` of `status/src/style.ts` (research.md §4, analysis C1: `base-100`=`bg`, `base-200`=`line`, `base-content`=`fg`, `primary`=`link`, `error`=`badFg`, `warning`=`warnFg`, `success`=`goodFg`, `neutral`=`unknownFg`, each `-content`=`bg`; DaisyUI uses the strong colour as the text of a soft badge), then run `bunx @tailwindcss/cli -i build/page-input.css -o build/page.css --minify`. Make `status/src/page.css` with `@import "tailwindcss"; @source "./render.ts"; @source "./client.ts"; @plugin "daisyui" { themes: false; }` and two theme placeholders (`calm` default, `calm-dark` with `prefersdark: true`), plus the small own rules of spec 012 that DaisyUI has no class for (`.sr` visually hidden, the uptime marks, `.nt`). Add the scripts `"css": "bun run scripts/build-css.ts"` and `"start": "bun run css && bun run src/main.ts"` to `status/package.json`.
+- [X] T002 Make `status/scripts/build-css.ts`: write `status/build/page-input.css` from `status/src/page.css` with the two theme blocks filled from `TOKENS` of `status/src/style.ts` (research.md §4, analysis C1: `base-100`=`bg`, `base-200`=`line`, `base-content`=`fg`, `primary`=`link`, `error`=`badFg`, `warning`=`warnFg`, `success`=`goodFg`, `neutral`=`unknownFg`, each `-content`=`bg`; DaisyUI uses the strong colour as the text of a soft badge), then run `bunx @tailwindcss/cli -i build/page-input.css -o build/page.css --minify`. Make `status/src/page.css` with `@import "tailwindcss"; @source "./render.ts"; @source "./client.ts"; @plugin "daisyui" { themes: false; }` and two theme placeholders (`calm` default, `calm-dark` with `prefersdark: true`; later replaced by the theme "bumblebee", research.md §9, and its dark variant of 2026-11-10), plus the small own rules of spec 012 that DaisyUI has no class for (`.sr` visually hidden, the uptime marks, `.nt`). Add the scripts `"css": "bun run scripts/build-css.ts"` and `"start": "bun run css && bun run src/main.ts"` to `status/package.json`.
 
 ---
 
@@ -22,7 +22,7 @@ contracts/address.md, quickstart.md
 
 **Purpose**: the CSS in the page, the view model, the browser functions; all stories use them.
 
-- [X] T003 [P] Make `status/tests/css.test.ts`: after `bun run css` (run it in `beforeAll` with `Bun.$`), `status/build/page.css` exists, is less than 80 000 bytes, has no `@import`, and has no `url(http` and no `url(//` (an SVG namespace inside a `data:` URL is allowed); it contains the theme name `calm`, and the token values of `bg` and `badFg` (the strong colour is `--color-error`, analysis C1).
+- [X] T003 [P] Make `status/tests/css.test.ts`: after `bun run css` (run it in `beforeAll` with `Bun.$`), `status/build/page.css` exists, is less than 80 000 bytes, has no `@import`, and has no `url(http` and no `url(//` (an SVG namespace inside a `data:` URL is allowed); it contains the theme name `calm`, and the token values of `bg` and `badFg` (the strong colour is `--color-error`, analysis C1). (Now: the theme "bumblebee", research.md §9.)
 - [X] T004 In `status/src/render.ts`, replace `css()` with the content of `status/build/page.css` (read once with `Bun.file` in `renderPage`'s caller `status/src/main.ts` and passed as `StatusPage.css`, so the tests can pass a small fake CSS). Remove `css()` from `status/src/style.ts`; keep `TOKENS`, `ICON` and `FAVICON`. Update `status/tests/style.test.ts` (the contrast test of `TOKENS` stays; the `css()` test goes).
 - [X] T005 [P] In `status/tests/view.test.ts`, add tests for `summaryFact(s)` (research.md §5, in this order: first problem text → kind `bad`; check not available → `unknown`; warning with the fewest days of certificate, renewal or secret → `warn`; "No expiry: <names>" → `warn`; "All correct" → `good`), `nextExpiry(s)` (nearest `YYYY-MM-DD` of certificate, renewals and secrets, or null) and `rowData(s, order)` (the attributes of data-model.md "Row").
 - [X] T006 Add `summaryFact`, `nextExpiry` and `rowData` to `status/src/view.ts`.
@@ -39,7 +39,7 @@ contracts/address.md, quickstart.md
 
 **Independent Test**: each project is one row; a click opens its modal; Escape closes it and the focus is on the row; `#p-<id>` opens it; without a script `:target` opens it.
 
-- [X] T009 [US1] In `status/src/render.ts`, replace the project sections with one `<ul class="list">` of rows: `<li><a class="list-row" href="#p-<id>" data-…>` with the dot (with screen-reader text), the name, the summary fact (DaisyUI `badge badge-soft` with `badge-error`/`badge-warning`/`badge-neutral` for bad/warn/unknown; plain text for good) and a "›" mark (`aria-hidden`). Keep the order of `sections()` (spec 012) for the default.
+- [X] T009 [US1] In `status/src/render.ts`, replace the project sections with one `<ul class="list">` of rows: `<li><a class="list-row" href="#p-<id>" data-…>` with the dot (with screen-reader text), the name, the summary fact (DaisyUI `badge badge-soft` with `badge-error`/`badge-warning`/`badge-neutral` for bad/warn/unknown; plain text for good) and a "›" mark (`aria-hidden`). Keep the order of `sections()` (spec 012) for the default. (As built: solid badges, FR-010, and 4 groups by `rowKind`: bad, warn, unknown, good; name order in each group.)
 - [X] T010 [US1] In `status/src/render.ts`, add one modal per project after the list: `<div id="p-<id>" class="modal" role="dialog" aria-modal="true" aria-labelledby="t-<id>"><div class="modal-box">` with `<h2 id="t-<id>">` (the project name as a new-tab link), the problems with issue links and "since", and the Site / Code / Expiry groups of `facts()` (spec 012/013), and a close link `<a href="#" class="btn btn-sm btn-ghost" aria-label="Close">✕</a>`; plus `<a href="#" class="modal-backdrop">` for a click outside.
 - [X] T011 [US1] In `status/src/client.ts` `start()`: on `hashchange` to `#p-<id>`, move the focus to the modal title; on Escape, set the hash to `""`; when the hash goes away, move the focus back to the row of that project; keep the focus inside the open modal with Tab and Shift+Tab.
 - [X] T012 [US1] Update `status/tests/render.test.ts`: one row per project with the right `href`, data attributes and summary fact; one modal per project with the facts, problems and issue links of the earlier tests (move those assertions from the list to the modal); a page without the `.js` class needs no script for `:target` (the modal CSS class is present). Keep the spec 007/012/013/015 content tests passing.
@@ -125,3 +125,13 @@ status/tests/client.test.ts  (T007)
 3. **US3 and US4**: sort and tabs.
 
 All four go in one PR.
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T029 Remove the inner `<section><h2>` of the Campaigns and Shared tokens panels and use the DaisyUI list classes of the Projects panel (`status/src/render.ts`) per contracts/page.md, FR-001 (partial)
+- [ ] T030 On a close that does not come from popstate, call `history.back()` when the modal added a history entry (`status/src/client.ts`) per contracts/address.md (partial)
+- [ ] T031 Add `aria-controls="tab-<id>"` to each tab and Left/Right key navigation on the tab list (`status/src/render.ts`, `status/src/client.ts`) per FR-009 (partial)

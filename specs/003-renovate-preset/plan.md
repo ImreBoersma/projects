@@ -6,7 +6,7 @@
 
 ## Summary
 
-One Renovate preset `renovate/default.json` in `projects`: Saturday window, 3-day release age, one
+One Renovate preset `renovate/default.json` in `projects`: weekend window (Saturday and Sunday; HomeLab keeps Saturday 02:00–06:00), 3-day release age, one
 automerged patch group, one manual minor group, security updates at once. The free hosted Mend
 Renovate app runs it for the five Node repos and `projects`. HomeLab keeps its self-hosted Renovate
 and extends the preset, with automerge off. Dependabot version updates go away. The status page

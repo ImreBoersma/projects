@@ -38,7 +38,7 @@ repo, the versions in the correct columns, "—" for a tool that a repo does not
 "24 (default)" for Node without a source.
 
 - [X] T005 [P] [US1] Make `status/tests/versions-read.test.ts` with a fake `fetch` (as `status/tests/conformance-read.test.ts`): `package.json` 404 → `null` (no row); `dependencies` before `devDependencies`; Node order `ci.yml` → `.nvmrc` → `.node-version` → `engines.node` → the shared default with source `default` and text "24 (default)"; Bun from `packageManager` `bun@1.3.0`, else `engines.bun`, else "newest (CI)" with source `bun.lock` when `bun.lock` gives 200 (try `bun.lockb` only when `bun.lock` gives 404), else no Bun; `packageManager` `yarn@4.18.1` gives no Bun; a request that fails (500 or a network error) or a `package.json` that is not valid JSON → `state: "not-available"` with empty `tools`; each cell text passes through `safeText`; the token is only in the `Authorization` header (check the fake's calls).
-- [X] T006 [US1] Make `status/src/versions/read.ts` with `readVersions(projectId, repo, token, ciText, nodeDefault, fetch = globalThis.fetch): Promise<VersionRow | null>` (raw contents API, `Accept: application/vnd.github.raw`, 404 = no file, the 4 files in parallel) so that T005 passes.
+- [X] T006 [US1] Make `status/src/versions/read.ts` with `readVersions(projectId, repo, token, ciText, nodeDefault, fetch = globalThis.fetch): Promise<VersionRow | null>` (as built: `workflowTexts: string[]` in place of `ciText`, research.md §9) (raw contents API, `Accept: application/vnd.github.raw`, 404 = no file, the 4 files in parallel) so that T005 passes.
 - [X] T007 [US1] In `status/src/main.ts`, page mode only: after `checkSecrets()`, for each status row with a repo (the projects that are not archived: `statuses`), take the `ci.yml` text from `workflowTexts` (own repos) or from the texts that the secrets compare read (keep them in a map; other repos), take the token (`CONFORMANCE_READ_TOKEN` for `ImreBoersma/…`, else `tokenFor(owner, process.env)`), and call `readVersions` in parallel; read the shared default once with `sharedNodeDefault` from `../.github/workflows/ci-node.yml` (as `sharedWorkflowVars`). Without a token: the row is `not-available`. Log `Versions <repo>: read` / `not available` (no file text), and after the drift step `Versions: <n> repos behind`. Put the rows in catalog order in `page.versions`.
 - [X] T008 [P] [US1] In `status/tests/render.test.ts`, add tests for contracts/page.md: the tab "Versions" between "Shared tokens" and "History" with `data-tab="versions"` and `href="?tab=versions"`; the panel `#tab-versions` with the title, the intro line, `<table class="versions">`, the 8 header cells with `scope="col"`, one row for each VersionRow with `<th scope="row">` and the repo link (the name after `/`, the new-tab rules of spec 012); "—" for a missing tool; `title` with the source; "(default)" in `opacity-60`; a `not-available` row with "Not available" and `colspan="7"`; "No version data." without `versions`; the panel is in the HTML without the script.
 - [X] T009 [US1] In `status/src/render.ts`, add `["versions", "Versions"]` to `TABS` (between `tokens` and `history`), `versions` to `tabCount` (0 for now), and `versionsSection(rows)`; render it with `panel("versions", "Versions", …)` so that T008 passes. Escape each text with `html()`.
@@ -94,3 +94,11 @@ marked, 7 is not, and the tab label shows 2.
 MVP = Phase 1 to 3: the table alone already answers "which versions do the repos use". US2 adds
 the marks and the tab count in a small second step. One PR for the full feature (the feature is
 small), with the checks of all runs on the merge commit.
+
+---
+
+## Phase 6: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T020 Accept a space between the operator and the version in `lowestMajor` (`">= 18"` → 18) and add the case to `status/tests/versions-parse.test.ts` per research §4, FR-005 (partial)

@@ -22,6 +22,20 @@ stops a client site for days, and the uptime check finds it only after the stop.
   → A: On the public page: the name and the days that remain (for example "Domain: 120 days"),
   never cost or contract numbers.
 
+### Session 2026-11-11 (review)
+
+- Q: Which domains are not checked at the registry? → A: Each host name that the registry does
+  not know (HTTP 400 or 404): a subdomain of a platform and also any other subdomain, for example
+  `www.` of an owned domain. Only the certificate of these hosts is checked.
+- Q: Which issues does a value that cannot be read keep open? → A: The run keeps a list of keys
+  (`keepKeys`): `<id>/cert-expiring` when the certificate is "not known", and
+  `<id>/renewal-due/domain` when the registry date is "not known" and the catalog has no "Domain"
+  renewal (research.md §7). A known gap for the second case is a Convergence task.
+- Q: What does the log line show? → A: `Certificate <domain>: <n> days; registry: <value>`, or
+  `not known` for the certificate.
+- Q: Which form of the renewal name is in the problem key? → A: The slug of the name (research.md
+  §6). The rule that two names must not give the same slug is a Convergence task.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Know before a certificate expires (Priority: P1)
@@ -99,9 +113,9 @@ date is always possible.
 
 ### Edge Cases
 
-- A site is on a subdomain of a platform (for example `scales-imreboersma.web.app`). The
-  Maintainer does not own that domain. The domain registration is not checked; the certificate
-  is.
+- A site is on a subdomain (of a platform, for example `scales-imreboersma.web.app`, or of an
+  owned domain, for example `www.`). The registry does not know the host name, so the domain
+  registration is not checked; the certificate is.
 - A project has a renewal but no domain (for example a hosting contract of a project without a
   site). The renewal is checked.
 - An archived project has renewals. They are not checked.
@@ -128,9 +142,9 @@ date is always possible.
   "Domain: 120 days".
 - **FR-005**: A certificate with 14 days or less MUST be a problem `cert-expiring`.
 - **FR-006**: A renewal or a domain expiry with 30 days or less, or in the past, MUST be a problem
-  `renewal-due`, one problem for each renewal. The problem key contains the renewal name
-  (`<project id>/renewal-due/<renewal name>`), so that two renewals of one project get two
-  issues.
+  `renewal-due`, one problem for each renewal. The problem key contains the slug of the renewal name
+  (`<project id>/renewal-due/<slug of the renewal name>`, research.md §6), so that two renewals of
+  one project get two issues. Two names with the same slug MUST NOT be in one project.
 - **FR-007**: The problems MUST use the problem rules, sort order and issue rules of spec 001: one
   issue for each problem, closed when the problem stops.
 - **FR-008**: A value that cannot be read MUST show "Not known" and MUST NOT make a problem.
@@ -171,7 +185,7 @@ date is always possible.
 | Principle | How this feature affects it |
 |---|---|
 | II. Catalog as the only project list | Renewal dates are in the catalog, as Principle II asks ("renewal dates"). |
-| III. No secrets or private data | Renewal names and dates only; no cost or contract numbers. |
-| VII. Read-only views for stakeholders | Stakeholders see the days until expiry on the public page. |
+| III. No secrets or private data | Renewal names and dates only. |
+| VII. Read-only views for stakeholders | Stakeholders see the days until expiry on the public page; no cost or contract numbers (FR-009). |
 | VIII. Keep the work small | Issues come before the stop, not after. |
 | X. ASD-STE100 | Page text and issue text use STE. |

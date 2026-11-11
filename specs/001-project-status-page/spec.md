@@ -25,6 +25,20 @@ the page does not show it."
 - Q: Should the update also notify the Maintainer when a project gets a new problem? → A: Yes. Open
   one GitHub issue for each new problem, and close it when the problem stops.
 
+### Session 2026-11-11 (review)
+
+- Q: Which deployments count as the "last deploy"? → A: The newest deployment on the environment
+  `production`, `Production` or `github-pages` (the constitution allows GitHub Pages). FR-008 says
+  this now.
+- Q: Which PRs are Renovate PRs? → A: PRs whose author login matches
+  `(^|-)renovate(\[bot\])?$`. This includes self-hosted Renovate apps, for example
+  `imreboersma-homelab-renovate`.
+- Q: What is "the last CI run on main"? → A: The combined check state of the head commit of the
+  default branch. PENDING, EXPECTED or no checks give "unknown". So a head commit without checks
+  hides an earlier failure. FR-007 says this now.
+- Q: How many open PRs does the update read? → A: The first 100 open PRs of each repo, to find the
+  Renovate PRs and the oldest one.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See the status of all projects on one page (Priority: P1)
@@ -130,9 +144,9 @@ Make sure that the issue closes.
 - A catalog entry has no repo (for example hob.nl or pretband). The page shows the project and shows
   "No repo" for the five items. The page does not mark it as a problem.
 - A project has no CI or no deploy record. The page shows "Unknown" for that item. The page does not
-  mark it as a problem.
+  mark it as a problem. (Superseded by spec 012 FR-011: an unknown fact is not shown.)
 - A repo has no commits. The page shows "Unknown" for the last commit. The page does not mark the
-  project as inactive.
+  project as inactive. (Superseded by spec 012 FR-011: an unknown fact is not shown.)
 - The repo of a project is owned by a different owner (for example `harmonieorkest-brummen`). The
   page shows the same items if the data is available.
 - The update cannot get data for one project. The page shows the other projects and marks that
@@ -152,9 +166,11 @@ Make sure that the issue closes.
 - **FR-006**: For each project, the system MUST show the number of open Renovate PRs and the age of
   the oldest one.
 - **FR-007**: For each project, the system MUST show the result of the last CI run on the main
-  branch: passed, failed or unknown.
+  branch: passed, failed or unknown. The result is the combined check state of the head commit of
+  the default branch; pending checks or no checks give unknown.
 - **FR-008**: For each project, the system MUST show the date and the result of the last GitHub
-  deployment record on the production environment, or "Unknown" if there is no record.
+  deployment record on the environment `production`, `Production` or `github-pages`, or "Unknown"
+  if there is no record.
 - **FR-009**: The system MUST mark a project as a problem when one or more of these conditions is
   true:
   - Its last CI run failed.
@@ -169,7 +185,8 @@ Make sure that the issue closes.
 - **FR-009e**: The issues MUST obey FR-018. They MUST NOT contain text from private repos.
 - **FR-010**: The system MUST show projects with problems before projects without problems.
 - **FR-011**: The system MUST update the page on a schedule, a minimum of two times each day, so
-  that SC-004 is true when GitHub starts a scheduled run late.
+  that SC-004 is true when GitHub starts a scheduled run late. (Since spec 005 the update runs each
+  hour.)
 - **FR-012**: The Maintainer MUST be able to start an update manually.
 - **FR-013**: The system MUST show the date and time of the last update. It MUST show a warning when
   the last update is more than 3 hours old (changed by spec 005, was 48 hours).
@@ -180,7 +197,9 @@ Make sure that the issue closes.
 - **FR-016**: The page MUST NOT show secrets, tokens, cost or private notes.
 - **FR-017**: The page MUST be public. A person MUST NOT need a login to see it.
 - **FR-018**: The page MUST NOT show text from private repos, for example commit messages, PR titles
-  or branch names. It MUST show only project names, dates, counts and results.
+  or branch names. It MUST show only project names, dates, counts and results. Later specs add
+  these items: rule ids (spec 008), secret names from workflow files (spec 013) and tool version
+  texts with a safe text rule (spec 016).
 
 ### Key Entities
 
@@ -217,7 +236,8 @@ Make sure that the issue closes.
   it deploys through a workflow.
 - A Renovate PR is a PR that Renovate opened. The page counts these PRs also in the total of open PRs.
 - The main branch of each repo is `main`, or the default branch if the repo uses a different name.
-- A daily update is sufficient. The Maintainer does not need real-time data.
+- A daily update is sufficient. The Maintainer does not need real-time data. (Changed by spec 005:
+  the update runs each hour.)
 - The page is static output, and a scheduled workflow makes it (Principle VIII).
 - Uptime of production sites is not in the scope of this feature.
 - The issues are in the `projects` repo, not in the project repos. This does not change repos of
@@ -227,7 +247,8 @@ Make sure that the issue closes.
 - The page is in English and uses ASD-STE100 (Principle X).
 - The `projects` repo becomes public, so that it can publish the page at no cost.
 - Project names and domains are not private data. Stakeholder names on the page are not necessary;
-  the page does not show them.
+  the page does not show them. (Superseded by spec 019: organisation names of stakeholders show in
+  the filter; names of people do not.)
 
 ## Principles Affected
 

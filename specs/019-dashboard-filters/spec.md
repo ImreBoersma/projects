@@ -21,6 +21,23 @@ some data behind other screens or pop ups. Make a spec for this."
 - Q: Does the pop-up of a project have its own link? → A: Yes. While the pop-up is open, the page
   address has the project id; a link with that id opens the page with that pop-up open.
 
+### Session 2026-11-11 (review)
+
+- Q: In which order are the rows of one state group? → A: Name order (A to Z), not the catalog
+  order (Maintainer decision 2026-11-11; the code stays).
+- Q: Does the page have a dark scheme? → A: Yes, since 2026-11-10 (Maintainer request): a dark
+  theme with the bumblebee colours on a dark base, chosen only by the browser setting
+  (`prefers-color-scheme`); there is no switch. Both themes pass the contrast test.
+- Q: Which colour has red text on the base (`text-error`)? → A: A separate theme colour
+  `--color-error-text` (54% in the light theme, 70% in the dark theme), 4.5:1 or more on the base;
+  badges and alerts keep `--color-error`.
+- Q: How does a field show the keyboard focus? → A: A 1px ring in the text colour at 45%.
+- Q: Does the pop-up show the uptime bar? → A: No. The pop-up shows the state and the uptime
+  percentage; the bar of 30 marks is in the tab "History" (research.md §8, page size).
+- Q: How does a pop-up open when the script runs? → A: With the class `modal-open`; `:target`
+  opens it only without the script (research.md §8).
+- Q: Below which width do the filters fold? → A: Below 640 pixels (the `sm` width).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See a short list, and the details of one project in a pop-up (Priority: P1)
@@ -28,7 +45,8 @@ some data behind other screens or pop ups. Make a spec for this."
 The page shows each project as one short row: the dot, the name, and one line with the most
 important fact (the worst state, for example "CI failed" or "Certificate in 20 days", or "All
 correct"). A click on the row (or Enter on the keyboard) opens a pop-up with all the details of
-that project: problems with their issue links and "since", Site (state, uptime and bar), Code (CI,
+that project: problems with their issue links and "since", Site (state and uptime; the bar is in the tab
+"History"), Code (CI,
 deploy, last commit, PRs), Expiry (certificate, renewals, secrets), and the links to the sources.
 Escape or the close button closes the pop-up; the page stays at the same place.
 
@@ -102,7 +120,7 @@ certificate, renewal or secret date is first.
 **Acceptance Scenarios**:
 
 1. **Given** the default sort, **When** the page opens, **Then** the order is problems, warnings,
-   check not available, all correct; in each group the catalog order.
+   check not available, all correct; in each group the name order (A to Z).
 2. **Given** "last commit", **When** it is selected, **Then** the project with the oldest last
    commit is first; projects without a repo are last.
 3. **Given** "next expiry", **When** it is selected, **Then** the project with the nearest date of
@@ -139,8 +157,8 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
 - A filter value in the address that does not exist (for example an old stakeholder name): the
   filter is ignored and the page shows all projects with a short note.
 - A pop-up open and the page updates its relative times (spec 012 script): the pop-up stays open.
-- A very small screen (360 pixels): the filters fold into one "Filters" button that opens them; no
-  horizontal scroll.
+- A small screen (below 640 pixels, for example 360 pixels): the filters fold into one "Filters"
+  button that opens them; no horizontal scroll.
 - Many stakeholders later: the stakeholder filter is a list built from the catalog, not fixed text.
 - The page is old (stale warning of spec 001): the warning shows above the tabs on all tabs.
 - Keyboard only: all filters, sorts, tabs, rows and pop-ups work with Tab, Enter, Space and
@@ -171,9 +189,11 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
   it is open and give it back to its row when it closes; each control MUST have a text for screen
   readers.
 - **FR-010**: Text and controls MUST have a contrast ratio of 4.5:1 or more; colour MUST NOT be the
-  only signal. Theme change 2026-11-06 (Maintainer): the page uses the DaisyUI theme "bumblebee"
-  for light and dark, so there is one (light) scheme; status badges are solid, because the
-  bumblebee colours are too light as text.
+  only signal. Theme change 2026-11-06 (Maintainer): the page uses the DaisyUI theme "bumblebee";
+  status badges are solid, because the bumblebee colours are too light as text. Since 2026-11-10:
+  a dark theme with the same colours on a dark base, chosen only by the browser setting
+  (`prefers-color-scheme`, no switch); red text on the base uses `--color-error-text`; fields
+  show the focus with a 1px ring in the text colour at 45%. Both themes pass the contrast test.
 - **FR-011**: The rules of the earlier specs MUST stay: the links and content rules (spec 001 and
   007), relative times and new-tab links (spec 012), no secret values (spec 013).
 
@@ -208,7 +228,8 @@ them. Click "Shared tokens": the shared tokens show and the address has the tab.
   page; this changes the decision "no UI library" of spec 012 (research.md §1) and is the first
   step of "the status page as an app" in PLAN.md, without a framework.
 - The calm look of spec 012 stays the target: colour only for states that need attention, white
-  space, one column. The DaisyUI theme gets the colours of spec 012.
+  space, one column. The DaisyUI theme is "bumblebee" (research.md §9), with a dark
+  variant for a dark browser setting.
 - Stakeholder values come from the catalog field `stakeholder`. One name for each group:
   "Harmonieorkest Brummen" for pretband, pretband-backend and hob-nl (clarification 2026-11-06).
 - The data on the page is the same as now; this feature changes how it shows, not what is

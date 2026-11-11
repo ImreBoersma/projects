@@ -10,6 +10,19 @@
 passes, one group for minor updates, a weekly schedule. Each project repo gets a `renovate.json`
 that extends `github>ImreBoersma/projects//renovate/default`. Remove Dependabot from all repos."
 
+## Clarifications
+
+### Session 2026-11-11 (review)
+
+- Q: Does HomeLab use the window of the preset? → A: No. HomeLab keeps its own window in
+  `.github/renovate.json`: Saturday 02:00–06:00 Europe/Amsterdam (Maintainer, 2026-11-11). A merge
+  to `main` of HomeLab changes the live environment on the Pi, so its updates stay in the night.
+  GitHub starts the scheduled HomeLab run 6 to 7 hours late (runs at 07:18–10:23 UTC), after the
+  window, so a cron-job.org job starts the HomeLab Renovate workflow at 02:30 Amsterdam each
+  Saturday (tasks.md T025). The GitHub cron stays as a backup.
+- Q: Which flags does the validator use? → A: `--strict --no-global`
+  (`.github/workflows/lint-renovate.yml`).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Get dependency updates from one shared configuration (Priority: P1)
@@ -82,7 +95,7 @@ one PR for them, in the weekly time window.
   the PR, so that a bad or compromised release has time to be found.
 - A repo has `dependabot.yml`. This feature removes it. Dependabot security alerts can stay on.
 - HomeLab already has a `renovate.json` and its own Renovate workflow. Its `renovate.json` extends
-  the preset and keeps only the rules that are specific to HomeLab.
+  the preset and keeps only the rules that are specific to HomeLab, and its own window (FR-002).
 - A PR that Renovate opened is open for more than 14 days. The status page marks the project
   (spec 001). The preset does not change this.
 
@@ -93,7 +106,9 @@ one PR for them, in the weekly time window.
 - **FR-001**: The `projects` repo MUST contain the preset `renovate/default.json`.
 - **FR-002**: The preset MUST open update PRs only in one weekly time window, except security
   updates. Window since 2026-11-09: Saturday and Sunday, all day, Amsterdam time (the Saturday
-  02:00–06:00 window was too short; research.md §14).
+  02:00–06:00 window was too short; research.md §14). Exception: HomeLab keeps its own window,
+  Saturday 02:00–06:00 Amsterdam, and an external trigger starts its run in that window
+  (Clarifications 2026-11-11).
 - **FR-003**: The preset MUST put all minor updates of a repo in one PR.
 - **FR-004**: The preset MUST merge patch updates automatically only when CI passes.
 - **FR-005**: The preset MUST NOT merge minor or major updates automatically.
@@ -137,7 +152,8 @@ one PR for them, in the weekly time window.
   automerge (FR-006).
 - The 3-day wait (FR-007) is not in PLAN.md. It is added because automerge without a wait can merge
   a compromised release.
-- The weekly window is on one morning in the weekend, time zone Europe/Amsterdam.
+- The weekly window is Saturday and Sunday, all day, time zone Europe/Amsterdam (HomeLab: Saturday
+  02:00–06:00).
 - `harmonieorkest-brummen/pretband-backend` is a repo of a different owner. This feature does not
   change it.
 - Dependabot alerts (GitHub vulnerability alerts) stay on. They open no PRs, and Renovate reads
