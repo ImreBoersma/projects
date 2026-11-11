@@ -62,6 +62,9 @@ roadmap.
   React, TypeScript, Biome and `@types/node` in each repo with a `package.json`. A version that is
   one or more major versions behind the newest repo is marked (no issue). A campaign of spec 015
   repairs the drift.
+- Spec 017: the tab "History" shows a table "Delivery (90 days)": for each project the merged
+  PRs, the dependency updates (PRs of bots) and the median time from open to merge, the other
+  PRs, and the production deploys with the counts of each month; a total row below.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -90,7 +93,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 014 | Free-tier usage warnings (shelved) | 005 |
 | 015 | Changes in all repos at once (campaigns) (done) | 008 |
 | 016 | Version drift between projects (done) | 008 |
-| 017 | Delivery numbers for each project | 010 |
+| 017 | Delivery numbers for each project (done) | 010 |
 | 018 | Archive suggestions for old projects | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
 | 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (done) | 019 |

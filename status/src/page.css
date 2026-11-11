@@ -124,9 +124,9 @@ html:not(.js) [role="tablist"] {
 .text-error {
   color: var(--color-error-text);
 }
-/* Spec 016: the table of the tool versions; it scrolls in its own box on a small screen. */
-.versions th,
-.versions td {
+/* Spec 016 and 017: the tables of the page (versions, delivery); each scrolls in its own box on a small screen. */
+.data-table th,
+.data-table td {
   padding: 4px 6px;
   text-align: left;
   white-space: nowrap;
