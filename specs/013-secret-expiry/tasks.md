@@ -120,6 +120,6 @@ All three go in one PR, as for specs 007 to 012. The catalog list (T019) goes in
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T026 Treat `expires: none` like `never` in the `listed` check of `checkSecrets()` (`status/src/main.ts`), so that the issue of a status token stays open when the token cannot be read per research §5 (partial)
-- [ ] T027 Log `Secrets compare <repo>: workflows not available` for own repos without workflow texts when `CONFORMANCE_READ_TOKEN` is not set (`status/src/main.ts`) per FR-009 (partial)
-- [ ] T028 Make the secret issue key unique per place: put the repo in the key or reject two names with the same slug for one owner (`status/src/secrets/expiry.ts`, `status/src/catalog.ts`) per FR-004 (partial)
+- [X] T026 Treat `expires: none` like `never` in the `listed` check of `checkSecrets()` (`status/src/main.ts`), so that the issue of a status token stays open when the token cannot be read per research §5 (partial)
+- [X] T027 Log `Secrets compare <repo>: workflows not available` for own repos without workflow texts when `CONFORMANCE_READ_TOKEN` is not set (`status/src/main.ts`) per FR-009 (partial)
+- [X] T028 Make the secret issue key unique per place: put the repo in the key or reject two names with the same slug for one owner (`status/src/secrets/expiry.ts`, `status/src/catalog.ts`) per FR-004 (partial)

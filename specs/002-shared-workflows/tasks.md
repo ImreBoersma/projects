@@ -200,4 +200,4 @@ Task: "T017 [US2] deploy-vercel.yml"
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T028 Remove `swa-cli.config.json` (the old Azure Static Web Apps config) from `ImreBoersma/Beter-dan-de-MIDI` per FR-012 (unrequested)
+- [X] T028 Remove `swa-cli.config.json` (the old Azure Static Web Apps config) from `ImreBoersma/Beter-dan-de-MIDI` per FR-012 (unrequested)

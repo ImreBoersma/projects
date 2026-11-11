@@ -13,7 +13,7 @@ export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
     problems: [],
     uptime: { state: "no-domain", at: null },
     commitOid: null,
-    renovateApp: null,
+    renovateApps: [],
     conformanceNotAvailable: [],
     expiry: { certificate: null, renewals: [], registryNotKnown: false },
     history: { since: {}, sinceIsHistoryStart: [], uptime: null },

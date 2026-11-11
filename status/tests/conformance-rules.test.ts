@@ -66,6 +66,10 @@ describe("checkRepo", () => {
       ),
     ).toEqual(["R1"]);
     expect(stateOf(facts({ hasPackageJson: false }), "R1")).toBe("not-applicable");
+    // Spec 008 T025: without package.json, R1 does not apply, also when the workflows are unknown.
+    expect(stateOf(facts({ hasPackageJson: false, workflows: "not-available" }), "R1")).toBe(
+      "not-applicable",
+    );
   });
 
   test("R2: a public repo needs the board caller; a private repo does not", () => {

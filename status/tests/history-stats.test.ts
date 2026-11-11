@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { repairTime, since, uptime } from "../src/history/stats";
+import { carryKeys, repairTime, since, uptime } from "../src/history/stats";
 import type { HistoryResult, SiteState } from "../src/types";
 
 const now = new Date("2026-11-05T15:30:00Z");
@@ -186,5 +186,29 @@ describe("recentChanges (spec 020 research.md §1)", () => {
     );
     expect(r.stopped).toEqual([]);
     expect(r.started[0].text).toBe("Renewal of Domain is due in 20 days.");
+  });
+});
+
+describe("carryKeys (spec 010 T024)", () => {
+  test("keeps a previous key whose check had no data; drops a key that stopped", () => {
+    const keep = (k: string) => k === "one/ci-failed";
+    expect(carryKeys(["one/ci-failed", "one/deploy-failed"], ["one/inactive"], keep)).toEqual([
+      "one/inactive",
+      "one/ci-failed",
+    ]);
+    expect(carryKeys(undefined, ["x"], keep)).toEqual(["x"]);
+  });
+  test("so since() does not restart after a run without data", () => {
+    const line = (time: string, problems: string[]) => ({
+      time,
+      projects: { one: { site: "up" as const, problems } },
+    });
+    const keep = () => true;
+    const results = [
+      line("2026-11-10T10:00:00Z", ["one/ci-failed"]),
+      line("2026-11-10T11:00:00Z", carryKeys(["one/ci-failed"], [], keep)),
+      line("2026-11-10T12:00:00Z", ["one/ci-failed"]),
+    ];
+    expect(since(results, "one", "one/ci-failed")?.time).toBe("2026-11-10T10:00:00Z");
   });
 });

@@ -132,6 +132,6 @@ All four go in one PR.
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T029 Remove the inner `<section><h2>` of the Campaigns and Shared tokens panels and use the DaisyUI list classes of the Projects panel (`status/src/render.ts`) per contracts/page.md, FR-001 (partial)
-- [ ] T030 On a close that does not come from popstate, call `history.back()` when the modal added a history entry (`status/src/client.ts`) per contracts/address.md (partial)
-- [ ] T031 Add `aria-controls="tab-<id>"` to each tab and Left/Right key navigation on the tab list (`status/src/render.ts`, `status/src/client.ts`) per FR-009 (partial)
+- [X] T029 Remove the inner `<section><h2>` of the Campaigns and Shared tokens panels and use the DaisyUI list classes of the Projects panel (`status/src/render.ts`) per contracts/page.md, FR-001 (partial)
+- [X] T030 On a close that does not come from popstate, call `history.back()` when the modal added a history entry (`status/src/client.ts`) per contracts/address.md (partial)
+- [X] T031 Add `aria-controls="tab-<id>"` to each tab and Left/Right key navigation on the tab list (`status/src/render.ts`, `status/src/client.ts`) per FR-009 (partial)

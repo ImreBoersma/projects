@@ -120,13 +120,14 @@ export function compareVisit(
   if (last) {
     const before = new Set(last.keys);
     const now = new Set(nowKeys);
+    const fixed = last.keys.filter((k) => !now.has(k) && projectIds.includes(project(k)));
+    // Spec 020 T028: the count is the full count; only the list has at most 20 items.
     return {
       base: "visit",
       since: last.time,
       newKeys: nowKeys.filter((k) => !before.has(k)),
-      fixedKeys: last.keys
-        .filter((k) => !now.has(k) && projectIds.includes(project(k)))
-        .slice(0, 20),
+      fixedCount: fixed.length,
+      fixedKeys: fixed.slice(0, 20),
       next,
     };
   }
@@ -134,9 +135,18 @@ export function compareVisit(
     base: "24h",
     since: changes.since,
     newKeys: changes.started.map((c) => c.key),
+    fixedCount: changes.stopped.length,
     fixedKeys: changes.stopped.map((c) => c.key).slice(0, 20),
     next,
   };
+}
+
+// Spec 020 FR-002: the changes line. A visit more than 30 days ago shows its date (T029).
+export function changesText(base: string, n: number, m: number, since: string, now: number) {
+  if (base === "24h") return `In the last 24 hours: ${n} new, ${m} fixed`;
+  const old = now - Date.parse(since) > 30 * 24 * 60 * 60 * 1000;
+  const when = old ? since.slice(0, 10) : `your visit ${relTime(since, now)}`;
+  return n + m === 0 ? `No change since ${when}` : `Since ${when}: ${n} new, ${m} fixed`;
 }
 
 // Spec 020 analysis U1: the text of a fixed key, from the project name and the reason.
@@ -249,12 +259,22 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
     apply();
     save();
   });
-  for (const tab of doc.querySelectorAll("[role=tab]")) {
+  const tabs = [...doc.querySelectorAll("[role=tab]")] as HTMLElement[];
+  for (const tab of tabs) {
     tab.addEventListener("click", (e) => {
       e.preventDefault();
       view.tab = tab.getAttribute("data-tab") ?? "projects";
       apply();
       save();
+    });
+    // Spec 019 T031: Left and Right move to the tab before or after (WAI-ARIA tabs pattern).
+    tab.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault();
+      const i = tabs.indexOf(tab) + (e.key === "ArrowRight" ? 1 : -1);
+      const next = tabs[(i + tabs.length) % tabs.length];
+      next.focus();
+      next.click();
     });
   }
   const note = doc.querySelector("[data-note]") as HTMLElement | null;
@@ -278,7 +298,10 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
     if (!modal) return;
     modal.classList.remove("modal-open");
     view.project = "";
-    save();
+    // Spec 019 T030: a pop-up that added a history entry closes with Back, so the next Back
+    // leaves the page as the user expects; else only the address changes.
+    if ((history.state as { modal?: string } | null)?.modal === id) history.back();
+    else save();
     (last ?? (doc.querySelector(`a[href="#p-${id}"]`) as HTMLElement | null))?.focus();
   };
   for (const a of doc.querySelectorAll('a[href^="#p-"]')) {
@@ -359,16 +382,10 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
       }
     }
     const n = result.newKeys.length;
-    const m = result.fixedKeys.length;
-    const when = relTime(result.since, Date.now());
+    const m = result.fixedCount;
     const line = doc.querySelector("[data-changes]") as HTMLElement | null;
     if (line) {
-      line.textContent =
-        result.base === "24h"
-          ? `In the last 24 hours: ${n} new, ${m} fixed`
-          : n + m === 0
-            ? `No change since your visit ${when}`
-            : `Since your visit ${when}: ${n} new, ${m} fixed`;
+      line.textContent = changesText(result.base, n, m, result.since, Date.now());
       line.title = result.since;
       line.hidden = false;
     }

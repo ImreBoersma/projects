@@ -51,7 +51,7 @@ function emptyStatus(project: Project, availability: ProjectStatus["availability
     problems: [],
     uptime: { state: "no-domain", at: null },
     commitOid: null,
-    renovateApp: null,
+    renovateApps: [],
     conformanceNotAvailable: [],
     expiry: { certificate: null, renewals: [], registryNotKnown: false },
     history: { since: {}, sinceIsHistoryStart: [], uptime: null },
@@ -98,7 +98,9 @@ export function mapRepo(node: RepoNode | null, project: Project): ProjectStatus 
           : "unknown",
     deploy,
     commitOid: commit?.oid ?? null,
-    renovateApp: renovatePrs[0]?.author?.login.replace(/\[bot\]$/, "") ?? null,
+    renovateApps: [
+      ...new Set(renovatePrs.map((pr) => (pr.author?.login ?? "").replace(/\[bot\]$/, ""))),
+    ],
   };
 }
 

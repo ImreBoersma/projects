@@ -38,6 +38,8 @@ const PAIRS: [string, string][] = [
   ["--color-warning-content", "--color-warning"],
   ["--color-success-content", "--color-success"],
   ["--color-neutral-content", "--color-neutral"],
+  // Spec 020: the "New" badge.
+  ["--color-info-content", "--color-info"],
 ];
 
 describe("theme (spec 019 FR-010)", () => {

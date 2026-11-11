@@ -61,7 +61,8 @@ export interface ProjectStatus {
   uptime: Uptime;
   // Spec 007: data for the links. Null when the repo has no commit or no data, or no Renovate PR.
   commitOid: string | null;
-  renovateApp: string | null;
+  // Spec 007 T024: each Renovate app with an open PR (hosted and self-hosted).
+  renovateApps: string[];
   // Spec 008: ids of the conformance rules that could not be read.
   conformanceNotAvailable: string[];
   expiry: Expiry;

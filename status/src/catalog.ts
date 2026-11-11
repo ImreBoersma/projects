@@ -1,4 +1,5 @@
 import { parse } from "yaml";
+import { slug } from "./expiry/expiry";
 import type { Project, ProjectState, SecretEntry, SecretKind } from "./types";
 
 const STATES: ProjectState[] = ["active", "maintenance", "archived"];
@@ -72,8 +73,10 @@ function parseRenewals(value: unknown, fail: (rule: string) => never) {
       fail(`item ${n} needs a name of at most 40 characters.`);
     }
     if (typeof date !== "string" || !realDate(date)) fail(`item ${n} needs a date as YYYY-MM-DD.`);
-    const key = (name as string).toLowerCase();
-    if (seen.has(key)) fail(`the name ${name} is used two times.`);
+    // Spec 009 T024: the issue key uses the slug, so two names may not give the same slug.
+    const key = slug(name as string);
+    if (seen.has(key))
+      fail(`the name ${name} is used two times, or gives the same key as another name.`);
     seen.add(key);
     return { name: name as string, date: date as string };
   });
@@ -96,6 +99,7 @@ export function parseSecrets(text: string, projects: Project[]): SecretEntry[] {
     throw new Error("Catalog error: the top-level key `secrets` must be a list.");
   const ids = new Set(projects.map((p) => p.id));
   const seen = new Set<string>();
+  const issueKeys = new Set<string>();
   return list.map((raw: Record<string, unknown>, n: number): SecretEntry => {
     const fail = (field: string, rule: string): never => {
       throw new Error(`Catalog error in secrets item ${n}, field \`${field}\`: ${rule}`);
@@ -130,6 +134,14 @@ export function parseSecrets(text: string, projects: Project[]): SecretEntry[] {
     const key = `${(name as string).toLowerCase()} ${(where as string).toLowerCase()}`;
     if (seen.has(key)) fail("name", `${name} in ${where} is used two times.`);
     seen.add(key);
+    // Spec 013 T028: the issue key is `<owner>/secret-expiring/<slug>`; one owner (a project, or
+    // the shared setup) may not have two entries with the same slug.
+    const owner = project ? String(project) : "shared";
+    const issueKey = `${owner}/${slug(name as string)}`;
+    if (issueKeys.has(issueKey)) {
+      fail("name", `${name} gives the same issue key as another secret of ${owner}.`);
+    }
+    issueKeys.add(issueKey);
     return {
       name: name as string,
       kind: kind as SecretKind,

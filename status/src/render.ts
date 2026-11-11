@@ -1,5 +1,6 @@
 import { THEME_COLOR } from "./app";
 import {
+  changesText,
   compare,
   compareVisit,
   fixedText,
@@ -147,8 +148,9 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
   const site: string[] = [];
   const { state, at } = s.uptime;
   if (state === "up" || state === "down") {
+    // Spec 005 T029: the time of the site check, visible and relative (spec 012 FR-006).
     const checked = at
-      ? `<span class="sr"> (checked ${at.toISOString().slice(11, 16)} UTC)</span>`
+      ? ` <span class="text-xs opacity-75">checked ${timeTag(at.toISOString(), now)}</span>`
       : "";
     site.push(
       `${link(badge(state === "up" ? "good" : "bad", state === "up" ? "Up" : "Down"), links.site)}${checked}`,
@@ -330,7 +332,11 @@ export function summary(rows: ProjectStatus[], sharedProblems = 0): string {
           `${count(problems, "problem")} in ${count(withProblem, "project")}.`,
           `${count(rows.length - withProblem, "project")} without a problem.`,
         ]
-      : ["No problems.", `${count(rows.length, "project")}.`];
+      : // Spec 007 T025: with shared problems, "No problems." would contradict the state badge.
+        [
+          sharedProblems > 0 ? "No project problems." : "No problems.",
+          `${count(rows.length, "project")}.`,
+        ];
   const checked = rows.filter((r) => r.uptime.state === "up" || r.uptime.state === "down");
   const up = checked.filter((r) => r.uptime.state === "up").length;
   if (checked.length > 0) {
@@ -372,7 +378,7 @@ export function renderPage(page: StatusPage): string {
   ];
   const tabs = TABS.map(
     ([id, label]) =>
-      `<a role="tab" class="tab${id === "projects" ? " tab-active" : ""}" data-tab="${id}" href="?tab=${id}" aria-selected="${id === "projects"}">${label}${tabCount[id] ? ` <span class="badge badge-sm ${id === "projects" ? "badge-error" : "badge-warning"} ml-1">${tabCount[id]}</span>` : ""}</a>`,
+      `<a role="tab" class="tab${id === "projects" ? " tab-active" : ""}" data-tab="${id}" href="?tab=${id}" aria-controls="tab-${id}" aria-selected="${id === "projects"}">${label}${tabCount[id] ? ` <span class="badge badge-sm ${id === "projects" ? "badge-error" : "badge-warning"} ml-1">${tabCount[id]}</span>` : ""}</a>`,
   ).join("");
   const option = (value: string, text: string) =>
     `<option value="${html(value)}">${html(text)}</option>`;
@@ -445,6 +451,7 @@ ${npField("id", "Id")}${npField("name", "Name")}${npField("repo", "Repo")}
     matches,
     compare,
     compareVisit,
+    changesText,
     fixedText,
     searchCommands,
     newProjectCommand,
@@ -631,15 +638,16 @@ function sharedSection(
     .filter((g) => g.items.length)
     .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
     .join("");
-  return `<section>
-<h2>Shared tokens</h2>
-<ul class="projects">
-<li class="project ${kind}">
-<p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>Shared setup</p>
-${problems.length ? `<ul class="problems">${problems.join("")}</ul>\n` : ""}${groups ? `<dl class="facts">${groups}</dl>` : ""}
+  // Spec 019 T029: the panel has the title; the item uses the list classes of the Projects panel.
+  return `<ul class="list rounded-box">
+<li class="project ${kind} list-row items-start">
+<span class="dot ${kind} mt-2" role="img" aria-label="${DOT_TEXT[kind]}"></span>
+<div class="list-col-grow">
+<p class="font-semibold">Shared setup</p>
+${problems.length ? `<ul class="problems my-2 space-y-1 text-sm text-error">${problems.join("")}</ul>\n` : ""}${groups ? `<dl class="facts space-y-1 text-sm">${groups}</dl>` : ""}
+</div>
 </li>
-</ul>
-</section>`;
+</ul>`;
 }
 
 // Spec 015, contracts/page.md: the progress of the campaigns. A warning only; no problem, no issue.
@@ -663,15 +671,16 @@ function campaignSection(campaigns: CampaignSummary[], now: Date): string {
             k === "failed-ci" ? badge("warn", `${c.counts[k]} ${text}`) : `${c.counts[k]} ${text}`,
           )
           .join(SEP);
-    return `<li class="project ${kind}">
-<p class="name"><span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>${html(c.title)} <span class="tag">started ${timeTag(c.started, now)}</span></p>
-<dl class="facts"><div><dt>PRs</dt><dd>${counts}${SEP}${link("PRs", c.url)}</dd></div></dl>
+    return `<li class="project ${kind} list-row items-start">
+<span class="dot ${kind} mt-2" role="img" aria-label="${DOT_TEXT[kind]}"></span>
+<div class="list-col-grow">
+<p class="font-semibold">${html(c.title)} <span class="text-xs font-normal opacity-75">started ${timeTag(c.started, now)}</span></p>
+<dl class="facts mt-1 text-sm"><div><dt>PRs</dt><dd>${counts}${SEP}${link("PRs", c.url)}</dd></div></dl>
+</div>
 </li>`;
   });
-  return `<section>
-<h2>Campaigns <span class="count">${campaigns.length}</span></h2>
-<ul class="projects">
+  // Spec 019 T029: the panel has the title; the items use the list classes of the Projects panel.
+  return `<ul class="list rounded-box">
 ${items.join("\n")}
-</ul>
-</section>`;
+</ul>`;
 }

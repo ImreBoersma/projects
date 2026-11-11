@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { issueContent, type OpenIssue, parseMarker, planIssueActions } from "../src/issues";
+import {
+  issueContent,
+  keepsOpen,
+  type OpenIssue,
+  parseMarker,
+  planIssueActions,
+} from "../src/issues";
 import type { Problem, Project } from "../src/types";
 
 const project: Project = { id: "one", name: "One", repo: "ImreBoersma/one", status: "active" };
@@ -224,5 +230,30 @@ describe("secret issues (spec 013)", () => {
     const open = [issue(7, "shared/secret-expiring/token_a")];
     expect(plan([], open).close.map((c) => c.number)).toEqual([7]);
     expect(plan([], open, [], false, [], ["shared/secret-expiring/token_a"]).close).toEqual([]);
+  });
+});
+
+describe("keepsOpen (spec 009 T025, spec 010 T024)", () => {
+  const ctx = {
+    unavailableIds: new Set(["one"]),
+    uptimeNotAvailable: false,
+    setupUnavailableIds: new Set<string>(),
+    keepKeys: new Set(["two/renewal-due/domain"]),
+  };
+  test("repo data rules only the repo problems", () => {
+    expect(keepsOpen(ctx, "one/ci-failed")).toBe(true);
+    expect(keepsOpen(ctx, "two/ci-failed")).toBe(false);
+  });
+  test("a certificate or renewal issue depends only on its own read", () => {
+    expect(keepsOpen(ctx, "one/cert-expiring")).toBe(false);
+    expect(keepsOpen(ctx, "one/renewal-due/hosting")).toBe(false);
+    expect(keepsOpen(ctx, "two/renewal-due/domain")).toBe(true);
+  });
+  test("site and setup checks", () => {
+    expect(keepsOpen({ ...ctx, uptimeNotAvailable: true }, "two/site-down")).toBe(true);
+    expect(keepsOpen(ctx, "one/site-down")).toBe(false);
+    expect(keepsOpen({ ...ctx, setupUnavailableIds: new Set(["two"]) }, "two/not-conformant")).toBe(
+      true,
+    );
   });
 });

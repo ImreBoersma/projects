@@ -58,6 +58,20 @@ jobs:
       BEFORE: ${{ github.event.before }}
       MARKER: .deploy-last-good-${{ github.event.repository.name }}
     steps:
+      # Spec 006 T023: name each empty secret or input, as the other deploy workflows do.
+      - name: Check the secrets
+        env:
+          KNOWN_HOSTS: ${{ inputs.known-hosts }}
+        run: |
+          missing=""
+          [ -n "$SSH_HOST" ] || missing="$missing ssh-host"
+          [ -n "$SSH_USER" ] || missing="$missing ssh-user"
+          [ -n "$SSHPASS" ] || missing="$missing ssh-password"
+          [ -n "$KNOWN_HOSTS" ] || missing="$missing known-hosts"
+          if [ -n "$missing" ]; then
+            echo "::error::Not set:$missing."
+            exit 1
+          fi
       - name: Get the repo with its history
         uses: actions/checkout@v7
         with:
