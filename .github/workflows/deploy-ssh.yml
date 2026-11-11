@@ -104,7 +104,9 @@ jobs:
             "$1/" "$SSH_USER@$SSH_HOST:$TARGET/"
           SCRIPT
           cat > "$RUNNER_TEMP/check.sh" <<'SCRIPT'
-          # Exit 1 when a URL gives HTTP 5xx, no answer, or the WordPress critical error page.
+          # Exit 1 when a URL gives no answer, HTTP 5xx, a 4xx other than 401/403/429 (login, bot
+          # challenge, rate limit: not a sign of a broken deploy), or the WordPress critical error
+          # page (spec 006 T025, Maintainer decision 2026-11-11).
           set -uo pipefail
           failed=0
           for url in $HEALTH_URLS; do
@@ -112,7 +114,8 @@ jobs:
             ok=0
             for try in 1 2; do
               code=$(curl -sL -m 20 -o "$RUNNER_TEMP/body" -w '%{http_code}' "$url${sep}deploy=$GITHUB_RUN_ID" || echo 000)
-              if [ "$code" -ge 200 ] && [ "$code" -lt 500 ] && ! grep -q 'There has been a critical error on this website' "$RUNNER_TEMP/body"; then
+              case "$code" in 2??|3??|401|403|429) good=1 ;; *) good=0 ;; esac
+              if [ $good = 1 ] && ! grep -q 'There has been a critical error on this website' "$RUNNER_TEMP/body"; then
                 ok=1; break
               fi
               sleep 10

@@ -33,8 +33,9 @@ File: `.github/workflows/deploy-ssh.yml` in `ImreBoersma/projects`. Trigger: `wo
 7. The same rsync without `--dry-run`.
 8. When `health-urls` is set: request each URL (timeout 20 seconds, follow redirects, 2 tries 10
    seconds apart). A URL fails on HTTP 5xx, no answer, or a body that contains
-   `There has been a critical error on this website`. HTTP 200 to 499 passes (a 4xx is accepted
-   on purpose).
+   `There has been a critical error on this website`. A 4xx fails too, except 401, 403 and 429
+   (a login, a bot challenge or a rate limit is not a sign of a broken deploy). Decision of
+   2026-11-11; before, 200 to 499 passed.
 9. When the check passes (or there is no check): write the commit id to the marker file
    `~/.deploy-last-good-<repo name>` on the server (in the home folder, outside the site).
 10. When a URL fails: put back the files of the commit in the marker file, the last version that

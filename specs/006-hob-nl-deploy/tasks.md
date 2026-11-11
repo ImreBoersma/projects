@@ -127,3 +127,4 @@ From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
 - [X] T023 Add a step "Check the secrets" to `.github/workflows/deploy-ssh.yml` that names each empty `ssh-host`, `ssh-user`, `ssh-password` and `known-hosts`, as `deploy-firebase.yml` and `deploy-vercel.yml` per spec 002 Edge Cases (missing)
 - [ ] T024 Check the server of hob.nl for custom `hob-*` files outside `mu-plugins` (for example `hob-cf-purge.php`, in the SFTP ignore list); add them to `harmonieorkest-brummen/hob-nl` or record them as out of scope per FR-001 (partial)
+- [X] T025 Fail the health check on a 4xx other than 401, 403 and 429 (a 404 or 410 home page restores the last good version; a login, bot challenge or rate limit still passes) in `.github/workflows/deploy-ssh.yml` per FR-013 (contradicts; Maintainer decision 2026-11-11, replaces the 200-499 rule of the review)

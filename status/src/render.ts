@@ -658,6 +658,8 @@ const CAMPAIGN_TEXT: [keyof CampaignSummary["counts"], string][] = [
   ["closed", "closed"],
   ["to-do", "to do"],
   ["not-needed", "not needed"],
+  // Spec 015 T027: a target repo that the run could not read.
+  ["not-available", "not available"],
 ];
 
 function campaignSection(campaigns: CampaignSummary[], now: Date): string {

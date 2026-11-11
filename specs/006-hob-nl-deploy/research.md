@@ -99,7 +99,8 @@ gives a redirect to the login page (HTTP 302 then 200); a fatal error in a must-
 HTTP 500 and the WordPress text "There has been a critical error on this website". On a failure,
 copy back the `hob-*` files of the last commit that passed the check (the marker file
 `~/.deploy-last-good-<repo>`; without a marker, the previous commit) with the same rsync filter,
-and stop the job with an error. HTTP 200 to 499 passes (review 2026-11-11).
+and stop the job with an error. A 4xx other than 401, 403 and 429 fails too (Maintainer,
+2026-11-11: a 404 home page is a broken deploy; a login, bot challenge or rate limit is not).
 
 **Rationale**: a must-use plugin loads on each request, so a runtime error stops the full site.
 `php -l` (§5) finds only syntax errors. The last good version is a commit in git, so the

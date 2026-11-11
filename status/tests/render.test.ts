@@ -696,6 +696,11 @@ describe("campaigns on the page (spec 015)", () => {
     expect(html).toContain('<dd>Done <time datetime="2026-10-27T05:03:00Z"');
   });
 
+  test("a repo that could not be read shows as not available (spec 015 T027)", () => {
+    const html = page([campaign({ counts: counts({ open: 1, "not-available": 1 }) })]);
+    expect(html).toContain(`<dd>1 open${SEP}1 not available${SEP}`);
+  });
+
   test("no campaigns: no section", () => {
     const panel = page([]).match(/<section id="tab-campaigns"[\s\S]*?<\/section>/)?.[0] ?? "";
     expect(panel).not.toContain('<li class="project');
