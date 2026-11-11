@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { client } from "../src/campaign/github";
+import { client, NoAccess } from "../src/campaign/github";
 import { diff, prBody, runCampaign } from "../src/campaign/run";
 import type { Campaign } from "../src/types";
 
@@ -69,6 +69,8 @@ describe("runCampaign (US1)", () => {
     expect(calls).toContain("POST /repos/ImreBoersma/a/pulls");
     expect(calls).toContain("POST /repos/ImreBoersma/a/labels");
     expect(calls).toContain("PATCH /repos/ImreBoersma/b/git/refs/heads/campaign/node-24");
+    // T029: the open PR #5 has no campaign label: the update adds it.
+    expect(calls).toContain("POST /repos/ImreBoersma/b/issues/5/labels");
     expect(calls).not.toContain("POST /repos/ImreBoersma/b/pulls");
     expect(calls.filter((c) => c.includes("/ImreBoersma/c/") && !c.startsWith("GET"))).toEqual([]);
     expect(lines.map((l) => l.replace(/\s+/g, " "))).toEqual([
@@ -118,6 +120,8 @@ describe("hand fixes (side note 2026-11-06)", () => {
       () => {},
     );
     expect(calls).toContain("PATCH /repos/ImreBoersma/b/git/refs/heads/campaign/node-24");
+    // T029: the open PR #5 has no campaign label: the update adds it.
+    expect(calls).toContain("POST /repos/ImreBoersma/b/issues/5/labels");
   });
 });
 
@@ -133,7 +137,11 @@ describe("an open PR that is up to date", () => {
       (l) => lines.push(l),
     );
     expect(results.get("ImreBoersma/b")).toEqual({ kind: "up-to-date", pr: 5 });
-    expect(calls.filter((c) => !c.startsWith("GET"))).toEqual([]);
+    // No commit and no branch change; only the missing label is added (T029).
+    expect(calls.filter((c) => !c.startsWith("GET"))).toEqual([
+      "POST /repos/ImreBoersma/b/labels",
+      "POST /repos/ImreBoersma/b/issues/5/labels",
+    ]);
     expect(lines[0]).toContain("up to date #5");
   });
 });
@@ -148,5 +156,42 @@ describe("helpers", () => {
 
   test("diff of a new file", () => {
     expect(diff("x", null, "a")).toBe("    --- x (new file)\n    + a");
+  });
+});
+
+// Spec 015 T029 and T030.
+describe("labels and access (spec 015 Convergence)", () => {
+  test("an up-to-date PR without the label gets it; with the label, no write", async () => {
+    const { calls, gh } = fakeGitHub(false, true);
+    await runCampaign(campaign, [targets[1]], gh, { dryRun: false, reopen: null }, () => {});
+    expect(calls).toContain("POST /repos/ImreBoersma/b/issues/5/labels");
+    const labelled = client("t", (async (url: string, init: RequestInit = {}) => {
+      const path = url.replace("https://api.github.com", "");
+      calls.length = 0;
+      return path.includes("/pulls?head=")
+        ? new Response(
+            JSON.stringify([
+              { number: 5, state: "open", merged_at: null, labels: [{ name: "campaign" }] },
+            ]),
+          )
+        : new Response("{}", { status: init.method === "GET" || !init.method ? 200 : 200 });
+    }) as unknown as typeof globalThis.fetch);
+    expect((await labelled.findPr("ImreBoersma/b", "campaign/x"))?.labelled).toBe(true);
+    expect((await gh.findPr("ImreBoersma/b", "campaign/x"))?.labelled).toBe(false);
+  });
+
+  test("NoAccess only for the repo read; another 404 is an error", async () => {
+    const answer = (status: number) =>
+      client(
+        "t",
+        (async () => new Response("{}", { status })) as unknown as typeof globalThis.fetch,
+      );
+    await expect(answer(404).defaultHead("org/x")).rejects.toBeInstanceOf(NoAccess);
+    await expect(answer(403).defaultHead("org/x")).rejects.toBeInstanceOf(NoAccess);
+    const compare = answer(404).branchIsOurs("org/x", "main", "campaign/x", "t");
+    await expect(compare).rejects.not.toBeInstanceOf(NoAccess);
+    await expect(answer(404).branchIsOurs("org/x", "main", "campaign/x", "t")).rejects.toThrow(
+      "HTTP 404",
+    );
   });
 });

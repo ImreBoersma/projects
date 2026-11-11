@@ -33,9 +33,9 @@ export function parseCampaign(text: string, fileName: string, projects: Project[
       fail("repos", "all, or a list of catalog ids.");
     for (const r of repos as unknown[]) {
       const p = projects.find((x) => x.id === r);
-      if (!p || p.status === "archived" || !p.repo) {
-        fail("repos", `${r} is not a catalog project with a repo that is not archived.`);
-      }
+      // An archived project stays allowed in the list, so that archiving a project does not break
+      // a campaign; targetRepos leaves it out (spec 015 T031).
+      if (!p?.repo) fail("repos", `${r} is not a catalog project with a repo.`);
     }
   }
   if (!Array.isArray(changes) || changes.length === 0) fail("changes", "at least 1 change.");

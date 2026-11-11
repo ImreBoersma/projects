@@ -15,6 +15,7 @@ export const STATES: CampaignState[] = [
   "closed",
   "to-do",
   "not-needed",
+  "not-available",
 ];
 
 export interface CampaignPr {
@@ -42,7 +43,8 @@ export function summarize(
 ): CampaignSummary | null {
   const counts = Object.fromEntries(STATES.map((s) => [s, 0])) as Record<CampaignState, number>;
   for (const s of states) counts[s]++;
-  const done = counts.open + counts["failed-ci"] + counts["to-do"] === 0;
+  // A repo that could not be read can still need the change, so the campaign is not done (T027).
+  const done = counts.open + counts["failed-ci"] + counts["to-do"] + counts["not-available"] === 0;
   const doneAt = done && closedTimes.length ? ([...closedTimes].sort().at(-1) ?? null) : null;
   if (done && (!doneAt || now.getTime() - Date.parse(doneAt) >= 7 * DAY)) return null;
   return {
@@ -116,14 +118,16 @@ export async function readCampaigns(
       console.log(error instanceof Error ? error.message : error);
       continue;
     }
-    // Old campaigns cost no requests (tasks.md T013).
-    if (now.getTime() - Date.parse(`${campaign.started}T00:00:00Z`) > 180 * DAY) continue;
+    // FR-007 (T026): an old campaign shows while it is not done; summarize() hides a done one.
     const states: CampaignState[] = [];
     const closed: string[] = [];
     const paths = [...new Set(campaign.changes.map((c) => c.path))];
     for (const t of targetRepos(campaign, projects)) {
       const token = tokenFor(t.repo.split("/")[0], env);
-      if (!token) continue;
+      if (!token) {
+        states.push("not-available");
+        continue;
+      }
       try {
         const pr = await readPr(t.repo, `campaign/${campaign.id}`, token);
         const apply =
@@ -133,6 +137,7 @@ export async function readCampaigns(
         states.push(classify(pr, apply));
         if (pr?.closedAt) closed.push(pr.closedAt);
       } catch {
+        states.push("not-available");
         console.log(`Campaign ${campaign.id} ${t.repo}: not available`);
       }
     }

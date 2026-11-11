@@ -224,7 +224,14 @@ export type RepoResult =
   | { kind: "changed-by-hand"; pr: number }
   | { kind: "failed"; reason: string };
 
-export type CampaignState = "merged" | "open" | "failed-ci" | "closed" | "not-needed" | "to-do";
+export type CampaignState =
+  | "merged"
+  | "open"
+  | "failed-ci"
+  | "closed"
+  | "not-needed"
+  | "to-do"
+  | "not-available";
 
 export interface CampaignSummary {
   id: string;

@@ -6,7 +6,15 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { client } from "../campaign/github";
-import { type Deps, OWNER, runNewProject, type Settings, TEMPLATE_COMMIT, validate } from "./steps";
+import {
+  type Deps,
+  ghToken,
+  OWNER,
+  runNewProject,
+  type Settings,
+  TEMPLATE_COMMIT,
+  validate,
+} from "./steps";
 import { type NewProject, templateFiles } from "./template";
 
 const PROJECTS = `${OWNER}/projects`;
@@ -38,9 +46,16 @@ export function realDeps(token: string): Deps {
 
   return {
     async login() {
-      const user = await (await must(api("GET", "/user"), "read the login")).json();
+      const res = await must(api("GET", "/user"), "read the login");
+      const user = await res.json();
       const repo = await (await must(api("GET", `/repos/${PROJECTS}`), "read projects")).json();
-      return { user: user.login, projectsAdmin: repo.permissions?.admin === true };
+      // A classic token names its scopes in this header; a fine-grained token gives none.
+      const header = res.headers.get("x-oauth-scopes");
+      return {
+        user: user.login,
+        projectsAdmin: repo.permissions?.admin === true,
+        scopes: header === null ? null : header.split(",").map((x) => x.trim()),
+      };
     },
     async catalog() {
       const head = await gh.defaultHead(PROJECTS);
@@ -167,7 +182,7 @@ if (import.meta.main) {
     const input = validate(values);
     for (const tool of ["git", "gh"])
       if (!Bun.which(tool)) throw new Error(`${tool} is not installed.`);
-    const token = (await Bun.$`gh auth token`.text()).trim();
+    const token = await ghToken(() => Bun.$`gh auth token`.quiet().text());
     const code = await runNewProject(
       input,
       realDeps(token),

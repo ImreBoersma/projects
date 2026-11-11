@@ -4,6 +4,7 @@ import {
   checkState,
   type Deps,
   FILES,
+  ghToken,
   runNewProject,
   type Settings,
   secretsTable,
@@ -43,6 +44,7 @@ function fake(
     pr: number | null;
     user: string;
     admin: boolean;
+    scopes: string[] | null;
     fail: string;
   }> = {},
 ) {
@@ -55,7 +57,11 @@ function fake(
     if (over.fail === name) throw new Error(`${name}: HTTP 502`);
   };
   const deps: Deps = {
-    login: async () => ({ user: over.user ?? "ImreBoersma", projectsAdmin: over.admin ?? true }),
+    login: async () => ({
+      user: over.user ?? "ImreBoersma",
+      projectsAdmin: over.admin ?? true,
+      scopes: over.scopes === undefined ? null : over.scopes,
+    }),
     catalog: async () => ({ text: catalog, sha: "abc" }),
     repoCommits: async () => commits,
     settings: async () => settings,
@@ -269,6 +275,39 @@ describe("checkState (spec 011 research §4)", () => {
   test("the login: owner and admin right", async () => {
     expect(await stop({ user: "someone" })).toContain("not ImreBoersma");
     expect(await stop({ admin: false })).toContain("no admin right");
+  });
+
+  // Spec 011 T034: a classic token gives its scopes; it must have `repo`. A fine-grained token
+  // gives no scopes header (null): the check is skipped (research §4).
+  test("the login: the scopes of a classic token", async () => {
+    expect(await stop({ scopes: ["gist", "read:org"] })).toBe(
+      "The gh login cannot make repos or change settings: the token has no scope repo.",
+    );
+    expect(await stop({ scopes: ["repo", "read:org"] })).toBeNull();
+    expect(await stop({ scopes: null })).toBeNull();
+  });
+
+  // Spec 011 T033: a dry run that stops at the check still ends with the dry-run line.
+  test("a dry run that stops at the check ends with the dry-run line", async () => {
+    const d = await run(fake({ user: "someone" }).deps, true);
+    expect(d.code).toBe(1);
+    expect(d.out.startsWith("Dry run: no change.")).toBe(true);
+    expect(d.out.endsWith("Dry run: no change.")).toBe(true);
+  });
+
+  // Spec 011 T032: a failed `gh auth token` gives the message of contracts/command.md.
+  test("ghToken: a failed gh auth token", async () => {
+    expect(await ghToken(async () => "  tok\n")).toBe("tok");
+    await expect(
+      ghToken(async () => {
+        throw new Error("You are not logged into any GitHub hosts.");
+      }),
+    ).rejects.toThrow(
+      "The gh login cannot make repos or change settings: You are not logged into any GitHub hosts.",
+    );
+    await expect(ghToken(async () => "")).rejects.toThrow(
+      "The gh login cannot make repos or change settings: no token.",
+    );
   });
 
   test("private and pages: a warning, no stop", async () => {

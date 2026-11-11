@@ -69,8 +69,13 @@ local file, which can be on another branch), the repo, and the PR of the branch
 
 The login check: `gh auth token`, the login must be `ImreBoersma`, and a read of the `projects`
 repo permission must give `admin` (not `maintain`). The `gh` token needs the scope `repo`
-(classic) or a fine-grained token with Administration write; the command does not check the
-scopes yet (tasks.md T034). A failed check stops before the first change.
+(classic) or a fine-grained token with Administration write. Since T034, the command reads the
+header `X-OAuth-Scopes` of `GET /user`: a classic token lists its scopes there, and without `repo`
+the command stops ("the token has no scope repo"). A fine-grained token gives no such header, so
+the command cannot see its permissions; it skips the scope check, and a missing permission shows
+as a failed step (the command can run again). A failed `gh auth token` stops with "The gh login
+cannot make repos or change settings: <gh text>." (T032). A failed check stops before the first
+change.
 
 ## 5. The catalog PR
 
