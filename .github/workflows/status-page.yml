@@ -43,10 +43,17 @@ jobs:
       # starts without history.
       - name: Get the stored results
         run: |
-          if git fetch --depth=1 origin data:refs/remotes/origin/data && git worktree add --detach ../_data origin/data; then
+          # Spec 010 T025: a missing branch is normal at the start; a failed read is not.
+          if ! heads=$(git ls-remote --heads origin data); then
+            echo "::warning::History: the branch data could not be read. The page shows no history for this run."
+            echo "HISTORY_NOT_READ=1" >> "$GITHUB_ENV"
+          elif [ -z "$heads" ]; then
+            echo "History: no branch data yet."
+          elif git fetch --depth=1 origin data:refs/remotes/origin/data && git worktree add --detach ../_data origin/data; then
             echo "History: $(find ../_data/history -maxdepth 1 -type f 2>/dev/null | wc -l) day files."
           else
-            echo "History: no branch data yet."
+            echo "::warning::History: the branch data exists but could not be fetched. The page shows no history for this run."
+            echo "HISTORY_NOT_READ=1" >> "$GITHUB_ENV"
           fi
       - run: bun run start --mode page --history ../_data/history --history-out ../_history/line.ndjson
         env:

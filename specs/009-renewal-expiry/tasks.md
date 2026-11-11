@@ -131,6 +131,6 @@ All three go in one PR.
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T024 Make the renewal key unique: two names that give the same slug ("Hosting (A)", "Hosting-A") are a catalog error in `parseRenewals` (`status/src/catalog.ts`) per FR-006 (partial)
-- [ ] T025 In `keep()` of `status/src/issues.ts`, do not apply the repo-availability rule to `/cert-expiring` and `/renewal-due/` keys, so that a fixed certificate or renewal issue closes when the repo data is not available per FR-007 (partial)
-- [ ] T026 Keep `<id>/renewal-due/domain` open when the registry read gives "not-known" and that issue is open, also when the catalog has a later Domain date (`status/src/main.ts` `checkExpiry`) per research §7 (partial)
+- [X] T024 Make the renewal key unique: two names that give the same slug ("Hosting (A)", "Hosting-A") are a catalog error in `parseRenewals` (`status/src/catalog.ts`) per FR-006 (partial)
+- [X] T025 In `keep()` of `status/src/issues.ts`, do not apply the repo-availability rule to `/cert-expiring` and `/renewal-due/` keys, so that a fixed certificate or renewal issue closes when the repo data is not available per FR-007 (partial)
+- [X] T026 Keep `<id>/renewal-due/domain` open when the registry read gives "not-known" and that issue is open, also when the catalog has a later Domain date (`status/src/main.ts` `checkExpiry`) per research §7 (partial)

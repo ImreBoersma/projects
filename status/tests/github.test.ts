@@ -95,11 +95,11 @@ describe("mapRepo", () => {
       },
       deployments: { nodes: [] },
     });
-    expect(mapRepo(node("renovate[bot]"), project("x")).renovateApp).toBe("renovate");
-    expect(mapRepo(node("imreboersma-homelab-renovate"), project("x")).renovateApp).toBe(
+    expect(mapRepo(node("renovate[bot]"), project("x")).renovateApps).toEqual(["renovate"]);
+    expect(mapRepo(node("imreboersma-homelab-renovate"), project("x")).renovateApps).toEqual([
       "imreboersma-homelab-renovate",
-    );
-    expect(mapRepo(node("some-person"), project("x")).renovateApp).toBeNull();
+    ]);
+    expect(mapRepo(node("some-person"), project("x")).renovateApps).toEqual([]);
   });
 
   test("a null alias is unavailable", () => {

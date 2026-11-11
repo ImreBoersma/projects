@@ -85,9 +85,12 @@ describe("renderPage", () => {
 
   test("shows the site state; colour only when it is not good", () => {
     const at = new Date("2026-11-04T10:17:42Z");
-    expect(group(status({ uptime: { state: "up", at } }), "Site")).toEqual([
-      'Up<span class="sr"> (checked 10:17 UTC)</span>',
-    ]);
+    // Spec 005 T029: the time of the check is visible, relative, with the exact time.
+    const [up] = group(status({ uptime: { state: "up", at } }), "Site");
+    expect(up).toStartWith(
+      'Up <span class="text-xs opacity-75">checked <time datetime="2026-11-04T10:17:42.000Z" data-rel',
+    );
+    expect(up).toContain('<span class="sr"> (2026-11-04 10:17 UTC)</span>');
     expect(group(status({ uptime: { state: "down", at } }), "Site")[0]).toStartWith(
       '<span class="badge badge-sm badge-error bad">Down</span>',
     );
@@ -118,7 +121,7 @@ describe("renderPage", () => {
         problems: [ci(), { projectId: "one", reason: "inactive", key: "one/inactive" }],
       }),
     ]);
-    expect(html).toContain('<li class="project bad"');
+    expect(html).toContain('<li class="project bad');
     expect(html).toContain('<span class="dot bad" role="img" aria-label="Problem"></span>');
     expect(html).toContain(
       "<li>The last CI run failed.</li><li>No commit for more than 90 days.</li>",
@@ -166,7 +169,7 @@ describe("renderPage", () => {
           commitOid: oid,
           ci: "failed",
           renovatePrCount: 1,
-          renovateApp: "renovate",
+          renovateApps: ["renovate"],
           deploy: { at: generatedAt, result: "succeeded" },
           uptime: { state: "up", at: generatedAt },
           problems: [ci()],
@@ -287,7 +290,7 @@ describe("conformance on the page (spec 008)", () => {
   test("shows a fact, not a problem, when rules could not be read", () => {
     const html = render([status({ conformanceNotAvailable: ["R7", "R9"] })]);
     expect(html).toContain("Setup check not available: R7, R9</dd>");
-    expect(html).toContain('<li class="project unknown"');
+    expect(html).toContain('<li class="project unknown');
   });
 });
 
@@ -490,7 +493,7 @@ describe("spec 012: total state, sections, times, new tabs", () => {
           project: site,
           commitOid: "abc",
           renovatePrCount: 1,
-          renovateApp: "renovate",
+          renovateApps: ["renovate"],
           deploy: { at: generatedAt, result: "succeeded" },
           uptime: { state: "up", at: generatedAt },
           problems: [
@@ -558,7 +561,7 @@ describe("secrets on the page (spec 013)", () => {
     ).toStartWith(
       '<span class="badge badge-sm badge-warning warn">Secret VERCEL_TOKEN <time datetime="2026-12-12"',
     );
-    expect(html).toContain('<li class="project warn"');
+    expect(html).toContain('<li class="project warn');
   });
 
   test("two secrets show the first one and a count", () => {
@@ -574,7 +577,7 @@ describe("secrets on the page (spec 013)", () => {
     expect(group(s, "Expiry")).toEqual([
       '<span class="badge badge-sm badge-warning warn" title="This secret can expire, but it has no expiry date. Set one at the provider, then in projects.yaml.">No expiry: BOARD_TOKEN, VERCEL_TOKEN</span>',
     ]);
-    expect(render([s])).toContain('<li class="project good"');
+    expect(render([s])).toContain('<li class="project good');
     expect(render([s])).toContain("<title>Project status</title>");
   });
 
@@ -585,7 +588,7 @@ describe("secrets on the page (spec 013)", () => {
       issues: new Map(),
       shared: { secrets: [], problems: [], gaps: [], noExpiry: ["BOARD_SYNC_TOKEN"] },
     });
-    expect(html).toContain("<h2>Shared tokens</h2>");
+    expect(html).toContain('<p class="font-semibold">Shared setup</p>');
     expect(html).toContain("No expiry: BOARD_SYNC_TOKEN</span>");
   });
 
@@ -613,8 +616,8 @@ describe("secrets on the page (spec 013)", () => {
       },
     });
     expect(html).toContain("<title>(1) Project status</title>");
-    expect(html).toContain("<h2>Shared tokens</h2>");
-    expect(html).toContain('<li class="project bad"');
+    expect(html).toContain('<p class="font-semibold">Shared setup</p>');
+    expect(html).toContain('<li class="project bad');
     expect(html).toContain(
       `${A("https://github.com/ImreBoersma/projects/issues/31")}The secret TOKEN_A expires in 20 days.${NT}`,
     );
@@ -625,8 +628,13 @@ describe("secrets on the page (spec 013)", () => {
     expect(html).toContain("1 shared problem.");
   });
 
+  test("shared problems only: the summary does not say No problems (spec 007 T025)", () => {
+    expect(summary([status()], 1)).toBe("No project problems. 1 project. 1 shared problem.");
+    expect(summary([status()], 0)).toBe("No problems. 1 project.");
+  });
+
   test("no secrets and no gaps: no shared group", () => {
-    expect(render([status()])).not.toContain("<h2>Shared tokens</h2>");
+    expect(render([status()])).not.toContain("Shared setup</p>");
     expect(
       renderPage({
         generatedAt,
@@ -634,7 +642,7 @@ describe("secrets on the page (spec 013)", () => {
         issues: new Map(),
         shared: { secrets: [], problems: [], gaps: [] },
       }),
-    ).not.toContain("<h2>Shared tokens</h2>");
+    ).not.toContain("Shared setup</p>");
   });
 });
 
@@ -664,18 +672,18 @@ describe("campaigns on the page (spec 015)", () => {
 
   test("the counts and the search link", () => {
     const html = page([campaign()]);
-    expect(html).toContain('<h2>Campaigns <span class="count">1</span></h2>');
+    expect(html).toContain('<li class="project unknown list-row items-start">');
     expect(html).toContain(
       `<dd>2 merged${SEP}2 open${SEP}${A("https://github.com/pulls?q=is%3Apr+head%3Acampaign%2Fnode-24")}PRs${NT}</dd>`,
     );
-    expect(html).toContain('<li class="project unknown"');
+    expect(html).toContain('<li class="project unknown');
     expect(html).toContain(">4 days ago</time>");
   });
 
   test("failed CI: an amber badge and dot; the total state does not change", () => {
     const html = page([campaign({ counts: counts({ open: 1, "failed-ci": 1 }) })]);
     expect(html).toContain('<span class="badge badge-sm badge-warning warn">1 failed CI</span>');
-    expect(html).toContain('<li class="project warn"');
+    expect(html).toContain('<li class="project warn');
     expect(html).toContain("<title>Project status</title>");
     expect(html).toContain('<section class="total correct');
   });
@@ -684,12 +692,18 @@ describe("campaigns on the page (spec 015)", () => {
     const html = page([
       campaign({ done: true, doneAt: "2026-10-27T05:03:00Z", counts: counts({ merged: 4 }) }),
     ]);
-    expect(html).toContain('<li class="project good"');
+    expect(html).toContain('<li class="project good');
     expect(html).toContain('<dd>Done <time datetime="2026-10-27T05:03:00Z"');
   });
 
+  test("a repo that could not be read shows as not available (spec 015 T027)", () => {
+    const html = page([campaign({ counts: counts({ open: 1, "not-available": 1 }) })]);
+    expect(html).toContain(`<dd>1 open${SEP}1 not available${SEP}`);
+  });
+
   test("no campaigns: no section", () => {
-    expect(page([])).not.toContain("<h2>Campaigns <span");
+    const panel = page([]).match(/<section id="tab-campaigns"[\s\S]*?<\/section>/)?.[0] ?? "";
+    expect(panel).not.toContain('<li class="project');
     expect(page([])).toContain("No open campaign.");
   });
 });
@@ -994,5 +1008,15 @@ describe("the Delivery table in the tab History (spec 017, contracts/page.md)", 
     expect(history(page({ rows: [row], months: five }))).toContain("· 1/1/1/1/1");
     const h = history(page({ rows, months }));
     expect(h).not.toMatch(/\[bot\]|renovate|dependabot\[/);
+  });
+});
+
+describe("tabs (spec 019 T031)", () => {
+  test("each tab names its panel", () => {
+    const html = renderPage({ generatedAt, rows: [status()], issues: new Map() });
+    for (const id of ["projects", "campaigns", "tokens", "versions", "history"]) {
+      expect(html).toContain(`data-tab="${id}" href="?tab=${id}" aria-controls="tab-${id}"`);
+      expect(html).toContain(`<section id="tab-${id}" role="tabpanel"`);
+    }
   });
 });

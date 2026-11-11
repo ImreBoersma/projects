@@ -147,11 +147,35 @@ describe("compareVisit and fixedText (spec 020)", () => {
     expect(r).toMatchObject({ base: "visit", since: at(-5), newKeys: ["two/site-down"] });
   });
 
-  test("at most 20 fixed keys", () => {
+  test("at most 20 fixed keys in the list, the full count in the line (T028)", () => {
     const keys = Array.from({ length: 30 }, (_, i) => `one/r${i}`);
-    expect(
-      compareVisit({ current: { time: at(-1), keys } }, [], at(0), changes, ids).fixedKeys,
-    ).toHaveLength(20);
+    const r = compareVisit({ current: { time: at(-1), keys } }, [], at(0), changes, ids);
+    expect(r.fixedKeys).toHaveLength(20);
+    expect(r.fixedCount).toBe(30);
+  });
+
+  test("the changes line; a visit more than 30 days ago shows its date (T029)", () => {
+    const { changesText } = require("../src/client") as typeof import("../src/client");
+    // In the page, relTime of view.ts is in the same script (render.ts).
+    (globalThis as { relTime?: unknown }).relTime = (
+      require("../src/view") as typeof import("../src/view")
+    ).relTime;
+    const now = Date.parse("2026-11-11T12:00:00Z");
+    expect(changesText("24h", 1, 2, "2026-11-10T12:00:00Z", now)).toBe(
+      "In the last 24 hours: 1 new, 2 fixed",
+    );
+    expect(changesText("visit", 1, 0, "2026-11-11T10:00:00Z", now)).toBe(
+      "Since your visit 2 hours ago: 1 new, 0 fixed",
+    );
+    expect(changesText("visit", 0, 0, "2026-11-11T10:00:00Z", now)).toBe(
+      "No change since your visit 2 hours ago",
+    );
+    expect(changesText("visit", 3, 1, "2026-09-01T08:00:00Z", now)).toBe(
+      "Since 2026-09-01: 3 new, 1 fixed",
+    );
+    expect(changesText("visit", 0, 0, "2026-09-01T08:00:00Z", now)).toBe(
+      "No change since 2026-09-01",
+    );
   });
 
   test("fixedText", () => {
@@ -249,5 +273,15 @@ describe("the tab Versions (spec 016)", () => {
     expect(readView("?tab=versions", "", known).tab).toBe("versions");
     expect(writeView(readView("?tab=versions", "", known))).toBe("?tab=versions");
     expect(start.toString()).toMatch(/\["Versions",\s*"versions"\]/);
+  });
+});
+
+describe("tabs and pop-ups (spec 019 T030, T031)", () => {
+  const { start } = require("../src/client") as typeof import("../src/client");
+  test("Left and Right move between tabs; a pushed pop-up closes with Back", () => {
+    const code = start.toString();
+    expect(code).toContain('"ArrowLeft"');
+    expect(code).toContain('"ArrowRight"');
+    expect(code).toContain("history.back()");
   });
 });

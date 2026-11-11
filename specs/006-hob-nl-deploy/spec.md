@@ -42,9 +42,10 @@ a workflow on push to `main`."
 - Q: Does the deploy write a file outside `mu-plugins`? → A: Yes, one: the marker file
   `~/.deploy-last-good-<repo>` in the home folder of the SSH user, outside the site. FR-005 permits
   it.
-- Q: Which HTTP answers pass the check? → A: Each answer from 200 to 499. Only HTTP 5xx, no answer,
-  or the WordPress "critical error" text fail. A 4xx (for example a 403 challenge page) is
-  accepted on purpose: it does not show a broken plugin.
+- Q: Which HTTP answers pass the check? → A: HTTP 2xx and 3xx, and 401, 403 and 429 (a login, a
+  bot challenge page or a rate limit does not show a broken plugin). HTTP 5xx, any other 4xx (for
+  example a 404 home page), no answer, or the WordPress "critical error" text fail (Maintainer
+  decision 2026-11-11, T025; the code until then passed each answer from 200 to 499).
 - Q: How much history does the checkout get? → A: The full history (`fetch-depth: 0`), so that the
   commit of the marker is always available.
 - Q: Is the SSH host a secret? → A: The host name is not secret data (it is also in the known-hosts
@@ -168,7 +169,8 @@ that the row of hob.nl shows the last commit and the last deploy.
 - **FR-013**: After each deploy, the workflow MUST check the home page and `/wp-admin/`. On HTTP
   5xx, no answer, or the WordPress "critical error" page, it MUST copy back the `hob-*` files of the
   last commit that passed the check (the marker file; without a marker, the previous commit), and
-  MUST mark the deploy as failed. HTTP 200 to 499 passes.
+  MUST mark the deploy as failed. A 4xx other than 401, 403 and 429 also fails; 2xx, 3xx, 401,
+  403 and 429 pass.
 - **FR-014**: The deploy MUST stop before the copy when a `hob-*` PHP file has a syntax error.
 
 ### Key Entities

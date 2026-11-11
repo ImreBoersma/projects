@@ -44,11 +44,11 @@ export function checkRepo(
 
   const checks: Record<string, () => RuleState> = {
     R1: () =>
-      na(facts.hasPackageJson) || na(callers)
-        ? "not-available"
-        : facts.hasPackageJson
-          ? state(!usesShared("ci-node.yml"))
-          : "not-applicable",
+      facts.hasPackageJson === false
+        ? "not-applicable"
+        : na(facts.hasPackageJson) || na(callers)
+          ? "not-available"
+          : state(!usesShared("ci-node.yml")),
     R2: () =>
       facts.private
         ? "not-applicable"

@@ -19,11 +19,12 @@ import {
 } from "./expiry/expiry";
 import { readBootstrap, readCertificate, readRegistryDate } from "./expiry/read";
 import { fetchStatuses, tokenFor } from "./github";
-import { recentChanges, repairTime, since, uptime as uptimeOf } from "./history/stats";
+import { carryKeys, recentChanges, repairTime, since, uptime as uptimeOf } from "./history/stats";
 import { readHistory, resultLine } from "./history/store";
 import {
   closeIssue,
   ensureLabel,
+  keepsOpen,
   listOpenIssues,
   openIssue,
   parseMarker,
@@ -117,7 +118,12 @@ async function checkSecrets(): Promise<{
     if (date === "not-known") {
       console.log(`Token ${name}: not known`);
       const listed = secretEntries.find(
-        (e) => e.name === name && e.where === "ImreBoersma/projects" && e.expires !== "never",
+        (e) =>
+          e.name === name &&
+          e.where === "ImreBoersma/projects" &&
+          e.expires !== "never" &&
+          // Spec 013 T026: `none` has no catalog date either.
+          e.expires !== "none",
       );
       if (!listed) keepKeys.add(`${SHARED}/secret-expiring/${slug(name)}`);
     } else if (date) {
@@ -150,6 +156,9 @@ async function checkSecrets(): Promise<{
       if (!texts) console.log(`Secrets compare ${repo}: workflows not available`);
       // Spec 016: keep them for the Node version of the CI caller.
       else workflowTexts.set(s.project.id, texts);
+    } else if (!texts) {
+      // Spec 013 T027: an own repo whose workflows the conformance check could not read.
+      console.log(`Secrets compare ${repo}: workflows not available`);
     }
     if (texts) used.push({ owner: s.project.id, repo, names: texts.flatMap(usedSecrets) });
   }
@@ -196,9 +205,11 @@ async function checkExpiry(): Promise<Set<string>> {
         ]);
         s.expiry.certificate = cert;
         if (cert === "not-known") keep.add(`${id}/cert-expiring`);
+        // Spec 009 T026: an open domain issue stays open while the registry date is not known,
+        // also when the catalog has a later Domain date.
+        if (reg === "not-known") keep.add(`${id}/renewal-due/domain`);
         if (reg === "not-known" && !hasCatalogDomain) {
           s.expiry.registryNotKnown = true;
-          keep.add(`${id}/renewal-due/domain`);
         } else if (reg !== "not-known" && reg !== "not-registered") {
           registry = {
             name: "Domain",
@@ -221,11 +232,13 @@ async function checkExpiry(): Promise<Set<string>> {
 async function checkConformance(): Promise<Set<string>> {
   const unavailable = new Set<string>();
   const token = process.env.CONFORMANCE_READ_TOKEN;
+  const own = statuses.filter((s) => s.project.repo?.startsWith("ImreBoersma/"));
   if (!token) {
+    // Spec 008 FR-007: nothing was checked, so the open not-conformant issues stay open.
     console.log("Conformance check not available: no token.");
+    for (const s of own) unavailable.add(s.project.id);
     return unavailable;
   }
-  const own = statuses.filter((s) => s.project.repo?.startsWith("ImreBoersma/"));
   // R9: the vars that each shared workflow of this repo reads from the caller repo.
   const sharedVars = await sharedWorkflowVars(
     new URL("../../.github/workflows", import.meta.url).pathname,
@@ -259,20 +272,42 @@ async function checkConformance(): Promise<Set<string>> {
 }
 
 // Spec 010: the result of this run, added to the stored results.
+// The checks without data in this run: the same rule for the issues and the stored results.
+const keepCtx = {
+  unavailableIds: new Set(
+    statuses.filter((s) => s.availability === "unavailable").map((s) => s.project.id),
+  ),
+  uptimeNotAvailable: [...uptime.values()].some((u) => u.state === "not-available"),
+  setupUnavailableIds: unavailableSetup,
+  keepKeys,
+};
+const stored = args.history ? await readHistory(args.history, now) : { results: [], start: null };
+// Spec 010 T024: a problem of the last result whose check had no data in this run stays in the
+// result, as its issue stays open; so one failed read does not reset "since" or add a repair.
+const previous = stored.results.at(-1)?.projects ?? {};
+const carried = (id: string, keys: string[]) =>
+  carryKeys(previous[id]?.problems, keys, (k) => keepsOpen(keepCtx, k));
+const sharedKeys = carried(
+  SHARED,
+  shared.problems.map((p) => p.key),
+);
 const current = {
   time: now.toISOString(),
   projects: Object.fromEntries([
     ...statuses.map((s) => [
       s.project.id,
-      { site: s.uptime.state, problems: s.problems.map((p) => p.key) },
+      {
+        site: s.uptime.state,
+        problems: carried(
+          s.project.id,
+          s.problems.map((p) => p.key),
+        ),
+      },
     ]),
     // Spec 013: the shared problems, so that "since" works for them.
-    ...(shared.problems.length
-      ? [[SHARED, { site: "no-domain", problems: shared.problems.map((p) => p.key) }]]
-      : []),
+    ...(sharedKeys.length ? [[SHARED, { site: "no-domain", problems: sharedKeys }]] : []),
   ]),
 };
-const stored = args.history ? await readHistory(args.history, now) : { results: [], start: null };
 const results = [...stored.results, current];
 for (const s of statuses) {
   for (const p of s.problems) {
@@ -300,7 +335,10 @@ if (args.mode === "page") {
     generatedAt: now,
     rows: sortRows(statuses),
     issues,
-    historyStart: stored.start ?? now.toISOString().slice(0, 10),
+    // Spec 010 T025: when the workflow could not read the branch data, no "History from <today>".
+    historyStart: process.env.HISTORY_NOT_READ
+      ? null
+      : (stored.start ?? now.toISOString().slice(0, 10)),
     repair: repairTime(results, now),
     // Spec 020: the changes of the last 24 hours (the base without a stored visit).
     changes: recentChanges(
@@ -330,7 +368,14 @@ if (args.mode === "page") {
   };
   await Bun.write(join(args.out, "index.html"), renderPage(page));
   // Spec 020 US2: the data file next to the page.
-  await Bun.write(join(args.out, "status.json"), statusJson(page));
+  // Spec 020 T030: without the data file the page still deploys; the run log shows an error.
+  try {
+    await Bun.write(join(args.out, "status.json"), statusJson(page));
+  } catch (error) {
+    console.error(
+      `::error::status.json not written: ${error instanceof Error ? error.message : error}`,
+    );
+  }
   // Spec 020 US3: the files of the installable app.
   await Bun.write(join(args.out, "manifest.webmanifest"), manifest());
   await Bun.write(join(args.out, "sw.js"), serviceWorker());
@@ -412,10 +457,10 @@ async function reconcileIssues() {
   const actions = planIssueActions(
     [...statuses.flatMap((s) => s.problems), ...shared.problems],
     await listOpenIssues(repo, token),
-    new Set(statuses.filter((s) => s.availability === "unavailable").map((s) => s.project.id)),
-    [...uptime.values()].some((u) => u.state === "not-available"),
-    unavailableSetup,
-    keepKeys,
+    keepCtx.unavailableIds,
+    keepCtx.uptimeNotAvailable,
+    keepCtx.setupUnavailableIds,
+    keepCtx.keepKeys,
     new Map(projects.map((p) => [p.id, p])),
     now.toISOString().slice(0, 10),
   );

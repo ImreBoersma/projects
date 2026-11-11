@@ -52,21 +52,6 @@ export function totalState(rows: ProjectStatus[], sharedProblems = 0) {
   return { kind, problems, text, title };
 }
 
-const SECTIONS = [
-  { id: "problems", title: "Projects with problems" },
-  { id: "not-available", title: "Check not available" },
-  { id: "other", title: "Other projects" },
-] as const;
-
-export function sections(rows: ProjectStatus[]) {
-  const sectionOf = (s: ProjectStatus) =>
-    s.problems.length > 0 ? "problems" : checkNotAvailable(s) ? "not-available" : "other";
-  return SECTIONS.map((section) => ({
-    ...section,
-    rows: rows.filter((s) => sectionOf(s) === section.id),
-  })).filter((section) => section.rows.length > 0);
-}
-
 // Data-model.md "BadgeKind".
 export const siteKind = (state: ProjectStatus["uptime"]["state"]): BadgeKind =>
   state === "up" ? "good" : state === "down" ? "bad" : "unknown";

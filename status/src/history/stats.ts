@@ -112,3 +112,13 @@ export function recentChanges(
     stopped: [...before].filter((k) => !nowKeys.has(k) && names.has(k.split("/")[0])).map(item),
   };
 }
+
+// Spec 010 T024: the keys of this run, and the keys of the previous result that `keep` keeps open
+// (their check had no data in this run), so that "since" and the repair time do not see a stop.
+export function carryKeys(
+  previous: string[] | undefined,
+  current: string[],
+  keep: (key: string) => boolean,
+): string[] {
+  return [...current, ...(previous ?? []).filter((k) => !current.includes(k) && keep(k))];
+}

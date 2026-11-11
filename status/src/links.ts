@@ -32,8 +32,8 @@ export function rowLinks(s: ProjectStatus, issues: Map<string, number>): RowLink
     ci: data && s.ci !== "unknown" && s.commitOid ? `${data}/commit/${s.commitOid}/checks` : null,
     deploy: data && s.deploy !== "unknown" ? `${data}/deployments` : null,
     renovate:
-      data && s.renovatePrCount > 0 && s.renovateApp
-        ? `${data}/pulls?q=${encodeURIComponent(`is:pr is:open author:app/${s.renovateApp}`).replace(/%20/g, "+")}`
+      data && s.renovatePrCount > 0 && s.renovateApps.length
+        ? `${data}/pulls?q=${encodeURIComponent(`is:pr is:open ${s.renovateApps.map((a) => `author:app/${a}`).join(" ")}`).replace(/%20/g, "+")}`
         : null,
     site,
     problems,

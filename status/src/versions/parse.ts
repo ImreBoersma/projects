@@ -15,7 +15,12 @@ export const TOOLS: [Tool, string][] = [
 // The major version of the lowest version that a range allows; null when it has none.
 export function lowestMajor(range: string): number | null {
   const majors = range.split("||").map((part) => {
-    const first = part.trim().split(/\s+/)[0] ?? "";
+    // Spec 016 T020: ">= 18" is ">=18" (a space after the operator).
+    const first =
+      part
+        .trim()
+        .replace(/([<>=^~]+)\s+/g, "$1")
+        .split(/\s+/)[0] ?? "";
     if (first.startsWith("<")) return null;
     const m = first.replace(/^[\^~>=v]+/, "").match(/^(\d+)(\.|$)/);
     return m ? Number(m[1]) : null;

@@ -133,5 +133,5 @@ All three go in one PR, because the page and the issue link to the repair docume
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T024 When `CONFORMANCE_READ_TOKEN` is not set, mark all `ImreBoersma/…` projects as setup-unavailable in `checkConformance()` (`status/src/main.ts`), so that their open not-conformant issues stay open per FR-007 (contradicts)
-- [ ] T025 In R1 (`status/src/conformance/rules.ts:47`), give `not-applicable` for a repo without `package.json` before the check for unreadable workflows per contracts/rules.md R1 (partial)
+- [X] T024 When `CONFORMANCE_READ_TOKEN` is not set, mark all `ImreBoersma/…` projects as setup-unavailable in `checkConformance()` (`status/src/main.ts`), so that their open not-conformant issues stay open per FR-007 (contradicts)
+- [X] T025 In R1 (`status/src/conformance/rules.ts:47`), give `not-applicable` for a repo without `package.json` before the check for unreadable workflows per contracts/rules.md R1 (partial)

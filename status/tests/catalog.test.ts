@@ -105,7 +105,13 @@ describe("parseCatalog", () => {
     }
     expect(() =>
       e("renewal:\n  - name: Domain\n    date: 2027-03-01\n  - name: domain\n    date: 2027-04-01"),
-    ).toThrow(`${err}the name domain is used two times.`);
+    ).toThrow(`${err}the name domain is used two times, or gives the same key as another name.`);
+    // Spec 009 T024: "Hosting (A)" and "Hosting-A" give the same issue key.
+    expect(() =>
+      e(
+        'renewal:\n  - name: "Hosting (A)"\n    date: 2027-03-01\n  - name: Hosting-A\n    date: 2027-04-01',
+      ),
+    ).toThrow("the name Hosting-A is used two times, or gives the same key as another name.");
   });
 
   test("reads the stakeholder name", () => {
@@ -172,6 +178,38 @@ describe("parseSecrets (spec 013)", () => {
   const base =
     "name: TOKEN_A\nkind: actions-secret\nwhere: ImreBoersma/projects\nexpires: 2027-11-06";
   const parse = (text: string) => parseSecrets(text, projects);
+
+  test("one owner may not have two secrets with the same issue key (T028)", () => {
+    expect(() =>
+      parse(
+        list(`  - name: MY_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: 2027-11-06
+  - name: my-token
+    kind: actions-secret
+    where: ImreBoersma/one
+    expires: 2027-11-06
+`),
+      ),
+    ).toThrow("my-token gives the same issue key as another secret of shared.");
+    // The same name for two projects is fine: the keys differ.
+    expect(
+      parse(
+        list(`  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/one
+    expires: never
+    project: one
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/two
+    expires: never
+    project: two
+`),
+      ).length,
+    ).toBe(2);
+  });
 
   test("reads a valid list", () => {
     expect(
@@ -250,8 +288,9 @@ describe("parseSecrets (spec 013)", () => {
       `  - ${base.split("\n").join("\n    ")}\n  - ${base.replace("TOKEN_A", "token_a").split("\n").join("\n    ")}\n`,
     );
     expect(() => parse(twice)).toThrow(/item 1, field `name`.*two times/);
+    // Another place of another owner (a project): a different issue key (T028).
     const otherPlace = list(
-      `  - ${base.split("\n").join("\n    ")}\n  - ${base.replace("ImreBoersma/projects", "ImreBoersma/one").split("\n").join("\n    ")}\n`,
+      `  - ${base.split("\n").join("\n    ")}\n  - ${`${base.replace("ImreBoersma/projects", "ImreBoersma/one")}\nproject: one`.split("\n").join("\n    ")}\n`,
     );
     expect(parse(otherPlace)).toHaveLength(2);
   });

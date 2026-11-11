@@ -17,7 +17,8 @@ export const THEME: Record<string, string> = {
   "--color-neutral": "oklch(37% 0.01 67.558)",
   "--color-neutral-content": "oklch(92% 0.003 48.717)",
   "--color-info": "oklch(74% 0.16 232.661)",
-  "--color-info-content": "oklch(39% 0.09 240.876)",
+  // Spec 020 T027: 36% (4.81:1 on the info colour; the original 39% gives 4.27:1).
+  "--color-info-content": "oklch(36% 0.09 240.876)",
   "--color-success": "oklch(76% 0.177 163.223)",
   "--color-success-content": "oklch(37% 0.077 168.94)",
   "--color-warning": "oklch(82% 0.189 84.429)",

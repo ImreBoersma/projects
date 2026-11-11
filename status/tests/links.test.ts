@@ -38,15 +38,24 @@ describe("rowLinks", () => {
     expect(rowLinks(status(), none).deploy).toBeNull();
   });
 
-  test("links Renovate PRs to the PRs of the Renovate app, only when there are some", () => {
-    expect(rowLinks(status({ renovatePrCount: 2, renovateApp: "renovate" }), none).renovate).toBe(
-      "https://github.com/ImreBoersma/one/pulls?q=is%3Apr+is%3Aopen+author%3Aapp%2Frenovate",
-    );
+  test("links Renovate PRs to the PRs of the Renovate apps, only when there are some", () => {
     expect(
-      rowLinks(status({ renovatePrCount: 1, renovateApp: "imreboersma-homelab-renovate" }), none)
+      rowLinks(status({ renovatePrCount: 2, renovateApps: ["renovate"] }), none).renovate,
+    ).toBe("https://github.com/ImreBoersma/one/pulls?q=is%3Apr+is%3Aopen+author%3Aapp%2Frenovate");
+    expect(
+      rowLinks(status({ renovatePrCount: 1, renovateApps: ["imreboersma-homelab-renovate"] }), none)
         .renovate,
     ).toContain("author%3Aapp%2Fimreboersma-homelab-renovate");
-    expect(rowLinks(status({ renovatePrCount: 0, renovateApp: null }), none).renovate).toBeNull();
+    // Spec 007 T024: PRs of two apps give one link with both authors.
+    expect(
+      rowLinks(
+        status({ renovatePrCount: 3, renovateApps: ["renovate", "imreboersma-homelab-renovate"] }),
+        none,
+      ).renovate,
+    ).toBe(
+      "https://github.com/ImreBoersma/one/pulls?q=is%3Apr+is%3Aopen+author%3Aapp%2Frenovate+author%3Aapp%2Fimreboersma-homelab-renovate",
+    );
+    expect(rowLinks(status({ renovatePrCount: 0, renovateApps: [] }), none).renovate).toBeNull();
   });
 
   test("links a problem to its open issue, only when the issue exists", () => {
@@ -83,7 +92,7 @@ describe("rowLinks", () => {
       availability: "unavailable",
       commitOid: oid,
       renovatePrCount: 1,
-      renovateApp: "renovate",
+      renovateApps: ["renovate"],
       deploy: { at: now, result: "succeeded" },
     });
     const links = rowLinks(s, none);

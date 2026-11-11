@@ -100,6 +100,27 @@ The next update closes this issue when the problem stops.
   };
 }
 
+// The checks that had no data in this run (spec 001, 005, 008, 009). A problem whose check had
+// no data stays open: its issue (planIssueActions) and its stored key (spec 010 T024).
+export interface KeepContext {
+  unavailableIds: Set<string>;
+  uptimeNotAvailable: boolean;
+  setupUnavailableIds: Set<string>;
+  keepKeys: Set<string>;
+}
+
+// A site-down issue depends only on the site check (spec 005, FR-008), a not-conformant issue only
+// on the setup check (spec 008), a certificate or renewal issue only on its own read (spec 009,
+// keepKeys); other issues on the repo data.
+export function keepsOpen(ctx: KeepContext, key: string): boolean {
+  const id = key.split("/")[0];
+  if (ctx.keepKeys.has(key)) return true;
+  if (key.endsWith("/site-down")) return ctx.uptimeNotAvailable;
+  if (key.endsWith("/not-conformant")) return ctx.setupUnavailableIds.has(id);
+  if (key.endsWith("/cert-expiring") || key.includes("/renewal-due/")) return false;
+  return ctx.unavailableIds.has(id);
+}
+
 export function planIssueActions(
   problems: Problem[],
   openIssues: OpenIssue[],
@@ -116,16 +137,8 @@ export function planIssueActions(
     if (key) openKeys.set(key, issue.number);
   }
   const found = new Set(problems.map((p) => p.key));
-  // A site-down issue depends only on the site check (spec 005, FR-008), a not-conformant issue only
-  // on the setup check (spec 008); other issues on the repo data.
-  const keep = (key: string) => {
-    const id = key.split("/")[0];
-    // Spec 009: a value that is not known in this run keeps its issue open.
-    if (keepKeys.has(key)) return true;
-    if (key.endsWith("/site-down")) return uptimeNotAvailable;
-    if (key.endsWith("/not-conformant")) return setupUnavailableIds.has(id);
-    return unavailableIds.has(id);
-  };
+  const keep = (key: string) =>
+    keepsOpen({ unavailableIds, uptimeNotAvailable, setupUnavailableIds, keepKeys }, key);
   return {
     open: problems
       .filter((p) => !openKeys.has(p.key))

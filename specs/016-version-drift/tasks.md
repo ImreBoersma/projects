@@ -101,4 +101,4 @@ small), with the checks of all runs on the merge commit.
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T020 Accept a space between the operator and the version in `lowestMajor` (`">= 18"` → 18) and add the case to `status/tests/versions-parse.test.ts` per research §4, FR-005 (partial)
+- [X] T020 Accept a space between the operator and the version in `lowestMajor` (`">= 18"` → 18) and add the case to `status/tests/versions-parse.test.ts` per research §4, FR-005 (partial)

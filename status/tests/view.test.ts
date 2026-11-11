@@ -6,7 +6,6 @@ import {
   deployKind,
   relTime,
   renewalKind,
-  sections,
   siteKind,
   totalState,
 } from "../src/view";
@@ -89,31 +88,6 @@ describe("totalState (US1)", () => {
   test("a certificate that is not known does not count", () => {
     const expiry = { certificate: "not-known" as const, renewals: [], registryNotKnown: true };
     expect(totalState([status({ expiry })]).kind).toBe("correct");
-  });
-});
-
-describe("sections (US3)", () => {
-  const named = (name: string, o: Partial<ProjectStatus> = {}) =>
-    status({ ...o, project: { id: name, name, repo: null, status: "active" } });
-
-  test("puts each row in one section, in catalog order", () => {
-    const rows = [
-      named("a"),
-      named("b", { availability: "unavailable" }),
-      named("c", { problems: [problem] }),
-      named("d"),
-      named("e", { problems: [problem] }),
-    ];
-    const result = sections(rows).map((s) => [s.id, s.rows.map((r) => r.project.id)]);
-    expect(result).toEqual([
-      ["problems", ["c", "e"]],
-      ["not-available", ["b"]],
-      ["other", ["a", "d"]],
-    ]);
-  });
-
-  test("leaves out empty sections", () => {
-    expect(sections([named("a")]).map((s) => s.title)).toEqual(["Other projects"]);
   });
 });
 

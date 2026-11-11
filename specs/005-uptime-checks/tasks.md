@@ -151,4 +151,4 @@ its runs 5 to 8 hours late. The Maintainer chose an external trigger on 2026-11-
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T029 Show the time of the site check as a visible relative time (`timeTag()`) next to the Up/Down state in `status/src/render.ts`, or record in FR-006 that the update time stands for it per FR-006 (partial)
+- [X] T029 Show the time of the site check as a visible relative time (`timeTag()`) next to the Up/Down state in `status/src/render.ts`, or record in FR-006 that the update time stands for it per FR-006 (partial)
