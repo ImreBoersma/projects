@@ -31,6 +31,19 @@ of spec 009 apply: an issue 30 days before the date, a badge on the status page.
   each run. A secret that a workflow uses but that is not in the catalog shows as a setup note on
   that project, without an issue.
 
+### Session 2026-11-11 (review)
+
+- Q: How does the catalog list a status token whose date the run reads from the token? → A: With
+  `expires: never` (`STATUS_READ_TOKEN`, `CONFORMANCE_READ_TOKEN`). A read date replaces it. When
+  the read fails or the token gives no date, the entry shows the "No expiry" warning of FR-010.
+- Q: How does a read date match a catalog entry? → A: On the exact name (case-sensitive), and only
+  for entries with `where: ImreBoersma/projects` (research.md §3). The compare of FR-009 and the
+  uniqueness check ignore case.
+- Q: What happens for a repo without a `.github/workflows` folder? → A: The folder gives 404: an
+  empty list, no notes. Any other read error: no notes and a log line (research.md §4).
+- Q: Which form of the name is in the problem key? → A: The slug of the name. Two entries that give
+  the same key (the same slug for one owner) are a known gap; it is a Convergence task.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Get an issue before a token expires (Priority: P1)
@@ -109,8 +122,9 @@ each shows in its place, with the colour rules of spec 012.
 
 - A token expires while the update runs with it: the read fails as now ("Data not available");
   the catalog date still makes the problem.
-- A catalog entry with "no expiry" (for example the board tokens): in the catalog list only; not
-  shown, no problem.
+- A catalog entry with `expires: none` (the value cannot expire, for example a host name): in the
+  catalog list only; not shown, no problem. An entry with `expires: never` shows the warning of
+  FR-010 and makes no problem.
 - A catalog entry for a project that is not in the catalog: an error in the catalog check, as for
   other catalog errors.
 - Two entries with the same name in the same place: an error in the catalog check (the name is part
@@ -134,9 +148,10 @@ each shows in its place, with the colour rules of spec 012.
 
 - **FR-001**: The catalog MUST accept a list of secrets: each secret that the projects use, also a
   secret that does not expire. Each entry has a name, the place where it is set (repo and kind:
-  Actions secret, Actions variable, environment secret; not a host account), an expiry date or "no
-  expiry", and, if necessary, the id of the project that it belongs to. An entry without a project is a
-  shared entry. An entry with "no expiry" MUST NOT make a problem and MUST NOT show on the page.
+  Actions secret, Actions variable, environment secret; not a host account), an expiry date, `never`
+  (an expiry is possible but not set) or `none` (the value cannot expire), and, if necessary, the
+  id of the project that it belongs to. An entry without a project is a shared entry. An entry
+  with `never` or `none` MUST NOT make a problem; FR-010 says what the page shows for each.
 - **FR-002**: The catalog, the page, the issues, the log and the history MUST NOT contain secret
   values, parts of values or hashes of values (Principle III). Only the name, the place and the
   date.
@@ -157,19 +172,20 @@ each shows in its place, with the colour rules of spec 012.
   field that the list does not have, or a field with the name `value`, `secret`, `password` or
   `token`.
 - **FR-008**: The check MUST run with each status update (each hour).
-- **FR-010**: An entry with `expires: never` and no read date MUST show as an amber warning
-  "No expiry: <names>" in the Expiry line of its project (or of "Shared setup"). It MUST NOT make a
-  problem or an issue, and MUST NOT change the dot of the project or the total state. An entry
-  with `expires: none` MUST NOT show.
 - **FR-009**: Each run MUST compare the secret names that the workflow files of each catalog repo
   and of this repo use with the catalog list. A name that is used but not listed MUST show as a
   setup note on that project ("Secret not in the catalog: <name>"), or in the group "Shared
   tokens" for this repo. It MUST NOT make a problem or an issue. The secret `GITHUB_TOKEN` (made by
   GitHub for each run) is not compared.
+- **FR-010**: An entry with `expires: never` and no read date MUST show as an amber warning
+  "No expiry: <names>" in the Expiry line of its project (or of "Shared setup"). It MUST NOT make a
+  problem or an issue, and MUST NOT change the dot of the project or the total state. An entry
+  with `expires: none` MUST NOT show.
 
 ### Key Entities
 
-- **Secret entry**: name, place (repo and kind), expiry date or "no expiry", optional project id.
+- **Secret entry**: name, place (repo and kind), expiry date, `never` or `none`, optional project
+  id.
   The name and the place together are unique. All entries together are the list of secrets of
   all projects.
 - **Read expiry**: the expiry date that a token gives when the update uses it. Not stored.
@@ -194,7 +210,8 @@ each shows in its place, with the colour rules of spec 012.
 - The names of secrets are not secret: they are already in the public workflow files of this repo.
   The page and the issues can show them.
 - Fine-grained GitHub tokens give their expiry date when they are used. Classic tokens without an
-  expiry give none; the board tokens have no expiry (decision of 2026-11-05) and do not show.
+  expiry give none. The board tokens are classic tokens; their date is in `projects.yaml`
+  (2027-11-05); a check of that date against `PLAN.md` is a Convergence task of spec 004.
 - Tokens of other services (Vercel, Firebase, GoDaddy) do not give a date to this update; the
   Maintainer adds their date to the catalog.
 - The limit of 30 days is the same as for renewals (spec 009): a new token needs a few minutes,
@@ -207,5 +224,7 @@ each shows in its place, with the colour rules of spec 012.
 |---|---|
 | II. Catalog is the only project list | The secret entries go in the catalog, linked to a project id. |
 | III. No secrets or private data | Only names, places and dates; a test checks that no values reach the page. |
+| IV. Use shared configuration | No change to the project repos; the compare reads their workflow files only. |
+| VII. Read-only views for stakeholders | The public page shows secret names and dates, never values. |
 | VIII. Keep the work small | Uses the renewal rules of spec 009 and the colours of spec 012; no new service. |
 | X. ASD-STE100 | Problem and page text use STE. |

@@ -21,7 +21,8 @@ hour.
 **Primary Dependencies**: none new. `fetch` of Bun, with `redirect: "follow"` and
 `AbortSignal.timeout()`.
 
-**Storage**: none. Each run checks again. No history (spec: no uptime percentage).
+**Storage**: none. Each run checks again. No history in this spec (spec 010 adds the stored
+results and the uptime percentage).
 
 **Testing**: `bun test` with an injected fetch function for the check, the retry and the
 all-down rule. A local run against a catalog copy with a domain that does not respond.
@@ -46,7 +47,7 @@ on the page or in issues (FR-011).
 
 | Principle | Result | Note |
 |---|---|---|
-| I. GitHub for all project work | Pass | Actions, Pages, Issues. |
+| I. GitHub for all project work | Exception | Actions, Pages, Issues. cron-job.org starts the hourly run and healthchecks.io watches it (decision 2026-11-05, research.md §2). See Complexity Tracking. |
 | II. Catalog is the only project list | Pass | Domains come only from `domain` in `projects.yaml`. |
 | III. No secrets or private data | Pass | No tokens for the check. Domains are public. |
 | VI. Sites off the HomeLab | Pass | The check runs on GitHub runners. |
@@ -94,4 +95,6 @@ file (research.md §1).
 
 ## Complexity Tracking
 
-No violations.
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| Principle I: cron-job.org starts the hourly run, healthchecks.io watches it | GitHub starts scheduled runs late or not at all, and disables them after 60 days without activity. The page must update each hour (FR-005) and a stop must give an alert. | Only the GitHub `schedule`: runs come up to hours late, and nothing tells the Maintainer when they stop. The services keep no project data: cron-job.org only starts a run, healthchecks.io only receives a ping (research.md §2). |

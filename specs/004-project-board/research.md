@@ -20,7 +20,8 @@ separate board is necessary.
 
 **Result**: the built-in auto-add did not add #42 within 3 minutes. The sync also reads
 `pretband-backend`, because it is a catalog repo, so its issues come with the next status run
-(within 13 hours), as for the private repos.
+(within 13 hours then; within about 1 hour since the hourly status run of spec 005), as for the
+private repos. The same is true for `harmonieorkest-brummen/hob-nl` (private, spec 006).
 
 **Alternatives**: a board in the organisation for all projects. Rejected: most repos are of
 `ImreBoersma`.
@@ -51,7 +52,7 @@ auto-add is limited to 1 repo on the free plan. FR-005 asks for the shared workf
 | `BOARD_SYNC_TOKEN` | `project`, `repo` | `projects` only | the sync |
 
 The private repos (HomeLab, Reperatie-Formulier) get no caller. The sync adds their open issues
-two times each day (§4, §7). FR-005 and SC-001 were changed for this on 2026-11-03.
+two times each day (§4, §7); since spec 005, each hour. FR-005 and SC-001 were changed for this on 2026-11-03.
 
 **Rationale**: `GITHUB_TOKEN` has no access to user projects. Fine-grained PATs do not support
 user-owned projects. GitHub App tokens are documented only for organisation projects. So the only

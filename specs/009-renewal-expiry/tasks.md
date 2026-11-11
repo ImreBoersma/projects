@@ -53,7 +53,7 @@ merge them in one PR.
 - [X] T005 [P] [US1] In `status/tests/expiry.test.ts`, add tests for `certificateProblem(projectId, certificate)` of `status/src/expiry/expiry.ts`: 15 days gives `null`; 14 days gives `{ reason: "cert-expiring", key: "<id>/cert-expiring", text: "The TLS certificate expires in 14 days." }`; 1 day gives "in 1 day."; -3 gives "The TLS certificate expired 3 days ago."; `"not-known"` and `null` give `null`. Then implement it. Make the tests pass.
 - [X] T006 [US1] Create `status/src/expiry/read.ts` with `readCertificate(host: string, now: Date, connect = tls.connect): Promise<{ date: string; days: number } | "not-known">` (research.md §1: `servername` = host, port 443, `rejectUnauthorized: false` so that an expired certificate can be read, timeout 10 seconds; `getPeerCertificate().valid_to` as `YYYY-MM-DD`; each error or timeout gives `"not-known"`; always end the socket). Add tests in `status/tests/expiry-read.test.ts` with a fake `connect` that gives a certificate, an expired certificate (negative days), an error, and no answer (timeout); also check that `connect` gets `rejectUnauthorized: false`.
 - [X] T007 [US1] In `status/tests/render.test.ts`, add tests for the column "Expiry" of `specs/009-renewal-expiry/contracts/page.md`: the header has `<th>Expiry</th>` after "Site"; `Certificate: 44 days`; `Certificate: not known`; no certificate line without a domain; `Certificate: 1 day` (singular, also for renewals: `Hosting: 1 day`, `Hosting: 1 day ago`); the cell has `data-label="Expiry"`; a problem with `text` shows that text instead of the fixed text. Then change `status/src/render.ts`. Make the tests pass. Fix the older render tests that list the columns.
-- [X] T008 [US1] In `status/src/main.ts`, both modes: for each project with a `domain`, call `readCertificate()` at the same time as the uptime check, set `s.expiry.certificate`, and add the problem of `certificateProblem()`. Log one line for each domain: `Certificate <domain>: <n> days` or `Certificate <domain>: not known`. Run `bun test`, `bun run lint` and `bunx tsc --noEmit -p .`.
+- [X] T008 [US1] In `status/src/main.ts`, both modes: for each project with a `domain`, call `readCertificate()` at the same time as the uptime check, set `s.expiry.certificate`, and add the problem of `certificateProblem()`. Log one line for each domain: `Certificate <domain>: <n> days` or `Certificate <domain>: not known` (as built: `Certificate <domain>: <n> days; registry: <value>`, review 2026-11-11). Run `bun test`, `bun run lint` and `bunx tsc --noEmit -p .`.
 - [X] T009 [US1] In `status/tests/issues.test.ts`, add tests and then change `planIssueActions()` in `status/src/issues.ts` (research.md §7): a `<id>/cert-expiring` issue stays open when the certificate of that project is `"not-known"` in this run; it closes when the certificate has more than 14 days. Use `problem.text` (when set) in the issue title. Add the steps of contracts/page.md "Issue" for `cert-expiring` to the issue body. Pass the set of projects with an unknown certificate from `main.ts`. Done: `planIssueActions()` gets the set `keepKeys` (`<id>/cert-expiring` when the certificate is not known, `<id>/renewal-due/domain` when the registry date is not known and the catalog has no "Domain"); `Problem` got the optional field `source`, so that the issue steps of a registry renewal differ.
 - [X] T010 [US1] Run quickstart.md §2 locally on the real domains. Make sure that the 4 sites show `Certificate: <n> days` and that there is no certificate problem. Done 2026-11-05: see research.md §9.
 
@@ -124,3 +124,13 @@ status/src/expiry/expiry.ts + expiry.test.ts (T004)
 3. **US3**: registry dates; small value now, because 3 of 4 domains are `.nl`.
 
 All three go in one PR.
+
+---
+
+## Phase 7: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T024 Make the renewal key unique: two names that give the same slug ("Hosting (A)", "Hosting-A") are a catalog error in `parseRenewals` (`status/src/catalog.ts`) per FR-006 (partial)
+- [ ] T025 In `keep()` of `status/src/issues.ts`, do not apply the repo-availability rule to `/cert-expiring` and `/renewal-due/` keys, so that a fixed certificate or renewal issue closes when the repo data is not available per FR-007 (partial)
+- [ ] T026 Keep `<id>/renewal-due/domain` open when the registry read gives "not-known" and that issue is open, also when the catalog has a later Domain date (`status/src/main.ts` `checkExpiry`) per research §7 (partial)

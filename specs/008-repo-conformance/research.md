@@ -16,10 +16,15 @@ gave names, and the repo gave `has_issues`, `default_branch` and `private`.
 | R6 Issues on | repo `has_issues` | `false` |
 | R7 Security alerts | `vulnerability-alerts` (204 on, 404 off), `automated-security-fixes` | alerts off, or security fixes on |
 | R8 Default branch | repo `default_branch` | not `main` |
-| R9 Secrets and variables | `actions/secrets`, `actions/variables`, workflow files | a `secrets.NAME` (not `GITHUB_TOKEN`) that is not a repo secret, or a `vars.NAME` that is not a repo variable |
+| R9 Secrets and variables | `actions/secrets`, `actions/variables`, workflow files, and the shared workflows in the checkout of `projects` | a `secrets.NAME` (not `GITHUB_TOKEN`) that is not a repo secret, or a `vars.NAME` that is not a repo variable; the `vars.NAME` of each called shared workflow count too (since 2026-11-09) |
 
 R9 finds the error of spec 002, where the Vercel ids were secrets: the caller uses `vars.VERCEL_ORG_ID`,
-and the repo has no variable with that name.
+and the repo has no variable with that name. Since 2026-11-09, R9 also counts the `vars.NAME` that a
+called shared workflow reads from the caller repo (`deploy-vercel.yml`: `VERCEL_ORG_ID`,
+`VERCEL_PROJECT_ID`). The run reads them from the checkout of `projects` at run time
+(`sharedWorkflowVars`), for the shared file that a caller uses, with any ref. R9 reads only the
+repo-level secrets and variables and the forms `${{ secrets.X` and `${{ vars.X`; a value in an
+environment gives a fail (known limit).
 
 ## 2. Token
 
@@ -64,7 +69,7 @@ change an open issue, so the body can become old; the page is always current.
 
 **Decision**: a rule result is `not-available` when one of its reads gives 403, 404 where 404 does
 not mean "off" or "no file", 5xx, or a network error. A `not-available` result makes no problem.
-When one or more rules of a repo are `not-available`, the page shows a grey note "Setup check not available: <rule ids>" in the Problems cell. The note is not a problem: it does not change the sort order and opens no issue. It
+When one or more rules of a repo are `not-available`, the page shows a note "Setup check not available: <rule ids>" (since spec 019: plain text in the group "Code" of the project). The note is not a problem: it does not change the sort order and opens no issue. It
 makes a missing token permission visible on the page.
 For R7, 404 of `vulnerability-alerts` means "off" only when the repo read itself passed.
 

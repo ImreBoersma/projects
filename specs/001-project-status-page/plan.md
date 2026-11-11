@@ -32,7 +32,7 @@ the problem state between runs.
 
 **Constraints**: €0 each month. Use less than 1% of the GitHub API rate limit. The page MUST NOT
 contain text from private repos (FR-018). The page MUST work without JavaScript, except the
-48-hour warning.
+3-hour warning (48 hours before spec 005).
 
 **Scale/Scope**: approximately 15 to 20 catalog entries. One page. A maximum of 4 problem types.
 
@@ -45,8 +45,8 @@ contain text from private repos (FR-018). The page MUST work without JavaScript,
 | I. GitHub for all project work | Pass | Actions, Pages, Issues and the GraphQL API only. |
 | II. Catalog is the only project list | Pass | The script reads only `projects.yaml`. |
 | III. No secrets or private data | Pass | Tokens are Actions secrets. The page and issues show no private text. |
-| IV. Shared configuration | Exception | No Renovate until the shared preset exists. See Complexity Tracking. |
-| V. One pipeline | Exception | The page deploys with `actions/deploy-pages` in this repo. See Complexity Tracking. |
+| IV. Shared configuration | Exception (resolved) | No Renovate until the shared preset exists. Resolved by spec 003: `renovate.json` extends the preset. |
+| V. One pipeline | Exception (resolved) | The page deployed with `actions/deploy-pages` in this repo. Resolved by spec 002: the job `deploy` calls the shared `deploy-pages.yml`. |
 | VI. Sites off the HomeLab | Pass | GitHub Pages hosts the page. |
 | VII. Read-only views for stakeholders | Pass | Public page, no login, no internal data. |
 | VIII. Keep the work small | Pass | Static output, scheduled workflow, one runtime dependency. |
@@ -109,3 +109,7 @@ need no mocks.
 |-----------|------------|-------------------------------------|
 | Principle V: the page does not deploy through a shared deploy workflow | The shared deploy workflows do not exist yet. This repo is the repo that will contain them. | A shared Pages workflow for one consumer is an abstraction for projects that do not exist (Principle VIII). Change to a shared workflow when a second Pages project exists. |
 | Principle IV: `status/` has dependencies without Renovate for a limited time | The shared Renovate preset does not exist yet. | A local Renovate config that is not the shared preset breaks Principle IV in a different way. Add `renovate.json` when the preset exists; until then the dependencies are `yaml` and Biome only. |
+
+Both exceptions are resolved: Principle V by spec 002 (`status-page.yml` job `deploy` calls the
+shared `deploy-pages.yml`), Principle IV by spec 003 (`renovate.json` at the repo root extends the
+preset).

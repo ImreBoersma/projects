@@ -49,7 +49,7 @@ status page again. `status-page.yml` has no trigger on `data` anyway.
   A result in which the project is present and the key is missing ends the search. A result
   without the project (no data, or no run) does not end it. "Since" is the time of the oldest
   result in that row. When the row goes back to the first result of the history, show "since
-  <date>" with "(history from <date>)".
+  <date> or before" (contracts/page.md, T011; the first idea "(history from <date>)" was not used).
 - **Uptime** (US3): for the last 30 days (today and 29 days before, UTC), count the results with
   site state `up` and `down`. Percentage = up / (up + down), with one decimal. No checks: "No data".
 - **Day mark** (US3): `down` when the day has at least 1 `down`, else `up` when it has at least 1

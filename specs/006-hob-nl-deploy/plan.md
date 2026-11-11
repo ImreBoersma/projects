@@ -44,7 +44,7 @@ change; a check that the GoDaddy files are not changed.
 | Principle | Result | Note |
 |---|---|---|
 | II. Catalog is the only project list | Pass | `hob-nl` gets `repo: harmonieorkest-brummen/hob-nl`. |
-| III. No secrets or private data | Pass | Password, host and user are Actions secrets of `hob-nl`. The first commit was scanned (research.md §1). |
+| III. No secrets or private data | Pass | Password and user are Actions secrets of `hob-nl`. The host name is not secret data (it is in the known-hosts variable), but it is also stored as a secret. The first commit was scanned (research.md §1). |
 | IV. Shared configuration | Pass | The caller only calls `deploy-ssh.yml`. |
 | V. One pipeline | Pass | Push to `main` deploys through the shared workflow. |
 | VI. Sites off the HomeLab | Pass | The site stays on GoDaddy. |
@@ -92,4 +92,6 @@ the source, the target and the name pattern. hob.nl is the only user now (spec a
 
 ## Complexity Tracking
 
-No violations.
+| Deviation | Why | Simpler option rejected because |
+|---|---|---|
+| The caller has 18 lines (Principle IV: approximately 10; spec 002 SC-003: 16) | A caller in a repo of another owner cannot use `secrets: inherit`, so it names each of the 3 secrets and the inputs. | `secrets: inherit` does not work across owners. |

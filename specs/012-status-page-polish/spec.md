@@ -33,6 +33,23 @@ light and dark schemes, and the phone card layout of spec 007."
   Correction during the plan: spec 009 has no warning period, so FR-004 sets one (more than the
   limit, at most two times the limit).
 
+### Session 2026-11-11 (review)
+
+- Q: How do the acceptance scenarios read after the design revision of 2026-11-05? → A: Good states
+  are plain text (no badge), times show the relative time only (the exact value is in the tooltip
+  and for screen readers), and there is no card layout. US2, US3 and US4 have notes at the
+  scenarios that changed.
+- Q: How does the page draw the new-tab mark? → A: With CSS (`a[target=_blank]::after`). The text
+  "opens in a new tab" for screen readers is one hidden element `#nt`, and each new-tab link names
+  it with `aria-describedby` (spec 020 research §9). So a copy of the page has no mark.
+- Q: Does each link open a new tab? → A: Each link to another page does. Links inside the page do
+  not: the project rows (`#p-<id>`), the tabs (`?tab=`) and the close links of the pop-ups.
+- Q: How do "No repo" and a date that is not known show? → A: As plain text ("No repo",
+  "Certificate date not known", "Domain date not known"), not as a grey badge.
+- Q: Is there a dark scheme? → A: Yes. Spec 019 had removed it; on 2026-11-10 a dark theme came
+  back (`THEME_DARK`), selected only by the browser setting (`prefers-color-scheme`). The contrast
+  test checks both themes (FR-009).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See the total state from the browser tab and the top of the page (Priority: P1)
@@ -71,18 +88,20 @@ correct colour, and an unknown state is grey.
 each cell to find the bad one.
 
 **Independent Test**: render a row with site Down, CI Passed and deploy Failed. Make sure that
-each value is a badge with its text, and that Down and Failed use the problem colour.
+each value is a badge with its text, and that Down and Failed use the problem colour. (Design
+revision 2026-11-05: Passed is plain text, not a badge.)
 
 **Acceptance Scenarios**:
 
 1. **Given** a site that is down, **When** the page opens, **Then** the site cell shows a badge
    "Down" in the problem colour, with the time of the check next to it.
 2. **Given** a CI result "Passed", **When** the page opens, **Then** the CI cell shows a badge
-   "Passed" in the correct colour.
+   "Passed" in the correct colour. (Design revision 2026-11-05, FR-004: a good state is plain text.)
 3. **Given** a certificate that expires in 20 days (warning period of FR-004), **When** the page opens, **Then** the
    expiry cell shows a badge in the warning colour with the date and the relative time.
 4. **Given** a value "Unknown" or "Data not available", **When** the page opens, **Then** the cell
-   shows a grey badge with that text.
+   shows a grey badge with that text. (Design revision 2026-11-05: "No repo" and a date that is not
+   known are plain text; an unknown fact is not shown, FR-011.)
 5. **Given** the page in grey scale (no colour), **When** the Maintainer reads it, **Then** each
    state is still clear from its text.
 
@@ -108,7 +127,7 @@ sure that this project is the first row, in the section "Projects with problems"
 3. **Given** a project without a problem but with a check that is not available, **When** the page opens,
    **Then** it shows in the section "Check not available".
 4. **Given** a phone screen, **When** the page opens, **Then** all sections use the card layout
-   of spec 007.
+   of spec 007. (Superseded by FR-011 and spec 019: one list with pop-ups on all screen widths.)
 
 ---
 
@@ -123,13 +142,15 @@ date.
 
 **Independent Test**: render the page with a last commit of 3 days before the time of the update.
 Make sure that the cell shows "3 days ago", and that the tooltip shows the exact date and time.
+(Design revision 2026-11-05, FR-006: the relative time only; the exact value is in the tooltip.)
 
 **Acceptance Scenarios**:
 
 1. **Given** a last commit 3 days before the update, **When** the page opens, **Then** the cell
    shows "3 days ago" and the tooltip shows the exact UTC time.
 2. **Given** a certificate that expires in 40 days, **When** the page opens, **Then** the expiry
-   cell shows "in 40 days" next to the date.
+   cell shows "in 40 days" next to the date. (Design revision 2026-11-05: "in 40 days" only; the
+   date is in the tooltip.)
 3. **Given** a time less than 1 hour before the update, **When** the page opens, **Then** the cell
    shows the minutes, for example "25 minutes ago".
 
@@ -205,8 +226,9 @@ tab" for the link.
   revision 2026-11-05: the exact value is not shown next to the relative time). A small
   script in the page MUST update the relative times each minute while the page is open. Without
   the script, the page MUST show the relative times of the update.
-- **FR-007**: Each link MUST open in a new tab and MUST NOT give the new tab access to the status
-  page (no opener, no referrer).
+- **FR-007**: Each link to another page MUST open in a new tab and MUST NOT give the new tab
+  access to the status page (no opener, no referrer). Links inside the page (project rows, tabs,
+  close links) stay in the tab.
 - **FR-008**: Each link MUST show a small visible new-tab mark, and MUST have the text "opens in a
   new tab" for screen readers. The mark MUST NOT be read twice.
 - **FR-009**: All colours MUST be tokens with a light and a dark value. Text and badges MUST have a

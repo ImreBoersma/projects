@@ -13,6 +13,26 @@ for all repos (presets, shared CI, conformance repairs) are now done by hand, on
 
 ## Clarifications
 
+### Session 2026-11-11 (review)
+
+- Q: How long does a campaign stay on the page? → A: Until it is done, and 7 days after that. A
+  campaign that started more than 180 days ago is not read only when it is done (no target repo is
+  open, failed CI or to do) (Maintainer, 2026-11-11). The code skips each campaign after 180 days
+  now; tasks.md T026 repairs it.
+- Q: What does a second run do when nothing changed? → A: It writes no commit and reports
+  `up to date #n` (a new commit would start CI again for nothing). When the branch has commits that
+  the command did not make, it reports `changed by hand #n` and changes nothing.
+- Q: Can `secret-set` read the value from a pipe? → A: No. It needs a terminal and refuses stdin
+  that is not a TTY, so that the value cannot come from the shell history.
+- Q: How does a change that is needed again after a merge count? → A: As `to-do` on the page.
+- Q: What does the command report for a closed PR when the change is not needed any more? → A:
+  `not needed` (a closed PR is `closed` only while the change is still needed).
+- Q: Can an archived project be in an explicit `repos` list? → A: Now it is a parse error, so
+  archiving a project stops each campaign that lists it. The edge case asks to leave it out; tasks.md
+  T031 repairs the code.
+- Q: What does the page show without a campaign? → A: The tab "Campaigns" (spec 019) with "No open
+  campaign.", not "no section".
+
 ### Session 2026-11-06
 
 - Analysis 2026-11-06: the identity of a campaign PR is its branch `campaign/<id>` (labels cannot
@@ -110,7 +130,8 @@ the shell history or in a log.
 
 - A repo that the Maintainer cannot write to (other owner without access): the result shows "no
   access" for that repo; the other repos continue.
-- An archived catalog project: not part of a campaign.
+- An archived catalog project: not part of a campaign, also when an explicit `repos` list names it
+  (it is left out, not an error).
 - A PR of the campaign that the Maintainer closed without a merge: it counts as "closed"; the next
   run of the command does not open it again for that repo, unless the Maintainer asks for it.
 - A text replacement where the old text is not in the file, and the new text is not there either:
@@ -151,7 +172,8 @@ the shell history or in a log.
   The status update MUST NOT get write access to the project repos for this feature.
 - **FR-007**: The status page MUST show each open campaign with the numbers merged, open, failed
   CI, closed, to do (needed, no PR) and not needed, a link to a GitHub search of the PRs from the
-  branch `campaign/<id>`, and "done" for 7 days after the last PR is merged or closed.
+  branch `campaign/<id>`, and "done" for 7 days after the last PR is merged or closed. A campaign
+  that started more than 180 days ago MAY be skipped (not read) only when it is done.
 - **FR-008**: A campaign with a PR that has a failed CI run MUST show as a warning on the page. It
   MUST NOT make a problem or an issue.
 - **FR-009**: The secret command (US3) MUST use the repos that the catalog list of spec 013 gives
@@ -165,7 +187,8 @@ the shell history or in a log.
 - **Campaign**: id, title, reason, target repos, change (a list of file writes and text
   replacements), start date.
 - **Campaign PR**: repo, PR number, state (open, merged, closed), CI result.
-- **Campaign result**: for each target repo one of: PR opened, PR updated, not needed, failed (with
+- **Campaign result**: for each target repo one of: PR opened, PR updated, up to date (the branch
+  already has the change), changed by hand (not updated), merged, closed, not needed, failed (with
   the error), no access.
 
 ## Success Criteria *(mandatory)*

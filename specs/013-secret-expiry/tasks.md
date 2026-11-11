@@ -21,7 +21,7 @@ contracts/page-issue.md, quickstart.md
 
 **Purpose**: the catalog list and the types; all stories need them.
 
-- [X] T002 In `status/src/types.ts`, add `SecretKind = "actions-secret" | "environment-secret" | "actions-variable" | "account"`, `SecretEntry { name: string; kind: SecretKind; where: string; expires: string | "never"; project: string | null }`, `SecretStatus { entry: SecretEntry; owner: string; date: string | null; days: number | null; source: "catalog" | "token" | "both" }`, and add `"secret-expiring"` to `Reason`. Add the text `"secret-expiring": "A secret expires soon."` to `PROBLEM_TEXT` in `status/src/problems.ts`.
+- [X] T002 In `status/src/types.ts`, add `SecretKind = "actions-secret" | "environment-secret" | "actions-variable" | "account"`, `SecretEntry { name: string; kind: SecretKind; where: string; expires: string | "never"; project: string | null }`, `SecretStatus { entry: SecretEntry; owner: string; date: string | null; days: number | null; source: "catalog" | "token" | "both" }`, and add `"secret-expiring"` to `Reason`. Add the text `"secret-expiring": "A secret expires soon."` to `PROBLEM_TEXT` in `status/src/problems.ts`. (Changed after the first implementation, research.md §7: the kind `account` is a catalog error, and `expires` also accepts `none`; FR-010.)
 - [X] T003 [P] In `status/tests/catalog.test.ts`, add tests for `parseCatalog` with a `secrets` list (contracts/catalog.md): a valid list; missing list → `[]`; each error: `name` not "1 to 60 characters of `A-Z a-z 0-9 _ -` and space"; `kind` not one of the 4 kinds; `where` not `owner/repo` for the first three kinds, or not "text of 1 to 40 characters" for `account`; `expires` not a real `YYYY-MM-DD` and not `never`; `project` not a catalog id (an archived project id is valid); `name` + `where` used two times (case-insensitive); an extra field; a field `value`, `secret`, `password` or `token` → "Do not put secret values in the catalog."
 - [X] T004 Change `parseCatalog` in `status/src/catalog.ts` to return `{ projects, secrets }` (or add `parseSecrets(doc, projectIds)` and a function `parseCatalogFile` that returns both), with the rules of T003 and the error text `Catalog error in secrets item <n>, field <field>: <rule>`. Check `project` against all catalog ids, also archived ones. Update the callers in `status/src/main.ts`, `status/src/board/*` and the tests, so that all existing tests pass.
 - [X] T005 Change the header of `projects.yaml` to: `# Do not put contact details or secret values in this file. Secret names, places and dates are allowed (spec 013).` (research.md §6).
@@ -113,3 +113,13 @@ status/tests/secrets-read.test.ts    (T010, with T008)
 3. **US3**: the page and the gaps keep the list complete.
 
 All three go in one PR, as for specs 007 to 012. The catalog list (T019) goes in the same PR.
+
+---
+
+## Phase 7: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T026 Treat `expires: none` like `never` in the `listed` check of `checkSecrets()` (`status/src/main.ts`), so that the issue of a status token stays open when the token cannot be read per research §5 (partial)
+- [ ] T027 Log `Secrets compare <repo>: workflows not available` for own repos without workflow texts when `CONFORMANCE_READ_TOKEN` is not set (`status/src/main.ts`) per FR-009 (partial)
+- [ ] T028 Make the secret issue key unique per place: put the repo in the key or reject two names with the same slug for one owner (`status/src/secrets/expiry.ts`, `status/src/catalog.ts`) per FR-004 (partial)

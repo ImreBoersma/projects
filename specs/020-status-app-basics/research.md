@@ -2,7 +2,7 @@
 
 ## 1. The changes of the last 24 hours (fallback of clarification 1)
 
-**Decision**: `recentChanges(results, now)` in `status/src/history/stats.ts`, from the stored
+**Decision**: `recentChanges(results, now)` (as built: `recentChanges(results, projects, now, reasonText, texts)`) in `status/src/history/stats.ts`, from the stored
 results of spec 010 plus the current one: take the newest result at or before `now - 24 h` (the
 "old" result) and the current result. Started = keys in the current result, not in the old one.
 Stopped = keys in the old result, not in the current one, for a project that is still in the

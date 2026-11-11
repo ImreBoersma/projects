@@ -5,7 +5,7 @@
 | Field | Type | Rule |
 |---|---|---|
 | `time` | ISO 8601 UTC | time of the run |
-| `projects` | map of catalog `id` → project result | only projects that are not archived |
+| `projects` | map of catalog `id` → project result | the projects that are not archived, and the pseudo-project `shared` for the problems of the shared setup (spec 013) |
 
 ## Project result
 

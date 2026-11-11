@@ -135,3 +135,14 @@ status/tests/links.test.ts          (T015)
 3. **US3–US5**: install, shortcuts, command box.
 
 All five go in one PR.
+
+---
+
+## Phase 9: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T027 Make the "New" badge 4.5:1 or more (darker `--color-info-content` in `status/src/style.ts`, both themes) and add the info pair to PAIRS in `status/tests/style.test.ts` per FR-012, spec 019 FR-010 (contradicts)
+- [ ] T028 Show the full fixed count in the changes line and limit only the list to 20 (`status/src/client.ts` `compareVisit`) per SC-002, FR-003 (partial)
+- [ ] T029 Show "Since <date>" for a last visit more than 30 days ago (`status/src/client.ts`) per Edge Cases (partial)
+- [ ] T030 When `status.json` cannot be written, still write and deploy the page, then exit non-zero (`status/src/main.ts`) per Edge Cases (partial)

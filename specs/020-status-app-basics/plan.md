@@ -31,7 +31,7 @@ badge; Safari installs from "Add to Home Screen").
 
 **Project Type**: extension of the status generator and its browser code.
 
-**Performance Goals**: page < 150 KB; data file < 50 KB for 20 projects; service worker < 2 KB.
+**Performance Goals**: page < 150 KB (since spec 011: < 30 KB gzip for the 20-site worst case); data file < 50 KB for 20 projects; service worker < 2 KB.
 
 **Constraints**: €0; no server; no write request from the page (FR-010); no external files; works
 without scripts (the script parts do not show).

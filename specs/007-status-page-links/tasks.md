@@ -136,3 +136,12 @@ status/tests/render.test.ts   (T006)
 3. **US4**: the header links.
 
 All four go in one PR, because they all change the same page.
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T024 Build the Renovate PR link of a repo from each Renovate app login in its open PRs, not only the first one (`status/src/github.ts:101`, `status/src/links.ts:35`) per FR-004 (partial)
+- [ ] T025 Do not write "No problems." in the summary when shared problems exist (`status/src/render.ts` `summary()`), so that the text and the state badge agree per FR-007 (contradicts)

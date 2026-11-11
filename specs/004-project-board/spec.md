@@ -22,6 +22,21 @@ issues from `harmonieorkest-brummen/pretband-backend`."
 - Q: Can the token with `repo` scope be in each project repo? → A: No. It stays in `projects`.
   Private repos get no caller, and the sync adds their issues (FR-005, FR-011, SC-001).
 
+### Session 2026-11-11 (review)
+
+- Q: How do the issues of repos of other owners go to the board? → A: Through the sync, not a
+  caller: this repo does not change repos of other owners. This is true for
+  `harmonieorkest-brummen/pretband-backend` (public) and `harmonieorkest-brummen/hob-nl` (private,
+  spec 006). FR-005 and SC-001 have this exception.
+- Q: How often does the sync run? → A: Each hour, in the `issues` job of the status page workflow
+  (spec 005 made the status run hourly). A private or other-owner issue is on the board within
+  about 1 hour.
+- Q: What happens when the sync fails, for example with a revoked token? → A: The `issues` job of
+  the status page fails before the watchdog ping of spec 005, so the watchdog also sends an alert.
+- Q: Do the board tokens expire? → A: Not decided in this review. The catalog lists
+  `expires: 2027-11-05` for `BOARD_TOKEN` and `BOARD_SYNC_TOKEN`; research.md §3 says "no expiry
+  date". The Maintainer checks the tokens on GitHub (tasks.md T040).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See all work of all projects on one board (Priority: P1)
@@ -99,7 +114,8 @@ sure that it shows the planned items and no internal data.
 - A project changes to `archived` in the catalog. Its open items stay on the board until the
   Maintainer closes them. New issues of that repo do not go to the board.
 - The auto-add fails, for example because a token expired. The workflow run fails, so the
-  Maintainer gets a notification.
+  Maintainer gets a notification. When the sync fails, the status page `issues` job fails before
+  its watchdog ping (spec 005), so the watchdog also sends an alert.
 - An issue title contains internal data. The Maintainer does not select it for the roadmap.
 
 ## Requirements *(mandatory)*
@@ -111,9 +127,10 @@ sure that it shows the planned items and no internal data.
 - **FR-003**: The board MUST have the fields Project, Priority, Status, Stakeholder and Roadmap.
 - **FR-004**: The values of Project MUST be the `name` values of the catalog entries that are not
   archived, plus the archived entries that still have open items on the board.
-- **FR-005**: A new issue in a public catalog repo MUST go to the board automatically, through the
-  shared workflow of spec 002, with the Project field set. An open issue in a private catalog repo
-  MUST go to the board with the next scheduled sync, with the Project field set. Issues that
+- **FR-005**: A new issue in a public catalog repo of the owner `ImreBoersma` MUST go to the board
+  automatically, through the shared workflow of spec 002, with the Project field set. An open
+  issue in a private catalog repo, or in a catalog repo of another owner (`pretband-backend`,
+  `hob-nl`), MUST go to the board with the next scheduled sync, with the Project field set. Issues that
   Renovate opens (the Dependency Dashboard) MUST NOT go to the board, because they are not tasks.
 - **FR-006**: A `status-problem` issue MUST go to the board with the Project of the problem.
 - **FR-007**: The board MUST have a Roadmap view that a person without a GitHub login can open.
@@ -136,9 +153,10 @@ sure that it shows the planned items and no internal data.
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of the issues that open in public catalog repos after the feature starts are on
-  the board within 5 minutes. 100% of the issues that open in private catalog repos are on the
-  board within 13 hours (the status page runs at 05:00 and 17:00 UTC).
+- **SC-001**: 100% of the issues that open in public catalog repos of `ImreBoersma` after the
+  feature starts are on the board within 5 minutes. 100% of the issues that open in private
+  catalog repos or in repos of other owners are on the board within about 1 hour (the status page
+  runs each hour, spec 005; first 05:00 and 17:00 UTC, so 13 hours).
 - **SC-002**: The Maintainer finds the open tasks of all projects in one place in less than 1
   minute.
 - **SC-003**: A stakeholder opens the roadmap without a GitHub account.

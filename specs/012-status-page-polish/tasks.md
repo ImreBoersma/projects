@@ -11,6 +11,10 @@
 
 ---
 
+Note (review 2026-11-11): T014, T018, T020 and T021 describe the markup before the design revision
+of 2026-11-05 (badges for good states, tables, `.rel` in brackets). The revision (spec.md
+Clarifications, research.md §9) changed that markup; no separate task records it.
+
 ## Phase 1: Setup
 
 - [X] T001 Make the branch `012-status-page-polish` from `main`. Run `cd status && bun test` and record the number of passing tests (178 expected) as the baseline. Done: 178.
@@ -138,3 +142,11 @@ status/src/style.ts        (T004, then T005)
 3. **US3–US5**: sections, relative times, new-tab links.
 
 All five go in one PR, as for specs 007–010.
+
+---
+
+## Phase 9: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T032 Remove `sections()` and its tests (`status/src/view.ts`, `status/tests/view.test.ts`): no page code uses it since spec 019 per FR-005 (unrequested)

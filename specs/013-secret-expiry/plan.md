@@ -7,7 +7,7 @@
 ## Summary
 
 The catalog gets a top-level list `secrets`: each secret that the projects and this repo use,
-with its place and an expiry date or `never`. Each status run reads the expiry date of its own
+with its place and an expiry date, `never` or `none`. Each status run reads the expiry date of its own
 GitHub tokens from the response header of one GitHub request, merges it with the catalog (earlier
 date wins), and makes a `secret-expiring` problem for a date 30 days or less away, with the issue
 rules of spec 001 and the colours of spec 012. Each run also compares the secret names in the
@@ -71,7 +71,8 @@ specs/013-secret-expiry/
 ```text
 projects.yaml                         # changed: header text; new top-level list `secrets`
 status/src/catalog.ts                 # changed: parseSecrets(), checked against project ids
-status/src/secrets/expiry.ts          # new: tokenExpiry() reads the header; merge, problems
+status/src/secrets/expiry.ts          # new: merge, problems
+status/src/secrets/read.ts            # new: tokenExpiry() reads the header; workflow texts of other repos
 status/src/secrets/compare.ts         # new: names used in workflows vs the list
 status/src/conformance/read.ts        # unchanged; its workflow texts are used again
 status/src/main.ts                    # changed: checkSecrets(); shared problems in the issue run

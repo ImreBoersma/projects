@@ -11,6 +11,18 @@ to the repo, CI to the last run, the deploy to the deploy and its log, Renovate 
 PR list, a problem to its issue, the site to the domain. A summary line, a card layout on a phone,
 and a link to the public roadmap."
 
+## Clarifications
+
+### Session 2026-11-11 (review)
+
+- Q: Which Renovate app does the Renovate link use when a repo has PRs of more than one app? → A:
+  Today the login of the app of the first Renovate PR, so the link shows only part of the PRs when
+  two apps (hosted and self-hosted) are active. A Convergence task in tasks.md changes this to all
+  app logins (FR-004 stays as written).
+- Q: Where is the link of the project name? → A: Since spec 019 a list row opens a pop-up, and the
+  title of the pop-up links to the repo, or to the site when there is no repo. The list row itself
+  links to the pop-up (`#p-<id>`).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Go from a problem to its cause in one click (Priority: P1)
@@ -116,7 +128,8 @@ opens.
 ### Functional Requirements
 
 - **FR-001**: The project name MUST link to the repo, or to the site when the project has no repo
-  but has a domain.
+  but has a domain. (Since spec 019 this link is on the title of the project pop-up; the list row
+  opens the pop-up.)
 - **FR-002**: The CI cell MUST link to the checks of the last commit on the default branch of the
   repo, when the CI result is not "Unknown".
 - **FR-003**: The deploy cell MUST link to the deployments of the repo, when a deploy is known.
@@ -129,7 +142,8 @@ opens.
   number of projects without a problem, and the number of sites that are up of the sites that were
   checked.
 - **FR-008**: On a screen that is 600 pixels wide or less, the page MUST show each project as a
-  card, without horizontal scroll.
+  card, without horizontal scroll. (Superseded by spec 012 FR-011 and spec 019: the page is one
+  list with pop-ups on all screen widths; there is no table and no card layout.)
 - **FR-009**: The header MUST link to the public Roadmap view and to the project board.
 - **FR-010**: Links MUST contain only the catalog repo, the catalog domain, the id of the last
   commit, the login of the Renovate app, issue numbers and fixed GitHub paths. The page MUST NOT show commit messages, PR titles, branch names or user names

@@ -2,11 +2,16 @@
 
 Changes the page contracts of specs 001, 005, 007 and 009. Spec 012 can change the look.
 
+Since spec 012 (FR-006) the problem time shows as "Started <relative time>", with the UTC time in
+the tooltip, and since spec 019 the bar of 30 marks is in the tab "History". The rules below for
+the start, " or before", the uptime and the time to repair stay the same.
+
 ## Problems cell
 
 After each problem text, `(since HH:MM)` when it started today (UTC), else
 `(since YYYY-MM-DD, <n> days)`. When the row goes back to the start of the history, add
-` or before`, for example `(since 2026-11-05 or before)`.
+` or before`, for example `(since 2026-11-05 or before)`. The start is the first result that the
+update read: the start of the 90-day window, or the first day file when it is newer.
 
 ## Site cell
 
@@ -24,11 +29,12 @@ Not shown for a project without a domain.
 
 A second sentence after the summary of spec 007:
 
-- `Average time to repair: <h> hours (<n> faults, 90 days).` (or minutes when less than 1 hour,
-  days when more than 48 hours)
+- `Average time to repair: <h> hours (<n> faults, 90 days).` Below 1 hour: whole minutes. Below
+  10 hours: hours with one decimal. Up to 48 hours: whole hours. More than 48 hours: whole days.
 - `No repaired faults in the last 90 days.` when there are none.
 
-Under the summary, in small text: `History from <date>.`
+Under the summary, in small text: `History from <date>.` The date is the first day file on the
+branch `data`, also when it is older than 90 days.
 
 ## Forbidden content
 

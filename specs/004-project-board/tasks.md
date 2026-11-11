@@ -171,3 +171,11 @@ Stop at each checkpoint and validate before the next phase.
 
 - [X] T038 Update the documents that still say the built-in auto-add brings `pretband-backend` issues: `specs/004-project-board/plan.md` (Summary and the Constitution Check row "Repos of other owners"), `specs/004-project-board/contracts/board.md` (row "Auto-add to project": state off), `specs/004-project-board/contracts/caller.md` and `specs/004-project-board/quickstart.md` §5. The sync adds these issues in each status run (research.md §1, T018) per plan: other-owner decision (contradicts) Done 2026-11-04.
 - [X] T039 Move the event read of `status/src/board/add.ts` into a pure function `readEvent(event, repo)` in `status/src/board/project.ts` that returns the issue node id, body, repo and author. Add tests in `status/tests/board.test.ts` for `opened`, for `transferred` (issue and repo from `changes.new_issue` and `changes.new_repository`), and for an issue opened by `renovate[bot]` per Edge case "an issue moves to a different repo" (partial) Done 2026-11-04: 67 tests pass; a local run of `board:add` on scales-exercises#3 kept its values.
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T040 Check the expiry of the classic PATs `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` on GitHub, then make `projects.yaml` (`expires: 2027-11-05`) and `PLAN.md`/research.md §3 ("no expiry") agree per FR-011 (contradicts)

@@ -27,7 +27,9 @@ checked at 360 and 1100 pixels wide in a browser.
 
 **Project Type**: change to an existing static page generator.
 
-**Performance Goals**: the page stays one file under 50 KB with 20 projects.
+**Performance Goals**: the page stays one file under 50 KB with 20 projects. (Superseded: spec 019
+SC-005 allowed 150 KB, and since spec 011 the budget is 30 KB gzip for 20 sites; spec 020 adds
+`status.json`, the manifest, the service worker and icons next to the page.)
 
 **Constraints**: €0 each month. No text from private repos on the page (FR-010, spec 001
 FR-018). No external scripts, fonts or styles (FR-011).
@@ -50,7 +52,7 @@ FR-018). No external scripts, fonts or styles (FR-011).
 
 Re-check after Phase 1: no violations. One spec deviation to fix in `/speckit-analyze`: FR-010
 lists the allowed link data; the Renovate link also uses the login of the Renovate app, and the
-CI link uses the commit id (research.md §1, §3).
+CI link uses the commit id (research.md §1, §3). Resolved: T017 added both to FR-010.
 
 ## Project Structure
 

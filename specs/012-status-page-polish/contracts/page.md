@@ -33,7 +33,8 @@ are plain text; other states are badges.
 
 Up to three sections, in this order:
 `Projects with problems`, `Check not available`, `Other projects`. A section without rows does not
-show. On a screen of 600 px or less, each table uses the card layout of spec 007.
+show. (Design revision 2026-11-05: one list item for each project, no table and no card layout;
+spec 019 replaced the sections with state groups and pop-ups.)
 
 ## Badges
 
@@ -53,8 +54,11 @@ last deploy, site check, oldest Renovate PR, "since" of a problem, certificate a
 
 ## Links
 
-Each `<a>`: `target="_blank" rel="noopener noreferrer"`, then the link text,
-`<span class="nt" aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span>`.
+Each `<a>` to another page: `target="_blank" rel="noopener noreferrer" aria-describedby="nt"`, then
+the link text. The mark `↗` is CSS (`a[target="_blank"]::after`), so it is not in a copy. One
+hidden element `<span id="nt" hidden>opens in a new tab</span>` gives the text for screen readers
+(spec 020 research §9; was `<span class="nt">` and `<span class="sr">` after each link). Links
+inside the page (`#p-<id>`, `?tab=`, close links) have no `target`.
 
 ## Script
 
@@ -62,7 +66,7 @@ One inline `<script>` at the end of `<body>`, no `src`:
 
 - the stale check of spec 001 (unchanged rule: more than 3 hours);
 - `relTime` (from `view.ts`, put in with `toString()`), run at load and each 60 seconds on each
-  `time[data-rel]`, to set the text of the next `.rel` element.
+  `time[data-rel]`, to set its own text (design revision 2026-11-05: there is no `.rel` element).
 
 Without the script, the page shows the relative times of the update.
 

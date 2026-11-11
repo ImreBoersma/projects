@@ -76,8 +76,8 @@ specs/016-version-drift/
 
 ```text
 status/src/versions/
-├── parse.ts          # new: lowestMajor(range), safeText(text), nodeFromCi(ciText), sharedNodeDefault(text)
-├── read.ts           # new: readVersions(repo, token, ciText, nodeDefault, fetch) → VersionRow | null
+├── parse.ts          # new: lowestMajor(range), safeText(text), nodeFromCi(workflowText), sharedNodeDefault(text)
+├── read.ts           # new: readVersions(projectId, repo, token, workflowTexts, nodeDefault, fetch) → VersionRow | null
 └── drift.ts          # new: markDrift(rows) → rows with behind/highest; markedCount(rows)
 status/src/types.ts   # changed: Tool, ToolVersion, VersionRow; StatusPage.versions
 status/src/main.ts    # changed: page mode reads the versions after the conformance and secrets reads

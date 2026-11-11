@@ -24,9 +24,10 @@ Open the page from a local server and check:
 - a click on a row opens its pop-up; Escape closes it; the focus is on the row again;
 - `#p-hob-nl` opens that pop-up directly;
 - keyboard only (Tab, Enter, Space, Escape) reaches all controls;
-- light and dark: readable; 360 px: 0 px horizontal scroll, filters folded;
+- light and dark (the dark theme follows the browser setting; there is no switch): readable;
+  360 px: 0 px horizontal scroll, filters folded (below 640 px);
 - scripts off: all projects and all tabs show; a row still opens its pop-up (`:target`);
-- the page is < 150 KB.
+- the page is < 150 KB (since spec 011: HTML with CSS of the 20-site worst case < 30 KB gzip).
 
 ## 3. Live page
 

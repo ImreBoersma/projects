@@ -33,7 +33,8 @@ File: `.github/workflows/deploy-ssh.yml` in `ImreBoersma/projects`. Trigger: `wo
 7. The same rsync without `--dry-run`.
 8. When `health-urls` is set: request each URL (timeout 20 seconds, follow redirects, 2 tries 10
    seconds apart). A URL fails on HTTP 5xx, no answer, or a body that contains
-   `There has been a critical error on this website`.
+   `There has been a critical error on this website`. HTTP 200 to 499 passes (a 4xx is accepted
+   on purpose).
 9. When the check passes (or there is no check): write the commit id to the marker file
    `~/.deploy-last-good-<repo name>` on the server (in the home folder, outside the site).
 10. When a URL fails: put back the files of the commit in the marker file, the last version that
@@ -42,8 +43,8 @@ File: `.github/workflows/deploy-ssh.yml` in `ImreBoersma/projects`. Trigger: `wo
    the deployment record shows "failure".
 11. Each other error stops the job, so the deployment record shows "failure".
 
-The checkout uses `fetch-depth: 2` (or the full history for a push of more than one commit), so
-that the commit of the marker is available for step 10.
+The checkout uses the full history (`fetch-depth: 0`), so that the commit of the marker is always
+available for step 10.
 
 The workflow uses `rsync -rl --checksum` and never `--delete-excluded`, `-a`, `-t` or `--force`: files outside `pattern` on the
 server stay as they are.

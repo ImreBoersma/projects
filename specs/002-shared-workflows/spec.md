@@ -17,6 +17,19 @@ approximately 10 lines."
 
 - Q: Vercel projects deploy through the Vercel Git integration now. Must they also deploy through a shared workflow? → A: Yes. All deploys run in GitHub Actions. The hosts do not change. The Vercel Git integration does not deploy to production.
 
+### Session 2026-11-11 (review)
+
+- Q: Which events start a deploy? → A: Each event except `pull_request`, on the default branch:
+  `push`, `schedule` and `workflow_dispatch`. The hourly status page needs `schedule` and
+  `workflow_dispatch`. The project callers start only on `push` to `main` and on `pull_request`, so
+  a project still deploys only after a push to `main` (FR-007).
+- Q: What happens with two quick pushes to `main`? → A: CI of the same ref cancels the older run
+  (`cancel-in-progress: true`), so the deploy of the first push does not start. The deploy queue
+  (FR-008) matters only for a re-run or a manual start.
+- Q: Does the Vercel deploy use the CI build? → A: No. `deploy-vercel.yml` runs `vercel build` again
+  from the source with the settings of the Vercel project; the Pages and Firebase deploys use the
+  CI artifact.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - CI in each project through one shared workflow (Priority: P1)
@@ -95,8 +108,9 @@ Make sure that both runs do the new step.
   secret.
 - A change to a shared workflow breaks CI. The constitution requires a test on a minimum of one
   real repo before the change goes to `main`.
-- Two pushes to `main` occur quickly. The second deploy waits for the first deploy, so that the
-  older version does not replace the newer version.
+- Two pushes to `main` occur quickly. The CI of the second push cancels the CI of the first push,
+  so only the newer version deploys. A deploy that starts while another deploy runs waits for it
+  (FR-008), so that the older version does not replace the newer version.
 
 ## Requirements *(mandatory)*
 
@@ -115,7 +129,9 @@ Make sure that both runs do the new step.
 - **FR-006**: Each shared deploy job MUST use `environment: production`, or `github-pages` for a
   GitHub Pages deploy, so that GitHub makes a deployment record (constitution, Development
   Workflow).
-- **FR-007**: A deploy MUST start only on a push to `main` and only after CI passes. Each repo in
+- **FR-007**: A deploy of a project MUST start only after a push to `main` and only after CI
+  passes. The shared deploy workflows run for each event except `pull_request` on the default
+  branch (also `schedule` and `workflow_dispatch`, for the status page). Each repo in
   the scope of FR-011 MUST use `main` as its default branch.
 - **FR-008**: Two deploys of the same project MUST NOT run at the same time.
 - **FR-009**: The workflow file in each project repo MUST only call shared workflows. It MUST be

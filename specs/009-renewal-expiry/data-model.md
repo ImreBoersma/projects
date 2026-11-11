@@ -23,6 +23,13 @@ No stored data. Each run makes these values again.
 | `reason` | new values `cert-expiring`, `renewal-due` |
 | `key` | `<id>/cert-expiring`, `<id>/renewal-due/<slug>` (research.md §6) |
 | `text` | optional; the page and the issue title use it instead of the fixed text |
+| `source` | optional, `catalog` or `registry`, for `renewal-due`; it selects the steps in the issue body |
+
+## Keys kept open (`keepKeys`)
+
+A set of problem keys that the run keeps open because their value is not known in this run
+(research.md §7): `<id>/cert-expiring` when the certificate is "not known"; `<id>/renewal-due/domain`
+when the registry date is "not known" and the catalog has no "Domain" renewal.
 
 ## Limits
 

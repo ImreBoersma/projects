@@ -17,6 +17,23 @@ the problem count on its icon, shortcut links in the pop-ups, and a command box 
   one; else the last 24 hours (first visit, other device, private window), from the problem
   history of spec 010.
 
+### Session 2026-11-11 (review)
+
+- Q: What is the exact text of the changes line? → A: "Since your visit <relative time>: <n> new,
+  <m> fixed" and "No change since your visit <relative time>"; without a stored visit "In the last
+  24 hours: <n> new, <m> fixed". The exact time is in a tooltip.
+- Q: Where does the Renovate dashboard shortcut go for a repo without a "Dependency Dashboard"
+  issue? → A: Always to the issue search of the repo for "Dependency Dashboard" (research.md §6);
+  the search is empty when the repo has none. There is no fallback to the Renovate PRs.
+- Q: Which items does the command box have? → A: Projects, tabs, state filters and the action
+  "New project" (spec 011). No stakeholder filters. The hint "⌘K" shows on every platform; Ctrl+K
+  also works.
+- Q: What does the data file contain in addition to FR-005? → A: The status of each project
+  (`active`, `maintenance`) and the changes of the last 24 hours (`changes`), as
+  contracts/status-json.md says.
+- Q: Which page size rule applies? → A: The gzip budget of spec 011: HTML with CSS of the 20-site
+  worst case < 30 KB gzip. It replaces the 150 KB raw limit.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See what changed since my last visit (Priority: P1)
@@ -43,7 +60,7 @@ mark.
 3. **Given** a problem that was there at the last visit and is gone now, **When** the page opens,
    **Then** the line counts it as fixed and the "Fixed" list names it with its project.
 4. **Given** no change since the last visit, **When** the page opens, **Then** the line says
-   "No change since <time>".
+   "No change since your visit <time>".
 5. **Given** the page opened again within 10 minutes, **When** it opens, **Then** the comparison
    still uses the visit before (a reload does not clear the marks).
 
@@ -126,7 +143,7 @@ opens the right GitHub page in a new tab.
 ### User Story 5 - Jump with the keyboard (Priority: P3)
 
 ⌘K (Mac) or Ctrl+K opens a command box. The Maintainer types a part of a project name, a tab
-name or a filter ("problems", "HOB"), and Enter goes there: the pop-up of the project, the tab,
+name or a state filter ("problems"), and Enter goes there: the pop-up of the project, the tab,
 or the filter.
 
 **Why this priority**: useful, but with 11 projects the search field already does most of it.
@@ -165,7 +182,8 @@ opens.
 
 - **FR-001**: The browser MUST remember, only on this device, the time and the problem and
   warning keys of the last visit, and nothing else.
-- **FR-002**: The page MUST show "Since <time>: <n> new, <m> fixed" (or "No change since <time>")
+- **FR-002**: The page MUST show "Since your visit <time>: <n> new, <m> fixed" (or "No change
+  since your visit <time>")
   and a "New" mark on each row with a new problem or warning. A visit counts as the last visit
   only when it is more than 10 minutes after the one before. Without a stored visit, the page
   MUST compare with the last 24 hours: problems that started in that time are new, problems that
@@ -178,8 +196,9 @@ opens.
   and the page MUST NOT need it to show its content (the page stays complete in itself).
 - **FR-005**: The data file MUST contain the time of the update, the total state, and for each
   project: id, name, state, summary fact, problems (text, issue link), site state and uptime
-  percentage, the next expiry date, and the stakeholder organisation. It MUST obey the content
-  rules of spec 001.
+  percentage, the next expiry date, the stakeholder organisation and the catalog status (`active`,
+  `maintenance`); and the changes of the last 24 hours. It MUST obey the content rules of spec
+  001.
 - **FR-006**: The page MUST be installable as an app (name, icon, full-screen start) and MUST
   show the last loaded state without a network.
 - **FR-007**: With a network, the installed app MUST show the newest update; a stored copy is
@@ -190,10 +209,10 @@ opens.
   deployments, Renovate dependency dashboard and issues; the header MUST have a link to the
   workflow page of the status update. All shortcuts follow the new-tab rules of spec 012.
 - **FR-010**: The page MUST NOT send a request that changes anything on GitHub or another service.
-- **FR-011**: ⌘K or Ctrl+K MUST open a command box that finds projects, tabs and state filters by
-  part of their name, with arrow keys, Enter and Escape, and screen-reader texts.
+- **FR-011**: ⌘K or Ctrl+K MUST open a command box that finds projects, tabs, state filters and
+  the action "New project" (spec 011) by part of their name, with arrow keys, Enter and Escape, and screen-reader texts.
 - **FR-012**: The rules of spec 019 MUST stay: works without scripts (the parts of this spec that
-  need a script do not show then), keyboard, contrast, page size less than 150 KB.
+  need a script do not show then), keyboard, contrast, page size less than 150 KB (since spec 011: HTML with CSS of the 20-site worst case < 30 KB gzip; research §8 of spec 011).
 
 ### Key Entities
 
@@ -215,7 +234,8 @@ opens.
 - **SC-003**: The installed app opens with the newest update when online, and with the last state
   when offline, in 100% of the tests.
 - **SC-004**: From a problem, the GitHub page to repair it is at most 2 clicks away.
-- **SC-005**: The page with all parts stays less than 150 KB and loads no file from other sites;
+- **SC-005**: The page with all parts stays less than 150 KB (since spec 011: HTML with CSS of the 20-site worst case < 30 KB gzip; research §8 of spec 011) and loads no file from other
+  sites;
   the data file is less than 50 KB for 20 projects.
 - **SC-006**: The feature costs €0 each month to operate.
 
@@ -231,8 +251,8 @@ opens.
   background, because that needs push messages from a server (side note 2026-11-09). It is a
   reminder, not an alarm: the alarm is the GitHub issue of each problem (spec 001), or a pushed
   digest later.
-- The Renovate dependency dashboard is the "Dependency Dashboard" issue of each repo; a repo
-  without it gets the link to its open Renovate PRs (spec 007) in its place.
+- The Renovate dependency dashboard is the "Dependency Dashboard" issue of each repo; the shortcut
+  is the issue search for it, also for a repo without it (research.md §6).
 - The text of the page stays English, in ASD-STE100.
 
 ## Principles Affected

@@ -30,7 +30,8 @@ Real issues in one test repo before the merge (constitution, Development Workflo
 **Project Type**: shared workflow and a small Bun script.
 
 **Performance Goals**: an issue of a public repo is on the board within 5 minutes, and an issue of
-a private repo within 13 hours (SC-001). The add job runs on the
+a private or other-owner repo within about 1 hour (SC-001; 13 hours before the hourly status run
+of spec 005). The add job runs on the
 `issues` event, so it takes less than 1 minute.
 
 **Constraints**: €0 each month. Classic PATs are necessary: `BOARD_TOKEN` (`project`) in the

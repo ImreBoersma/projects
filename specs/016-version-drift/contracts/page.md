@@ -18,7 +18,7 @@ version is one or more major versions behind the newest repo."
 <th scope="col">Next.js</th><th scope="col">React</th><th scope="col">TypeScript</th>
 <th scope="col">Biome</th><th scope="col">@types/node</th></tr></thead>
 <tbody>
-<tr><th scope="row"><a href="https://github.com/ImreBoersma/boek-de-bus" target="_blank" rel="noopener" aria-describedby="nt">boek-de-bus</a></th>
+<tr><th scope="row"><a class="link" href="https://github.com/ImreBoersma/boek-de-bus" target="_blank" rel="noopener noreferrer" aria-describedby="nt">boek-de-bus</a></th>
 <td title="default of ci-node.yml">24 <span class="opacity-60">(default)</span></td>
 <td title="bun.lock">newest (CI)</td>
 <td title="dependencies">16.4.1</td>

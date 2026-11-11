@@ -13,7 +13,7 @@ Made by the generator from `ProjectStatus` (specs 001–015). Nothing is stored.
 | `data-site` | `yes` when the project has a domain, else `no` |
 | `data-commit` | ISO time of the last commit, or empty (sorts last) |
 | `data-expiry` | `YYYY-MM-DD` of the nearest certificate, renewal or secret date, or empty (sorts last) |
-| `data-order` | the position in the catalog (tie-break) |
+| `data-order` | the position in the list of the run: problems first, then name order (tie-break; decision 2026-11-11) |
 | summary | `summaryFact` (research.md §5): text and kind |
 
 ## View (the page address)

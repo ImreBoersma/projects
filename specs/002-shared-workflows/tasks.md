@@ -95,7 +95,7 @@ project repo change in a PR.
 
 - [X] T015 [P] [US2] Create `.github/workflows/deploy-firebase.yml` as in `contracts/workflows.md`:
   - `workflow_call` inputs `project-id` (required), `target` (default `""`). Secret `firebase-service-account` (required).
-  - Job `deploy`: `if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)`, `environment: production`, job concurrency `deploy-${{ github.repository }}`, `cancel-in-progress: false`.
+  - Job `deploy`: `if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)` (first `== 'push'`; changed so that the scheduled status page deploys, contracts/workflows.md), `environment: production`, job concurrency `deploy-${{ github.repository }}`, `cancel-in-progress: false`.
   - Steps: check that the secret is set, else `::error::The secret firebase-service-account is not set.`; checkout; read the `public` folder from `firebase.json` with `jq` (the hosting entry with the `target`, or the only entry); download artifact `build` into that folder; `FirebaseExtended/action-hosting-deploy@v0.11.0` with `firebaseServiceAccount`, `projectId`, `target`, `channelId: live`.
 - [X] T016 [P] [US2] Create `.github/workflows/deploy-pages.yml` as in `contracts/workflows.md`:
   - `workflow_call`, no inputs. Job `deploy`: the same default-branch `if:` as T015, `environment: { name: github-pages, url: ${{ steps.deployment.outputs.page_url }} }`, permissions `pages: write`, `id-token: write`, job concurrency `deploy-${{ github.repository }}`, no cancel.
@@ -193,3 +193,11 @@ Task: "T017 [US2] deploy-vercel.yml"
 ## Phase 7: Convergence
 
 - [X] T027 In `specs/002-shared-workflows/contracts/workflows.md`, change the CI concurrency group from `ci-<workflow>-<ref>` to `ci-<repo>-<ref>`, so that it matches `.github/workflows/ci-node.yml` per plan: contracts/workflows.md (partial)
+
+---
+
+## Phase 8: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T028 Remove `swa-cli.config.json` (the old Azure Static Web Apps config) from `ImreBoersma/Beter-dan-de-MIDI` per FR-012 (unrequested)

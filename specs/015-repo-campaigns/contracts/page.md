@@ -1,7 +1,8 @@
 # Contract: the section "Campaigns" on the status page
 
 After the project sections, before "Shared tokens". Not shown when no campaign is open or done in
-the last 7 days.
+the last 7 days. (Since spec 019 this is the tab "Campaigns"; without a campaign the tab shows "No
+open campaign.")
 
 ```text
 CAMPAIGNS

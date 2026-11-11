@@ -22,9 +22,11 @@ links, total state, title, favicon, no secret values).
   "›" mark (`aria-hidden`).
 - Each modal: `<div id="p-<id>" class="modal" role="dialog" aria-modal="true" aria-labelledby="t-<id>">`
   with a `modal-box`, the title (`h2#t-<id>`, a new-tab link to the repo or site), the problems,
-  the fact groups, and a close link `<a href="#" aria-label="Close">✕</a>`.
+  the fact groups, and a close link `<a href="#" aria-label="Close">✕</a>`. With the script, the
+  class `modal-open` opens a modal and `:target` does not (research.md §8); without the script,
+  `:target` opens it.
 - Controls: real `<input>` and `<select>` elements with `<label>` (visible or screen-reader text);
-  on 360 px they fold under a "Filters" button (`<details>`). They show only when the script runs
+  below 640 px they fold under a "Filters" button (`<details>`). They show only when the script runs
   (`html:not(.js) .controls { display: none }`), because without the script they do nothing.
 - Empty result: "No project matches the filter." with a "Clear the filter" button.
 - Tabs: `<nav class="tabs tabs-border" role="tablist">` with `<a role="tab" href="?tab=…">`;

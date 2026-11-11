@@ -24,7 +24,7 @@ the three values, or `repo` is not in the `owner/name` format. Full schema:
 | `availability` | `ok` \| `no-repo` \| `unavailable` | `no-repo` if `repo` is empty; `unavailable` if the query failed for this repo |
 | `lastCommitAt` | date or null | head commit of the default branch |
 | `openPrCount` | number | open PRs, including Renovate PRs |
-| `renovatePrCount` | number | open PRs by `renovate` or `renovate[bot]` |
+| `renovatePrCount` | number | open PRs whose author matches `(^\|-)renovate(\[bot\])?$` (also self-hosted apps such as `imreboersma-homelab-renovate`), in the first 100 open PRs |
 | `oldestRenovatePrAt` | date or null | oldest `createdAt` of those PRs |
 | `ci` | `passed` \| `failed` \| `unknown` | research.md §2 |
 | `deploy` | `{ at: date, result: succeeded \| failed \| in-progress }` or `unknown` | research.md §3 |

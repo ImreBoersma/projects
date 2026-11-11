@@ -23,6 +23,26 @@ to repair. 90 days on the page; git keeps older days. A missing run is a gap, no
   → A: All on the public page: uptime, bars, "since" and the average time to repair. The problems
   are already public on the page and in the issues; a second private page is not necessary.
 
+### Session 2026-11-11 (review)
+
+- Q: How far in the future may a stored result be? → A: At most 10 minutes after the time of the
+  run. A result later than that is ignored.
+- Q: What does a result line hold? → A: The projects that are not archived, and also the
+  pseudo-project `shared` for the problems of the shared setup (spec 013), so that "since" works
+  for them.
+- Q: What does the update ignore when a stored result cannot be read? → A: The whole line. One
+  project entry that is not valid makes the line not valid. The log gives the number of skipped
+  lines.
+- Q: How long is a fault that started before the 90-day window? → A: The update reads only the
+  last 90 days, so the fault counts from the start of the window. Its time to repair is then too
+  short. This is accepted.
+- Q: How is the average time to repair rounded? → A: Below 1 hour: whole minutes. Below 10 hours:
+  hours with one decimal. Up to 48 hours: whole hours. More than 48 hours: whole days.
+- Q: Which start does "History from" use, and which does " or before" use? → A: "History from" is
+  the date of the first day file on the branch `data`, also when it is older than 90 days.
+  " or before" shows when the row of a problem goes back to the first result that the update read
+  (the start of the 90-day window, or the first day file when it is newer).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Each update is kept (Priority: P1)
@@ -61,7 +81,8 @@ time of the first of them.
 **Acceptance Scenarios**:
 
 1. **Given** a problem that is in each update since a time T, **When** the page is made, **Then** the
-   problem shows "since T" (a time today, else a date and a number of days).
+   problem shows "since T" (a time today, else a date and a number of days). (Superseded by spec
+   012 FR-006: the page shows "Started <relative time>" with the UTC time in the tooltip.)
 2. **Given** a problem that stopped and came back, **When** the page is made, **Then** "since" is the
    time it came back.
 3. **Given** a missing update between two updates with the same problem, **When** the page is made,
@@ -127,10 +148,10 @@ necessary for daily work.
   it.
 - A project id changes in the catalog. The history of the old id is not moved; the new id starts a
   new history.
-- The stored results contain an entry that cannot be read. The update ignores that entry, writes a
-  log line, and continues.
-- The clock of an update is wrong. Results are sorted by their stored time; a result in the future
-  is ignored.
+- The stored results contain an entry that cannot be read. The update ignores the line of that
+  entry, writes a log line with the number of skipped lines, and continues.
+- The clock of an update is wrong. Results are sorted by their stored time; a result more than 10
+  minutes in the future is ignored.
 
 ## Requirements *(mandatory)*
 
@@ -151,7 +172,8 @@ necessary for daily work.
   percentage.
 - **FR-007**: The page MUST show the average time to repair of the faults that closed in the last
   90 days, and their number (US4). Faults are the problems `site-down`, `ci-failed`,
-  `deploy-failed` and `cert-expiring`; other problems do not count.
+  `deploy-failed` and `cert-expiring`; other problems do not count. A fault that started before the
+  window counts from the start of the window.
 - **FR-008**: The stored results MUST NOT contain text from repos, names of persons, tokens or
   site content (spec 001 FR-018). They contain only states, problem keys and times.
 - **FR-009**: An update that cannot store its result MUST still publish the page, and MUST then
@@ -177,7 +199,8 @@ necessary for daily work.
   issues or logs.
 - **SC-004**: A stakeholder can read the uptime percentage of the last 30 days of each site on the
   public page.
-- **SC-005**: The page with history stays less than 100 KB.
+- **SC-005**: The page with history stays less than 100 KB. (Superseded by spec 019 SC-005 and
+  spec 011: HTML with CSS of the 20-site worst case < 30 KB gzip.)
 - **SC-006**: The feature costs €0 each month to operate.
 
 ## Assumptions

@@ -2,6 +2,10 @@
 
 Changes the page contract of spec 001 (`specs/001-project-status-page/contracts/page.md`).
 
+Superseded by spec 012 (`specs/012-status-page-polish/contracts/page.md`) and spec 019: the page
+has no table and no column "Site" now. The site state shows in the Site group of each project, and a
+project without a domain has no Site group. The states below stay the same.
+
 ## New column "Site"
 
 After the column "Problems", before "Last commit".

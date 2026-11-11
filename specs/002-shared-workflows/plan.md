@@ -104,3 +104,7 @@ permits reusable workflows only there. The project repo changes are one PR for e
 
 No violations. The GitHub Pages environment was an exception in the first version of this plan.
 The constitution amendment v2.1.1 (2026-10-30) permits it.
+
+Principle IV says "approximately 10 lines" for a caller. SC-003 permits 16 lines (decision
+2026-11-02, T023): Biome formats YAML with line width 80, so the scales-exercises caller has 16
+lines. The hob-nl caller of spec 006 has 18 lines; spec 006 records that exception.

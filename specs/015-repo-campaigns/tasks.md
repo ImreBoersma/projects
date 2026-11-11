@@ -54,7 +54,7 @@ contracts/commands.md, contracts/page.md, quickstart.md
 **Independent Test**: a page with a campaign of 5 repos (2 merged, 2 open, 1 failed CI) shows the counts and the search link.
 
 - [X] T012 [P] [US2] Make `status/tests/campaign-status.test.ts` for `classify(prs, applyResults)` and `summary(states, now)`: merged/open/closed PR; open PR with CI `FAILURE` or `ERROR` → `failed-ci`; open PR without a CI rollup → `open` ("no CI" is not failed); no PR + needed → `to-do`; no PR + not-needed → `not-needed`; summary counts; `done` when no `open`, `failed-ci` or `to-do`; shown while not done, or done less than 7 days ago; hidden after 7 days.
-- [X] T013 [US2] Make `status/src/campaign/status.ts` with `classify`, `summary`, and `readCampaigns(dir, projects, env, now)`: read `campaigns/*.yaml` (skip `README.md`; a parse error is a log line and that campaign is skipped, not a run failure; skip a campaign that started more than 180 days ago when all its target repos are merged, closed or not needed, so that old campaigns cost no requests), and for each target repo read the campaign PR by branch with GraphQL `pullRequests(headRefName: "campaign/<id>", states: [OPEN, MERGED, CLOSED], first: 1)` with `mergedAt`, `closedAt` and the head commit `statusCheckRollup { state }`, using the read token of the owner (`tokenFor` of `status/src/github.ts`); for a repo without a PR read the files and use `applyChanges`.
+- [X] T013 [US2] Make `status/src/campaign/status.ts` with `classify`, `summary`, and `readCampaigns(dir, projects, env, now)`: read `campaigns/*.yaml` (skip `README.md`; a parse error is a log line and that campaign is skipped, not a run failure; skip a campaign that started more than 180 days ago when all its target repos are merged, closed or not needed, so that old campaigns cost no requests; the first implementation skipped each old campaign, research §9 Found (3), repaired by T026), and for each target repo read the campaign PR by branch with GraphQL `pullRequests(headRefName: "campaign/<id>", states: [OPEN, MERGED, CLOSED], first: 1)` with `mergedAt`, `closedAt` and the head commit `statusCheckRollup { state }`, using the read token of the owner (`tokenFor` of `status/src/github.ts`); for a repo without a PR read the files and use `applyChanges`.
 - [X] T014 [US2] In `status/src/types.ts` add `StatusPage.campaigns?: CampaignSummary[]`; in `status/src/main.ts` call `readCampaigns(join(dirname(args.catalog), "campaigns"), ...)` in page mode and pass the result to `renderPage`.
 - [X] T015 [US2] In `status/src/render.ts`, add the section "Campaigns" after the project sections and before "Shared tokens" (contracts/page.md): one item per campaign with a dot (amber with failed CI, grey while open/to do, green when done), the title, `started <relative time>`, the counts > 0 separated by ` · ` with `failed CI` as an amber badge, and a link `PRs` to the search URL; `Done <relative time>` in place of the counts when done. No problem, no issue, no change to the total state.
 - [X] T016 [US2] Add render tests in `status/tests/render.test.ts`: the counts and the search link; the amber badge and dot with failed CI; `Done` within 7 days; no section without campaigns; the total state and title do not change.
@@ -112,3 +112,16 @@ status/tests/secret-set.test.ts       (T017)
 3. **US3**: the secret command, small and last; it can be dropped (clarification 2026-11-06).
 
 All three go in one PR.
+
+---
+
+## Phase 7: Convergence
+
+From the review of 2026-11-11 (code checked against spec, plan and tasks).
+
+- [ ] T026 Skip a campaign older than 180 days on the page only when no target repo is open, failed-ci or to-do (`status/src/campaign/status.ts:120`) per FR-007 (contradicts; Maintainer decision 2026-11-11)
+- [ ] T027 Do not mark a campaign done when a target repo could not be read; show "not available" for it (`status/src/campaign/status.ts`) per FR-007, SC-004 (partial)
+- [ ] T028 Print `failed: <gh exit text>` in `secret-set` (capture the stderr of `gh secret set`) per contracts/commands.md (partial)
+- [ ] T029 Add the campaign label on the update and up-to-date paths when it is missing (`status/src/campaign/run.ts`) per FR-002 (partial)
+- [ ] T030 Raise NoAccess only for the repo read in `defaultHead`, not for every 403/404 (`status/src/campaign/github.ts`) per Edge Cases (partial)
+- [ ] T031 Ignore archived ids in an explicit `repos` list instead of a parse error (`status/src/campaign/parse.ts:36`) per Edge Cases (contradicts)
