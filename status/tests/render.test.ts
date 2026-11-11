@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
+import { deliveryRow, windowMonths } from "../src/delivery/stats";
 import { mapRepo } from "../src/github";
 import { renderPage, repairText, summary } from "../src/render";
 import { FAVICON } from "../src/style";
 import type {
   CampaignSummary,
+  DeliveryRow,
   Problem,
   ProjectStatus,
   SecretStatus,
@@ -864,7 +866,7 @@ describe("the tab Versions (spec 016, contracts/page.md)", () => {
   test("the table: header, one row for each repo, the sources and the empty cells", () => {
     const p = panel(page(rows));
     expect(p).toContain("The versions that each repo asks for.");
-    expect(p).toContain('<table class="versions text-sm">');
+    expect(p).toContain('<table class="data-table text-sm">');
     expect([...p.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map((m) => m[1])).toEqual([
       "Repo",
       "Node",
@@ -915,5 +917,81 @@ describe("the tab Versions (spec 016, contracts/page.md)", () => {
       { projectId: "o", repo: "a/o", state: "ok" as const, tools: { react: v("<19 & >1", null) } },
     ];
     expect(panel(page(odd))).toContain("&lt;19 &amp; &gt;1");
+  });
+});
+
+describe("the Delivery table in the tab History (spec 017, contracts/page.md)", () => {
+  const H = 3_600_000;
+  const at = (hoursAgo: number) => new Date(generatedAt.getTime() - hoursAgo * H).toISOString();
+  const pr = (ago: number, open: number, bot = true) => ({
+    createdAt: at(ago + open),
+    mergedAt: at(ago),
+    bot,
+  });
+  const months = windowMonths(generatedAt);
+  const rows: DeliveryRow[] = [
+    deliveryRow(
+      {
+        prs: [pr(1, 2), pr(2, 10), pr(3, 50), pr(4, 0.5, false)],
+        deploys: [
+          "2026-08-20T10:00:00Z",
+          "2026-08-21T10:00:00Z",
+          "2026-09-02T10:00:00Z",
+          "2026-10-02T10:00:00Z",
+        ],
+      },
+      { id: "scales", name: "Scales & co" },
+      generatedAt,
+    ),
+    deliveryRow({ prs: [], deploys: [] }, { id: "home", name: "HomeLab" }, generatedAt),
+    deliveryRow("not-available", { id: "pret", name: "pretband-backend" }, generatedAt),
+  ];
+  const page = (delivery?: { rows: DeliveryRow[]; months: string[] }) =>
+    renderPage({ generatedAt, rows: [status()], issues: new Map(), delivery });
+  const history = (html: string) =>
+    html.match(/<section id="tab-history"[\s\S]*?<\/section>/)?.[0] ?? "";
+
+  test("heading, explanation and header after the uptime list", () => {
+    const h = history(page({ rows, months }));
+    expect(h).toContain('<h3 class="mt-6 mb-2 text-sm font-semibold">Delivery (90 days)</h3>');
+    expect(h).toContain("An update is a PR of a bot (Renovate, Dependabot).");
+    expect([...h.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map((m) => m[1])).toEqual([
+      "Project",
+      "Merged PRs",
+      "Updates",
+      "Update time",
+      "Other PR time",
+      "Deploys",
+    ]);
+    expect(h.indexOf("Delivery (90 days)")).toBeGreaterThan(h.indexOf("No uptime data yet."));
+    expect(history(page())).not.toContain("Delivery (90 days)");
+  });
+
+  test("rows: name, counts, medians, deploys with months; not available; escape", () => {
+    const h = history(page({ rows, months }));
+    expect(h).toContain(
+      '<tr><th scope="row">Scales &amp; co</th><td>4</td><td>3</td><td>10 h</td><td>&lt; 1 h</td><td>4 <span class="opacity-60" aria-hidden="true">· 0/2/1/1</span><span class="sr"> (July 0, August 2, September 1, October 1)</span></td></tr>',
+    );
+    expect(h).toContain(
+      '<tr><th scope="row">HomeLab</th><td>0</td><td>0</td><td>—</td><td>—</td><td>—</td></tr>',
+    );
+    expect(h).toContain(
+      '<tr><th scope="row">pretband-backend</th><td colspan="5">Not available</td></tr>',
+    );
+  });
+
+  test("the total row in tfoot (FR-004)", () => {
+    const h = history(page({ rows, months }));
+    expect(h).toContain(
+      '<tfoot><tr><th scope="row">Total</th><td>4</td><td>3</td><td>10 h</td><td>&lt; 1 h</td><td>4 <span class="opacity-60" aria-hidden="true">· 0/2/1/1</span>',
+    );
+  });
+
+  test("5 months, and no PR text, login or [bot] (FR-008)", () => {
+    const five = ["2027-01", "2027-02", "2027-03", "2027-04", "2027-05"];
+    const row: DeliveryRow = { ...rows[1], deploys: 5, months: five.map((m) => [m, 1]) };
+    expect(history(page({ rows: [row], months: five }))).toContain("· 1/1/1/1/1");
+    const h = history(page({ rows, months }));
+    expect(h).not.toMatch(/\[bot\]|renovate|dependabot\[/);
   });
 });

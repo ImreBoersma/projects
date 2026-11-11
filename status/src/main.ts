@@ -8,6 +8,8 @@ import { readFacts } from "./conformance/read";
 import { checkRepo } from "./conformance/rules";
 import { sharedWorkflowVars } from "./conformance/workflows";
 import { statusJson } from "./data";
+import { readDelivery } from "./delivery/read";
+import { deliveryRow, windowMonths } from "./delivery/stats";
 import {
   certificateProblem,
   daysUntil,
@@ -292,6 +294,7 @@ if (args.mode === "page") {
   }
   const issues = await issueNumbers();
   const versions = await checkVersions();
+  const delivery = await checkDelivery();
   await mkdir(args.out, { recursive: true });
   const page: StatusPage = {
     generatedAt: now,
@@ -316,6 +319,7 @@ if (args.mode === "page") {
     css: await Bun.file(new URL("../build/page.css", import.meta.url)).text(),
     shared,
     versions,
+    delivery,
     // Spec 015: the progress of the campaigns.
     campaigns: await readCampaigns(
       join(dirname(args.catalog), "campaigns"),
@@ -362,6 +366,23 @@ async function checkVersions(): Promise<VersionRow[]> {
   const marked = markDrift(rows.filter((r) => r !== null));
   console.log(`Versions: ${markedCount(marked)} repos behind`);
   return marked;
+}
+
+// Spec 017: the merged PRs and the production deploys of the last 90 days, in catalog order.
+// Logs counts only, never a PR text.
+async function checkDelivery() {
+  const withRepo = statuses.map((s) => s.project).filter((p) => p.repo);
+  const raw = await readDelivery(withRepo, process.env, now);
+  const rows = withRepo.map((p) => {
+    const row = deliveryRow(raw.get(p.id) ?? "not-available", p, now);
+    console.log(
+      row.state === "ok"
+        ? `Delivery ${p.repo}: ${row.merged} PRs, ${row.deploys} deploys`
+        : `Delivery ${p.repo}: not available`,
+    );
+    return row;
+  });
+  return { rows, months: windowMonths(now) };
 }
 
 // Spec 007: issue numbers for the problem links. Without them, the page shows problems without links.

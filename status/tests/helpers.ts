@@ -1,4 +1,4 @@
-import type { ProjectStatus, VersionRow } from "../src/types";
+import type { DeliveryRow, ProjectStatus, VersionRow } from "../src/types";
 
 export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
   return {
@@ -70,4 +70,23 @@ export function versionsWorstCase(): VersionRow[] {
       "types-node": v(`^${20 + (i % 7)}.6.5`, 20 + (i % 7)),
     },
   }));
+}
+
+// Spec 017: the delivery numbers of the 20-site worst case: 4 months, a mix of counts and times.
+export function deliveryWorstCase(): { rows: DeliveryRow[]; months: string[] } {
+  const months = ["2026-08", "2026-09", "2026-10", "2026-11"];
+  return {
+    months,
+    rows: Array.from({ length: 20 }, (_, i) => ({
+      projectId: `p${i}`,
+      name: `Project ${i}`,
+      state: "ok" as const,
+      merged: 40 + i,
+      updates: 30 + i,
+      updateHours: Array.from({ length: 30 + i }, (_, j) => j * 3.5),
+      otherHours: [0.2, 1.5, 30],
+      deploys: 10 + i,
+      months: months.map((m, j): [string, number] => [m, j + i]),
+    })),
+  };
 }

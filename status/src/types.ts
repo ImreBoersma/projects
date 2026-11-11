@@ -92,6 +92,25 @@ export interface StatusPage {
   issues: Map<string, number>;
   // Spec 016: the versions of the tools in each repo, after the drift step.
   versions?: VersionRow[];
+  // Spec 017: the delivery numbers of the last 90 days.
+  delivery?: { rows: DeliveryRow[]; months: string[] };
+}
+
+// Spec 017, data-model.md.
+export interface RawDelivery {
+  prs: { createdAt: string; mergedAt: string; bot: boolean }[];
+  deploys: string[];
+}
+export interface DeliveryRow {
+  projectId: string;
+  name: string;
+  state: "ok" | "not-available";
+  merged: number;
+  updates: number;
+  updateHours: number[];
+  otherHours: number[];
+  deploys: number;
+  months: [string, number][];
 }
 
 // Spec 016, data-model.md: the tools of the table, in column order.

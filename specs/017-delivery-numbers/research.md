@@ -72,3 +72,17 @@ catalog order, and the total row in `<tfoot>`.
 **Rationale**: the History tab already has the 90-day numbers (uptime, time to repair); the table
 style exists. Renaming the class `versions` to a shared name (`data-table`) is a small change of
 spec 016 CSS; done in this feature so that two tables do not use a name of one feature.
+
+## 7. Validation (2026-11-11)
+
+- Tests: 430 pass (408 before), typecheck and lint pass. Page of the 20-site worst case with the
+  versions and the delivery tables: 174.6 KB raw, 22.2 KB gzip (budget 30 KB).
+- Local run with real data (read-only GraphQL queries, one for each token): 8 rows. Total 147
+  merged PRs, 118 updates, update median 21 h, other PRs < 1 h, 76 production deploys
+  (7/18/16/35 for August to November). scales-exercises 58 merged, 47 updates (SC-002);
+  pretband-backend has the highest update median, 11 d (SC-002). HomeLab and
+  Reperatie-Formulier: Deploys "—". The production deploy counts are lower than the REST count of
+  spec.md "Current state", because that count had the Preview deploys.
+- Browser (Chrome): light and dark theme readable; at 375 px (in a frame) the table scrolls in
+  its own box and the page does not scroll sideways.
+- The CSS class `versions` of spec 016 is now `data-table` (both tables).

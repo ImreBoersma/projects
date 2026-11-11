@@ -12,6 +12,7 @@ import {
   writeView,
 } from "./client";
 import { RULES } from "./conformance/rules";
+import { deliveryTotal, median, timeText } from "./delivery/stats";
 import { rowLinks, STATUS_WORKFLOW, shortcuts } from "./links";
 import { HOSTS } from "./new-project/hosts";
 import { PROBLEM_TEXT } from "./problems";
@@ -19,6 +20,7 @@ import { FAVICON, ICON } from "./style";
 import type {
   CampaignSummary,
   DayMark,
+  DeliveryRow,
   Problem,
   ProjectStatus,
   SecretStatus,
@@ -288,7 +290,11 @@ ${problems.length ? `<ul class="problems mb-3 space-y-2 text-error">${problems.j
 }
 
 // Spec 019 data-model.md "Tab counts" and the History panel (spec 010).
-function historyPanel(rows: ProjectStatus[], repair: string): string {
+function historyPanel(
+  rows: ProjectStatus[],
+  repair: string,
+  delivery?: StatusPage["delivery"],
+): string {
   const sites = rows.filter((s) => s.history.uptime);
   const items = sites
     .map(
@@ -296,7 +302,7 @@ function historyPanel(rows: ProjectStatus[], repair: string): string {
         `<li class="list-row"><span class="font-semibold">${html(s.project.name)}</span><span class="text-sm">${uptime(s)[0] ?? ""}</span></li>`,
     )
     .join("\n");
-  return `<p class="mb-3 text-sm">${html(repair)}</p>${items ? `<ul class="list">${items}</ul>` : "<p>No uptime data yet.</p>"}`;
+  return `<p class="mb-3 text-sm">${html(repair)}</p>${items ? `<ul class="list">${items}</ul>` : "<p>No uptime data yet.</p>"}${delivery ? deliverySection(delivery) : ""}`;
 }
 
 // Spec 010, contracts/page.md "Summary line": the average time to repair of the faults.
@@ -492,7 +498,7 @@ ${panel("projects", "Projects", projectsBody, true)}
 ${panel("campaigns", "Campaigns", campaignSection(campaigns, now) || "<p>No open campaign.</p>")}
 ${panel("tokens", "Shared tokens", sharedSection(shared, now, page.issues) || "<p>No shared tokens with a date.</p>")}
 ${panel("versions", "Versions", versionsSection(page.versions))}
-${panel("history", "History", historyPanel(page.rows, repairText(page.repair ?? null)))}
+${panel("history", "History", historyPanel(page.rows, repairText(page.repair ?? null), page.delivery))}
 ${commandBox}
 ${newProject}
 </div>
@@ -508,6 +514,55 @@ ${minified}
 </body>
 </html>
 `;
+}
+
+// Spec 017, contracts/page.md: the merged PRs and production deploys of the last 90 days.
+const MONTH = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+function deliverySection({ rows, months }: NonNullable<StatusPage["delivery"]>): string {
+  const cells = (r: DeliveryRow) => {
+    if (r.state !== "ok") return `<td colspan="5">Not available</td>`;
+    const counts = r.months.map(([, n]) => n);
+    const names = r.months.map(([m, n]) => `${MONTH[Number(m.slice(5, 7)) - 1]} ${n}`).join(", ");
+    const deploys = r.deploys
+      ? `${r.deploys} <span class="opacity-60" aria-hidden="true">· ${counts.join("/")}</span><span class="sr"> (${names})</span>`
+      : "—";
+    return [
+      r.merged,
+      r.updates,
+      html(timeText(median(r.updateHours))),
+      html(timeText(median(r.otherHours))),
+      deploys,
+    ]
+      .map((c) => `<td>${c}</td>`)
+      .join("");
+  };
+  const tr = (r: DeliveryRow) => `<tr><th scope="row">${html(r.name)}</th>${cells(r)}</tr>`;
+  const head = ["Project", "Merged PRs", "Updates", "Update time", "Other PR time", "Deploys"]
+    .map((h) => `<th scope="col">${h}</th>`)
+    .join("");
+  return `<h3 class="mt-6 mb-2 text-sm font-semibold">Delivery (90 days)</h3>
+<p class="mb-2 text-sm">Merged PRs and production deploys of the last 90 days. An update is a PR of a bot (Renovate, Dependabot). Times are medians from open to merge.</p>
+<div class="overflow-x-auto">
+<table class="data-table text-sm">
+<thead><tr>${head}</tr></thead>
+<tbody>
+${rows.map(tr).join("\n")}
+</tbody>
+<tfoot>${tr(deliveryTotal(rows, months))}</tfoot>
+</table></div>`;
 }
 
 // Spec 016, contracts/page.md: one table of the tool versions; a marked cell is behind.
@@ -539,7 +594,7 @@ function versionsSection(rows: VersionRow[] | undefined): string {
     .join("\n");
   return `<p class="mb-2 text-sm">The versions that each repo asks for. A marked version is one or more major versions behind the newest repo.</p>
 <div class="overflow-x-auto">
-<table class="versions text-sm">
+<table class="data-table text-sm">
 <thead><tr><th scope="col">Repo</th>${head}</tr></thead>
 <tbody>
 ${body}

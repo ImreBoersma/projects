@@ -109,8 +109,9 @@ deploy. Make sure that the total and each month count are correct and the previe
   example `renovate[bot]`, `dependabot[bot]`, `imreboersma-homelab-renovate[bot]`). A campaign PR
   of spec 015 is opened by the Maintainer, so it counts as an other PR.
 - A PR that was closed without a merge: not counted.
-- A repo with more than 100 merged PRs in 90 days: all are counted (the read continues to the
-  next page until the PRs are older than 90 days).
+- A repo with more than 100 merged PRs in 90 days: the read continues to the next page until the
+  PRs are older than 90 days, to a maximum of 500 PRs for each repo; above that, the run logs
+  "Delivery <repo>: more than 500 PRs" and counts the 500 (research §2).
 - A repo that the read token cannot read: the row shows "Not available" and is not in the total.
 - An archived project: not in the table.
 - A project without a repo: not in the table.
@@ -146,8 +147,8 @@ deploy. Make sure that the total and each month count are correct and the previe
   name, login or text of a repo (spec 001 FR-018).
 - **FR-009**: A repo that the run cannot read MUST show "Not available" in its row, MUST NOT be in
   the total, and MUST NOT stop the run.
-- **FR-010**: Times MUST show as "< 1 h", whole hours below 48 hours, and whole days from 48
-  hours. A cell without data MUST show "—".
+- **FR-010**: Times MUST show as "< 1 h", whole hours (rounded down) below 48 hours, and whole
+  days (rounded down) from 48 hours. A cell without data MUST show "—".
 
 ### Key Entities
 
