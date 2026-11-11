@@ -62,7 +62,6 @@ describe("parseCampaign", () => {
       ],
       [swap("started: 2026-11-10", "started: 2026-02-30"), "node-24.yaml", /field `started`/],
       [swap("repos: all", "repos: [two]"), "node-24.yaml", /field `repos`.*two/],
-      [swap("repos: all", "repos: [old]"), "node-24.yaml", /field `repos`.*old/],
       [swap("repos: all", "repos: [nope]"), "node-24.yaml", /field `repos`/],
       [swap("path: .nvmrc", "path: /etc/x"), "node-24.yaml", /changes 0/],
       [swap("path: .nvmrc", "path: a/../../x"), "node-24.yaml", /changes 0/],
@@ -88,6 +87,13 @@ describe("targetRepos", () => {
       { id: "hob", repo: "org/hob" },
     ]);
     expect(targetRepos(parse(swap("repos: all", "repos: [hob]")), projects)).toEqual([
+      { id: "hob", repo: "org/hob" },
+    ]);
+  });
+
+  // Spec 015 T031: an archived id in an explicit list is left out, not a parse error.
+  test("an archived id in an explicit list is left out", () => {
+    expect(targetRepos(parse(swap("repos: all", "repos: [old, hob]")), projects)).toEqual([
       { id: "hob", repo: "org/hob" },
     ]);
   });

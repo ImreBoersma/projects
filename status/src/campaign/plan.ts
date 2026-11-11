@@ -4,6 +4,8 @@ import type { ApplyResult } from "../types";
 export interface PrInfo {
   number: number;
   state: "open" | "closed" | "merged";
+  // The PR has the label `campaign` (spec 015 T029).
+  labelled?: boolean;
 }
 
 export type RepoAction =

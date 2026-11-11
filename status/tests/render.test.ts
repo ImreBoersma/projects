@@ -654,6 +654,7 @@ describe("campaigns on the page (spec 015)", () => {
     closed: 0,
     "to-do": 0,
     "not-needed": 0,
+    "not-available": 0,
     ...o,
   });
   const campaign = (o: Partial<CampaignSummary> = {}): CampaignSummary => ({

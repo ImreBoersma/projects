@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { reposFor, setAll } from "../src/secret-set";
+import { reposFor, resultLine, setAll } from "../src/secret-set";
 import type { SecretEntry } from "../src/types";
 
 const entry = (
@@ -40,7 +40,9 @@ describe("setAll (FR-009)", () => {
     const seen: { args: string[]; stdin: string }[] = [];
     const run = async (args: string[], stdin: string) => {
       seen.push({ args, stdin });
-      return args.includes("ImreBoersma/fail") ? 1 : 0;
+      return args.includes("ImreBoersma/fail")
+        ? { code: 1, stderr: `HTTP 404: Not Found ${stdin}\n` }
+        : { code: 0, stderr: "" };
     };
     const value = "ghp_FIXTUREVALUE";
     const results = await setAll("BOARD_TOKEN", ["ImreBoersma/a", "ImreBoersma/fail"], value, run);
@@ -51,9 +53,22 @@ describe("setAll (FR-009)", () => {
     expect(seen.every((s) => s.stdin === value)).toBe(true);
     expect(seen.some((s) => s.args.join(" ").includes(value))).toBe(false);
     expect(results).toEqual([
-      { repo: "ImreBoersma/a", ok: true },
-      { repo: "ImreBoersma/fail", ok: false },
+      { repo: "ImreBoersma/a", ok: true, error: "" },
+      { repo: "ImreBoersma/fail", ok: false, error: "HTTP 404: Not Found ***" },
     ]);
     expect(JSON.stringify(results)).not.toContain(value);
+  });
+
+  // Spec 015 T028, contracts/commands.md: `set` or `failed: <gh exit text>`.
+  test("the result line has the gh text of a failure", () => {
+    expect(resultLine({ repo: "ImreBoersma/a", ok: true, error: "" })).toMatch(
+      /^ {2}ImreBoersma\/a\s+set$/,
+    );
+    expect(resultLine({ repo: "ImreBoersma/b", ok: false, error: "HTTP 404" })).toMatch(
+      /^ {2}ImreBoersma\/b\s+failed: HTTP 404$/,
+    );
+    expect(resultLine({ repo: "ImreBoersma/c", ok: false, error: "" })).toMatch(
+      /failed: exit code not 0$/,
+    );
   });
 });
