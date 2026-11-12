@@ -199,7 +199,7 @@ secrets:
     expires: none
     project: homelab
   # Fine-grained PAT, HomeLab only, Actions read/write: starts renovate.yml each Saturday (spec 003 T025).
-  - name: cron-job-homelab-renovate
+  - name: HOMELAB_RENOVATE_TRIGGER
     kind: external
     where: cron-job.org
     expires: 2027-11-12
