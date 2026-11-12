@@ -165,4 +165,4 @@ Task: "T015 [US1] boek-de-bus renovate.json"
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T025 Start the HomeLab Renovate workflow on time: a cron-job.org job sends `workflow_dispatch` to `ImreBoersma/HomeLab` `renovate.yml` each Saturday 02:30 Europe/Amsterdam (GitHub starts its schedule 6 to 7 hours late, so each run is after the 02:00-06:00 window of HomeLab) per FR-002 (contradicts)
+- [X] T025 Start the HomeLab Renovate workflow on time: a cron-job.org job sends `workflow_dispatch` to `ImreBoersma/HomeLab` `renovate.yml` each Saturday 02:30 Europe/Amsterdam (GitHub starts its schedule 6 to 7 hours late, so each run is after the 02:00-06:00 window of HomeLab) per FR-002 (contradicts)

@@ -28,10 +28,12 @@ Rules (data-model.md "SecretEntry"); each failure stops the run with
 `Catalog error in secrets item <n>, field <field>: <rule>` before any output (spec 001 FR-015):
 
 - `name`: required, 1 to 60 characters of `A-Z a-z 0-9 _ -` and space.
-- `kind`: one of `actions-secret`, `environment-secret`, `actions-variable`. The kind `account`
+- `kind`: one of `actions-secret`, `environment-secret`, `actions-variable`, `external`. The kind
+  `external` is a token in an outside service, for example the GitHub token in cron-job.org
+  (added 2026-11-12, spec 003 T025). The kind `account`
   is refused: host logins are not listed in this public file (spec clarification); they stay in
   the password manager.
-- `where`: `owner/repo`.
+- `where`: `owner/repo`; for `external`, the host name of the service (for example `cron-job.org`).
 - `expires`: `YYYY-MM-DD` (a real date), `never` (an expiry is possible but not set: the page
   warns, FR-010) or `none` (the value cannot expire: no warning).
 - `project`: empty or a catalog id.

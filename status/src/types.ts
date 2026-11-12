@@ -182,7 +182,8 @@ export interface ProjectHistory {
 
 // Spec 013: the catalog list `secrets` (contracts/catalog.md).
 // No `account`: host logins are not listed in the public catalog (spec 013 clarification).
-export type SecretKind = "actions-secret" | "environment-secret" | "actions-variable";
+// `external`: a token kept in an outside service (for example cron-job.org); `where` is its host.
+export type SecretKind = "actions-secret" | "environment-secret" | "actions-variable" | "external";
 
 export interface SecretEntry {
   name: string;
