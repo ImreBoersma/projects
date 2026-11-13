@@ -53,6 +53,12 @@ a workflow on push to `main`."
   secret data.
 - Q: Is the caller of 18 lines a deviation? → A: Yes, recorded in plan.md Complexity Tracking.
 
+### Session 2026-11-13
+
+- Q: Are there custom `hob-*` files outside `wp-content/mu-plugins` on the server? → A: No. A
+  search of `~/html` found none (T024). The repo holds all custom code (FR-001, SC-001). The entry
+  `hob-cf-purge.php` in the SFTP ignore list does not point to a file.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - The custom code of hob.nl is in git (Priority: P1)
