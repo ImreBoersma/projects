@@ -44,7 +44,8 @@ auto-add is limited to 1 repo on the free plan. FR-005 asks for the shared workf
 
 ## 3. Token (FR-011)
 
-**Decision**: two classic PATs, with no expiry date (changed on 2026-11-04 by the Maintainer).
+**Decision**: two classic PATs. They expire on 2027-11-06 (first planned without an expiry on
+2026-11-04; the rotation of 2026-11-06 gave them a one-year expiry, checked on GitHub 2026-11-13).
 
 | Secret | Scopes | Where | Used by |
 |---|---|---|---|
@@ -69,10 +70,10 @@ was on the board 18 seconds after it opened (T024). `public_repo` is not necessa
   all repos, also HomeLab, which deploys as root.
 - Keep the private repos off the board. Rejected: the board then misses the work of 2 projects.
 
-The tokens have no expiry date, so no renewal is planned. When a token is revoked, the add job or
-the sync fails, and GitHub sends a notification (spec edge case). Then make a new token with the
-same scopes. A token without expiry stays valid after a leak until it is revoked, so revoke it at
-once if a secret leaks.
+The tokens expire on 2027-11-06. The catalog lists this date, so the status page opens an issue 30
+days before (spec 013). Make new tokens with the same scopes and set `BOARD_TOKEN` again in all 5
+repos. When a token is revoked earlier, the add job or the sync fails, and GitHub sends a
+notification (spec edge case). Revoke a token at once if a secret leaks.
 
 ## 4. Field options follow the catalog (FR-004)
 

@@ -178,4 +178,4 @@ Stop at each checkpoint and validate before the next phase.
 
 From the review of 2026-11-11 (code checked against spec, plan and tasks).
 
-- [ ] T040 Check the expiry of the classic PATs `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` on GitHub, then make `projects.yaml` (`expires: 2027-11-05`) and `PLAN.md`/research.md §3 ("no expiry") agree per FR-011 (contradicts)
+- [X] T040 Check the expiry of the classic PATs `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` on GitHub, then make `projects.yaml` (`expires: 2027-11-05`) and `PLAN.md`/research.md §3 ("no expiry") agree per FR-011 (contradicts)
