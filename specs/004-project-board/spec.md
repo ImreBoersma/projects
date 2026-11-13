@@ -33,9 +33,9 @@ issues from `harmonieorkest-brummen/pretband-backend`."
   about 1 hour.
 - Q: What happens when the sync fails, for example with a revoked token? → A: The `issues` job of
   the status page fails before the watchdog ping of spec 005, so the watchdog also sends an alert.
-- Q: Do the board tokens expire? → A: Not decided in this review. The catalog lists
-  `expires: 2027-11-05` for `BOARD_TOKEN` and `BOARD_SYNC_TOKEN`; research.md §3 says "no expiry
-  date". The Maintainer checks the tokens on GitHub (tasks.md T040).
+- Q: Do the board tokens expire? → A: Yes. `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` expire on
+  2027-11-06 (checked on GitHub by the Maintainer, 2026-11-13, T040). The catalog, PLAN.md and
+  research.md §3 give this date.
 
 ## User Scenarios & Testing *(mandatory)*
 
