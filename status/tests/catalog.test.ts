@@ -243,6 +243,17 @@ describe("parseSecrets (spec 013)", () => {
     ]);
   });
 
+  test("the kind external takes a host name as place", () => {
+    const ext = "name: cron-job-homelab\nkind: external\nwhere: cron-job.org\nexpires: 2027-11-12";
+    expect(parse(one(ext))[0]).toMatchObject({ kind: "external", where: "cron-job.org" });
+    expect(() => parse(one(ext.replace("cron-job.org", "ImreBoersma/HomeLab")))).toThrow(
+      /field `where`.*host name/,
+    );
+    expect(() => parse(one(base.replace("ImreBoersma/projects", "cron-job.org")))).toThrow(
+      /field `where`.*owner\/repo/,
+    );
+  });
+
   test("a missing or empty list is valid", () => {
     expect(parse(valid)).toEqual([]);
     expect(parse(`${valid}secrets:\n`)).toEqual([]);

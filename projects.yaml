@@ -137,6 +137,11 @@ secrets:
     kind: actions-secret
     where: ImreBoersma/projects
     expires: none
+  # Fine-grained PAT, projects only, Actions read/write: starts status-page.yml each hour (spec 005 T025).
+  - name: STATUS_PAGE_TRIGGER
+    kind: external
+    where: cron-job.org
+    expires: 2027-11-12
   # Project repos.
   - name: BOARD_TOKEN
     kind: actions-secret
@@ -197,4 +202,10 @@ secrets:
     kind: actions-secret
     where: ImreBoersma/HomeLab
     expires: none
+    project: homelab
+  # Fine-grained PAT, HomeLab only, Actions read/write: starts renovate.yml each Saturday (spec 003 T025).
+  - name: HOMELAB_RENOVATE_TRIGGER
+    kind: external
+    where: cron-job.org
+    expires: 2027-11-12
     project: homelab
