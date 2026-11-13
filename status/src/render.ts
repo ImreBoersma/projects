@@ -418,14 +418,14 @@ ${page.rows.map((s) => modal(s, now, page.issues)).join("\n")}`;
 <a href="#" data-close-command class="modal-backdrop">Close</a>
 </div>`;
   // Spec 011 US4, contracts/dialog.md: the "New project" dialog; only the script opens it.
-  const npField = (name: string, label: string) =>
-    `<label class="flex flex-col gap-1 text-sm">${label}<input name="${name}" type="text" class="input input-sm w-full" autocomplete="off"><span data-msg="${name}" aria-live="polite" class="text-xs text-error"></span></label>`;
+  const npField = (name: string, label: string, hint = "") =>
+    `<label class="flex flex-col gap-1 text-sm">${label}<input name="${name}" type="text" class="input input-sm w-full" autocomplete="off"${hint ? ` placeholder="${hint}"` : ""}><span data-msg="${name}" aria-live="polite" class="text-xs text-error"></span></label>`;
   const newProject = `<div id="new-project" class="modal" role="dialog" aria-modal="true" aria-labelledby="np-title">
 <div class="modal-box flex max-w-md flex-col gap-2">
 <h2 id="np-title" class="font-semibold">New project</h2>
 ${npField("id", "Id")}${npField("name", "Name")}${npField("repo", "Repo")}
 <label class="flex flex-col gap-1 text-sm">Visibility<select name="visibility" class="select select-sm w-full"><option value="public">Public</option><option value="private">Private</option></select></label>
-<label class="flex flex-col gap-1 text-sm">Stack<input name="stack" type="text" class="input input-sm w-full" autocomplete="off" placeholder="Vite, React"></label>
+${npField("stack", "Stack", "Vite, React")}
 <label class="flex flex-col gap-1 text-sm">Host<select name="host" class="select select-sm w-full">${HOSTS.map((h) => `<option value="${h.key}">${html(h.label)}</option>`).join("")}</select></label>
 <pre class="overflow-x-auto rounded bg-base-200 p-2 text-xs"><code></code></pre>
 <button type="button" data-copy class="btn btn-sm">Copy command</button>

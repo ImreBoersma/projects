@@ -171,7 +171,7 @@ export function searchCommands(
 }
 
 // Spec 011 US4, contracts/dialog.md: the command of the "New project" dialog. Null until the id,
-// the name and the repo are valid. Values go in POSIX single quotes.
+// the name, the repo and the stack are valid. Values go in POSIX single quotes.
 export function newProjectCommand(f: Record<string, string>): string | null {
   const id = (f.id ?? "").trim();
   const name = (f.name ?? "").trim();
@@ -179,7 +179,8 @@ export function newProjectCommand(f: Record<string, string>): string | null {
   if (!/^[a-z0-9-]+$/.test(id) || !/^[A-Za-z0-9._-]+$/.test(repo)) return null;
   if (name === "" || name.length > 60) return null;
   const q = (v: string) => `'${v.replace(/'/g, "'\\''")}'`;
-  const stack = (f.stack ?? "").trim() || "-";
+  const stack = (f.stack ?? "").trim();
+  if (stack === "") return null;
   return `cd status && bun run new-project --id ${id} --name ${q(name)} --repo ${repo} --visibility ${f.visibility || "public"} --stack ${q(stack)} --host ${f.host || "none"}`;
 }
 
@@ -194,10 +195,13 @@ export function nameTaken(
   const repo = (f.repo ?? "").trim();
   if (id && !/^[a-z0-9-]+$/.test(id)) out.id = "Use a-z, 0-9 and -.";
   else if (names.ids.includes(id)) out.id = "This id is in the catalog.";
-  if (name && names.names.includes(name)) out.name = "This name is in the catalog.";
+  if (name.length > 60) out.name = "Use 1 to 60 characters.";
+  else if (name && names.names.includes(name)) out.name = "This name is in the catalog.";
   if (repo && !/^[A-Za-z0-9._-]+$/.test(repo)) out.repo = "Use A-Z, a-z, 0-9, ., _ and -.";
   else if (repo && names.repos.includes(`imreboersma/${repo.toLowerCase()}`))
     out.repo = `ImreBoersma/${repo} is in the catalog.`;
+  // Spec 011 T035: only when the other fields are filled, so an empty dialog shows no message.
+  if (id && name && repo && (f.stack ?? "").trim() === "") out.stack = "Write a stack.";
   return out;
 }
 
@@ -490,7 +494,7 @@ export function start(known: { stakeholders: string[]; projects: string[] }) {
       if (!np) return;
       const f = npValues();
       const msg = nameTaken(f, npNames);
-      for (const key of ["id", "name", "repo"]) {
+      for (const key of ["id", "name", "repo", "stack"]) {
         const out = np.querySelector(`[data-msg=${key}]`);
         if (out) out.textContent = msg[key] ?? "";
       }

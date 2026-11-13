@@ -235,11 +235,24 @@ describe("the New project dialog (spec 011 US4, contracts/dialog.md)", () => {
     expect(newProjectCommand({ ...f, id: "Orkest" })).toBeNull();
     expect(newProjectCommand({ ...f, name: " " })).toBeNull();
     expect(newProjectCommand({ ...f, repo: "ImreBoersma/x" })).toBeNull();
+    expect(newProjectCommand({ ...f, stack: " " })).toBeNull();
+    expect(newProjectCommand({ ...f, name: "x".repeat(61) })).toBeNull();
+  });
+
+  test("the messages for an empty stack and a long name (T035)", () => {
+    const names = { ids: [], names: [], repos: [] };
+    expect(nameTaken({ ...f, stack: "" }, names)).toEqual({ stack: "Write a stack." });
+    expect(nameTaken({ id: "", name: "", repo: "", stack: "" }, names)).toEqual({});
+    expect(nameTaken({ ...f, name: "x".repeat(61) }, names)).toEqual({
+      name: "Use 1 to 60 characters.",
+    });
   });
 
   test("the messages for values in the catalog", () => {
     const names = { ids: ["hob-nl"], names: ["hob.nl"], repos: ["imreboersma/boek-de-bus"] };
-    expect(nameTaken({ id: "hob-nl", name: "HOB.nl", repo: "Boek-de-bus" }, names)).toEqual({
+    expect(
+      nameTaken({ id: "hob-nl", name: "HOB.nl", repo: "Boek-de-bus", stack: "x" }, names),
+    ).toEqual({
       id: "This id is in the catalog.",
       name: "This name is in the catalog.",
       repo: "ImreBoersma/Boek-de-bus is in the catalog.",

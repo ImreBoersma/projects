@@ -12,8 +12,8 @@ filters.
 |---|---|
 | Title | "New project" |
 | Fields | Id, Name, Repo, Visibility (select: Public, Private), Stack, Host (select: the catalog hosts of the host map, and "Other (no deploy)") — each with a `<label>` |
-| Message | below a field: "This id is in the catalog." / "This name is in the catalog." / "ImreBoersma/<repo> is in the catalog." / "Use a-z, 0-9 and -." (`aria-live="polite"`) |
-| Command | `<pre><code>` with the text of `newProjectCommand(fields)`; empty until id, name and repo are valid |
+| Message | below a field: "This id is in the catalog." / "This name is in the catalog." / "ImreBoersma/<repo> is in the catalog." / "Use a-z, 0-9 and -." / "Use 1 to 60 characters." (name) / "Write a stack." (empty Stack, only when id, name and repo are filled) (`aria-live="polite"`) |
+| Command | `<pre><code>` with the text of `newProjectCommand(fields)`; empty until id, name, repo and stack are valid |
 | Copy | button "Copy command"; after the copy the button text is "Copied" for 2 s |
 | Note | "Run it in a terminal in the projects repo. Add --dry-run to see the steps first." |
 
