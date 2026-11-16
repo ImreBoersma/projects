@@ -65,6 +65,10 @@ roadmap.
 - Spec 017: the tab "History" shows a table "Delivery (90 days)": for each project the merged
   PRs, the dependency updates (PRs of bots) and the median time from open to merge, the other
   PRs, and the production deploys with the counts of each month; a total row below.
+- Spec 018: a project with no commit, PR or issue by a person for 12 months gets the badge
+  "Archive?" on the status page, with a link to the checklist `docs/archive.md`. Bot work and
+  campaign PRs do not count. The catalog field `keep` (a date and a reason) stops it until that
+  date. The status tokens need "Issues: Read-only"; without it, no suggestion shows.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -95,7 +99,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 015 | Changes in all repos at once (campaigns) (done) | 008 |
 | 016 | Version drift between projects (done) | 008 |
 | 017 | Delivery numbers for each project (done) | 010 |
-| 018 | Archive suggestions for old projects | 010 |
+| 018 | Archive suggestions for old projects (done) | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
 | 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (done) | 019 |
 | 021 | History charts | 010, 019, 020 |

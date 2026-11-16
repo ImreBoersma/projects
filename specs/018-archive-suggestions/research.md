@@ -2,7 +2,10 @@
 
 ## 1. Source and token
 
-**Decision**: one GraphQL query for each token (`tokenFor(owner)`: `STATUS_READ_TOKEN`,
+**Decision**: one GraphQL query for each repo, in parallel (changed 2026-11-16 from one query for
+each token: that query took 8 s for 8 repos, near the 10 s limit of GitHub, and the first test
+run failed for all repos; one query for each repo took 2.3 s for all 8). Before the change:
+one GraphQL query for each token (`tokenFor(owner)`: `STATUS_READ_TOKEN`,
 `STATUS_READ_TOKEN_HOB`), with one alias for each repo, in page mode only, as `readDelivery` of
 spec 017. The tokens have "Contents" and "Pull requests: read", but not "Issues" (status/README.md).
 
@@ -52,8 +55,12 @@ openIssues: issues(states: OPEN, first: 50) {
 ```
 
 - No title, body or commit message (FR-009).
-- The newest 20 PRs and issues give the last PR and the last issue by a person. When a list has
-  20 nodes and none of them is by a person, the run is "not sure": no suggestion (FR-006).
+- The newest 20 PRs and issues give the last PR and the last issue by a person. When the issue
+  list has 20 nodes and none of them is by a person, the run is "not sure": no suggestion
+  (FR-006). The PR list has no such check (changed 2026-11-16 after the real run, §8): Dependabot
+  fills the 20 newest PRs of pretband-backend, the type of repo this feature is for. A merged PR
+  by a person is also a person commit, and an open one is in the open list; only an old closed PR
+  that was not merged can be missed.
 - The open PRs and issues come from separate lists (`states: OPEN`, 50 nodes), so an old open
   PR by a person is never missed. A list with `hasNextPage` is "not sure". Today the largest list
   is 5 open bot PRs (pretband-backend).
@@ -117,3 +124,24 @@ shows it. Steps: FR-007 in this order, each with the command or the GitHub page.
 
 **Alternatives**: a page section on the status page (rejected: the page is generated each hour,
 and the steps need no data).
+
+## 8. Validation results (2026-11-16)
+
+`bun test`: 476 pass (453 before, T001); typecheck and lint clean. Worst-case page 22.7 KB gzip
+(< 30 KB). Real run of `readArchive` with a token that has all read permissions, 2.3 s:
+
+| Repo | Last person commit | Last person PR | Last person issue | Open person work | Result |
+|---|---|---|---|---|---|
+| Beter-dan-de-MIDI | 2026-11-11 | 2026-11-11 | — | no | no suggestion |
+| boek-de-bus | 2026-11-03 | 2026-11-03 | — | no | no suggestion |
+| personal-website | 2026-11-06 | 2026-11-06 | — | no | no suggestion |
+| Reperatie-Formulier | 2026-11-02 | 2026-11-02 | 2026-11-04 | no | no suggestion |
+| scales-exercises | 2026-11-03 | 2026-11-03 | 2026-11-06 | yes | no suggestion |
+| pretband-backend | 2026-07-29 | — (20 bot PRs) | 2026-11-03 | no | no suggestion |
+| hob-nl | 2026-11-05 | — | — | no | no suggestion |
+| HomeLab | 2026-11-13 | 2026-11-13 | — | no | no suggestion |
+
+Two changes came from this run: one query for each repo (§1), and no "not sure" for a PR list of
+bots (§2). The behaviour without the Issues permission (the `issues` fields null, the other data
+kept) is from the GitHub GraphQL documentation and the test; check the log line `not sure (no
+issue data)` in the first status run after the merge.

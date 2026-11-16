@@ -37,13 +37,14 @@ bun run typecheck
 
 | Secret                   | Contents                                                                                                                                                                       |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `STATUS_READ_TOKEN`      | Fine-grained PAT. Owner `ImreBoersma`. All repos. Read access: Metadata, Contents, Pull requests, Commit statuses, Actions, Deployments.                                       |
+| `STATUS_READ_TOKEN`      | Fine-grained PAT. Owner `ImreBoersma`. All repos. Read access: Metadata, Contents, Issues, Pull requests, Commit statuses, Actions, Deployments.                               |
 | `STATUS_READ_TOKEN_HOB`  | Optional. The same permissions, owner `harmonieorkest-brummen`. The organisation must approve it.                                                                              |
 | `CONFORMANCE_READ_TOKEN` | Fine-grained PAT. Owner `ImreBoersma`. All repos. Read access: Metadata, Contents, Administration, Secrets, Variables (spec 008). Also used for the versions table (spec 016). |
 
 Without a token for an owner, the page shows "Data not available" for the repos of that owner.
 Without `CONFORMANCE_READ_TOKEN`, the setup check and the versions of the `ImreBoersma` repos are
 not available. The expiry dates of the tokens are in the `secrets` list of `projects.yaml`.
+Without the Issues permission, the page shows no archive suggestion (spec 018, `docs/archive.md`).
 
 ## Schedule limit
 

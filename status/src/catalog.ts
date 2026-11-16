@@ -19,7 +19,7 @@ export function parseCatalog(text: string): Project[] {
     const fail = (field: string, rule: string): never => {
       throw new Error(`Catalog error in entry ${i}, field \`${field}\`: ${rule}`);
     };
-    const { id, name, repo, status, stakeholder, domain, exceptions, renewal } = raw ?? {};
+    const { id, name, repo, status, stakeholder, domain, exceptions, renewal, keep } = raw ?? {};
     if (typeof id !== "string" || !ID.test(id)) fail("id", "required, only a-z, 0-9 and -.");
     if (seen.has(id as string)) fail("id", `"${id}" is not unique.`);
     seen.add(id as string);
@@ -43,6 +43,7 @@ export function parseCatalog(text: string): Project[] {
       }
     }
     const renewals = parseRenewals(renewal, (rule) => fail("renewal", rule));
+    const kept = keep == null ? null : parseKeep(keep, (rule) => fail("keep", rule));
     return {
       id: id as string,
       name: name as string,
@@ -52,6 +53,7 @@ export function parseCatalog(text: string): Project[] {
       domain: (domain as string) || null,
       ...(exceptions != null ? { exceptions: exceptions as Record<string, string> } : {}),
       ...(renewals.length ? { renewals } : {}),
+      ...(kept ? { keep: kept } : {}),
     };
   });
 }
@@ -80,6 +82,22 @@ function parseRenewals(value: unknown, fail: (rule: string) => never) {
     seen.add(key);
     return { name: name as string, date: date as string };
   });
+}
+
+// Spec 018 contracts/catalog.md: `keep: { until, reason }`. A date in the past is valid.
+function parseKeep(value: unknown, fail: (rule: string) => never) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    fail("must be a map with until and reason.");
+  }
+  const map = value as Record<string, unknown>;
+  for (const key of Object.keys(map)) {
+    if (key !== "until" && key !== "reason") fail(`${key} is not a field of keep.`);
+  }
+  const until = map.until instanceof Date ? map.until.toISOString().slice(0, 10) : map.until;
+  if (typeof until !== "string" || !realDate(until)) fail("until must be a date as YYYY-MM-DD.");
+  const reason = typeof map.reason === "string" ? map.reason.trim() : "";
+  if (reason === "" || reason.length > 80) fail("reason must be 1 to 80 characters.");
+  return { until: until as string, reason };
 }
 
 export function visibleProjects(projects: Project[]): Project[] {

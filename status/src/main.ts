@@ -2,6 +2,8 @@ import { mkdir, readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { icons, manifest, serviceWorker } from "./app";
+import { readArchive } from "./archive/read";
+import { archiveState } from "./archive/rule";
 import { readCampaigns } from "./campaign/status";
 import { parseCatalog, parseSecrets, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
@@ -330,6 +332,7 @@ if (args.mode === "page") {
   const issues = await issueNumbers();
   const versions = await checkVersions();
   const delivery = await checkDelivery();
+  await checkArchive();
   await mkdir(args.out, { recursive: true });
   const page: StatusPage = {
     generatedAt: now,
@@ -428,6 +431,39 @@ async function checkDelivery() {
     return row;
   });
   return { rows, months: windowMonths(now) };
+}
+
+// Spec 018: the archive suggestion of each project with a repo (archived projects are not in
+// `statuses`). Logs dates and reasons only, never a text or a login.
+async function checkArchive() {
+  const withRepo = statuses.filter((s) => s.project.repo);
+  const raw = await readArchive(
+    withRepo.map((s) => s.project),
+    process.env,
+  );
+  for (const s of withRepo) {
+    const data = raw.get(s.project.id);
+    const state = archiveState(data, s.project.keep, now);
+    if (state) s.archive = state;
+    const repo = s.project.repo;
+    if (state?.state === "kept") console.log(`Archive ${repo}: kept until ${state.until}`);
+    else if (!data || data === "not-available") console.log(`Archive ${repo}: not available`);
+    else if (data.notSureReason === "no-issue-data")
+      console.log(`Archive ${repo}: not sure (no issue data)`);
+    else if (data.notSureReason === "lists")
+      console.log(`Archive ${repo}: not sure (lists not complete)`);
+    else if (data.openPersonWork) console.log(`Archive ${repo}: open work`);
+    else
+      console.log(
+        `Archive ${repo}: last work ${
+          [data.lastPersonCommit, data.lastPersonPr, data.lastPersonIssue]
+            .filter(Boolean)
+            .sort()
+            .at(-1)
+            ?.slice(0, 10) ?? "none read"
+        }${state ? " (suggest)" : ""}`,
+      );
+  }
 }
 
 // Spec 007: issue numbers for the problem links. Without them, the page shows problems without links.

@@ -50,6 +50,8 @@ import {
 const BOARD = "https://github.com/users/ImreBoersma/projects/4";
 const ROADMAP = `${BOARD}/views/3`;
 const DOCS = "https://github.com/ImreBoersma/projects/blob/main/docs/conformance.md";
+// Spec 018 FR-007: the archive checklist.
+const ARCHIVE_DOC = "https://github.com/ImreBoersma/projects/blob/main/docs/archive.md";
 
 const DAY = 24 * 60 * 60 * 1000;
 // The page updates each hour, so 3 hours without an update means that the schedule stopped.
@@ -218,10 +220,23 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
   }
   if (s.secretsNoExpiry.length) expiry.push(noExpiryText(s.secretsNoExpiry));
 
+  // Spec 018 contracts/page.md: dates as YYYY-MM-DD; the date of a past work does not change.
+  const archive: string[] = [];
+  const a = s.archive;
+  const day = (d: string) => `<time datetime="${d}">${d}</time>`;
+  if (a?.state === "suggest") {
+    archive.push(
+      `No commit, PR or issue by a person since ${day(a.since)}${a.orEarlier ? " or earlier" : ""}. ${link("Archive checklist", ARCHIVE_DOC)}`,
+    );
+  } else if (a?.state === "kept") {
+    archive.push(`Kept until ${day(a.until)}: ${html(a.reason.replace(/\.$/, ""))}.`);
+  }
+
   return [
     { label: "Site", items: site },
     { label: "Code", items: code },
     { label: "Expiry", items: expiry },
+    { label: "Archive", items: archive },
   ].filter((g) => g.items.length > 0);
 }
 
@@ -255,7 +270,7 @@ function row(s: ProjectStatus, order: number): string {
     .join("");
   return `<li class="project ${kind}"${data} data-keys="${html(rowKeys(s).join(" "))}" data-title="${html(s.project.name)}"><a class="list-row items-center rounded-box py-2 hover:bg-base-200" href="#p-${s.project.id}">
 <span class="dot ${kind}" role="img" aria-label="${DOT_TEXT[kind]}"></span>
-<span class="font-semibold">${html(s.project.name)} <span data-new hidden class="badge badge-sm badge-info">New<span class="sr"> since your last visit</span></span></span>
+<span class="font-semibold">${html(s.project.name)} <span data-new hidden class="badge badge-sm badge-info">New<span class="sr"> since your last visit</span></span>${s.archive?.state === "suggest" ? ' <span class="badge badge-sm badge-ghost">Archive?</span>' : ""}</span>
 <span class="list-col-grow text-sm">${badge(fact.kind, html(fact.text))}</span>
 <span aria-hidden="true" class="opacity-50">›</span>
 </a></li>`;

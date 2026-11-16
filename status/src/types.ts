@@ -11,6 +11,26 @@ export interface Project {
   exceptions?: Record<string, string>;
   // Spec 009: renewal dates from the catalog field `renewal`.
   renewals?: { name: string; date: string }[];
+  // Spec 018 FR-008: no archive suggestion until this date (inclusive).
+  keep?: { until: string; reason: string };
+}
+
+// Spec 018 data-model.md: the archive suggestion of a project, or a `keep` until a date.
+export type ArchiveState =
+  | { state: "suggest"; since: string; orEarlier: boolean }
+  | { state: "kept"; until: string; reason: string };
+
+// Spec 018 data-model.md "ArchiveRaw": the read result for one repo; not on the page.
+export interface ArchiveRaw {
+  createdAt: string;
+  lastPersonCommit: string | null;
+  oldestCommitRead: string | null;
+  historyComplete: boolean;
+  lastPersonPr: string | null;
+  lastPersonIssue: string | null;
+  openPersonWork: boolean;
+  listsComplete: boolean;
+  notSureReason: "no-issue-data" | "lists" | null;
 }
 
 export type UptimeState = "up" | "down" | "no-domain" | "not-available";
@@ -73,6 +93,8 @@ export interface ProjectStatus {
   secretGaps: string[];
   // Spec 013 FR-010: names of secrets that can expire but have no date.
   secretsNoExpiry: string[];
+  // Spec 018: set in page mode only.
+  archive?: ArchiveState;
 }
 
 export interface StatusPage {

@@ -20,7 +20,7 @@ Both are required when `keep` is set (contracts/catalog.md).
 | `lastPersonPr` | string \| null | Newest PR by a person, not `campaign`. |
 | `lastPersonIssue` | string \| null | Newest issue by a person. |
 | `openPersonWork` | boolean | An open PR (not `campaign`) or issue by a person, from the open lists. |
-| `listsComplete` | boolean | The issue fields were read; each newest list had fewer than 20 nodes or a person node; each open list had no next page. |
+| `listsComplete` | boolean | The issue fields were read; the newest issue list had fewer than 20 nodes or a person node; each open list had no next page. |
 | `notSureReason` | `"no-issue-data"` \| `"lists"` \| null | Why `listsComplete` is false; only for the log. |
 
 `"not-available"` when the query for the repo failed. When only the issue part failed (no
