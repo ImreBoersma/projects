@@ -18,6 +18,9 @@ board. Reason: fewer projects means less maintenance (Principle VIII)."
 - Q: Can the Maintainer stop the suggestion for one project without archiving it? → A: Yes, for a
   time: the catalog field `keep` with a date and a reason. Until that date the project gets no
   suggestion; after it, the suggestion comes back, so each kept project gets a new decision.
+- Q: Do the campaign PRs of the Maintainer (spec 015, label `campaign`) count as work on a
+  project? → A: No. A campaign PR and the commits it brings to the default branch do not count,
+  as bot work does not count (FR-002).
 
 ## Current state (2026-11-16)
 
@@ -63,8 +66,9 @@ and takes this time forever.
    a link to the checklist, and the detail view gives the date of the last work.
 2. **Given** the same project with one open issue by a person, **When** the page updates, **Then**
    it shows no suggestion.
-3. **Given** a project whose only commits and PRs in 12 months come from bots, **When** the page
-   updates, **Then** it shows the suggestion (bot work does not count).
+3. **Given** a project whose only commits and PRs in 12 months come from bots or campaigns,
+   **When** the page updates, **Then** it shows the suggestion (bot and campaign work does not
+   count).
 4. **Given** a project with a suggestion, **When** the page updates, **Then** its state dot, the
    problem count and the issues of spec 001 do not change (a suggestion is not a problem or a
    warning).
@@ -97,6 +101,8 @@ hidden).
 ### Edge Cases
 
 - A project without a repo has no data: no suggestion.
+- A repo whose only work by a person in 12 months is a campaign PR: the suggestion shows
+  (FR-002).
 - The repo data is not available (token error, rate limit): no suggestion for that project in
   that run. A missing value never counts as "old".
 - A repo with more bot commits than one read can contain: the search for the last commit by a
@@ -119,7 +125,9 @@ hidden).
   the default branch by a person, the last PR opened by a person and the last issue opened by a
   person.
 - **FR-002**: Work by a bot MUST NOT count. A bot is an author that GitHub marks as a bot (for
-  example Renovate, Dependabot, GitHub Actions and the HomeLab Renovate app).
+  example Renovate, Dependabot, GitHub Actions and the HomeLab Renovate app). A campaign PR of
+  spec 015 (label `campaign`) and the commits it brings to the default branch MUST NOT count
+  either: a campaign is the same change in all repos, not work on one project.
 - **FR-003**: A project MUST get the suggestion when its last work by a person is more than 12
   months old and it has no open PR and no open issue by a person.
 - **FR-004**: The project row MUST show a badge "Archive?" that links to the checklist. The
@@ -157,7 +165,7 @@ hidden).
 - **SC-001**: A project with no work by a person for more than 12 months shows the suggestion
   within 1 status run after it passes the 12 months.
 - **SC-002**: 0 suggestions for projects with work by a person in the last 12 months, also when
-  bots worked in the repo each day.
+  bots worked in the repo each day. Campaign PRs alone do not stop a suggestion.
 - **SC-003**: The Maintainer archives a project completely in less than 15 minutes with the
   checklist.
 - **SC-004**: 0 changes to the project state, problem counts and issues because of a suggestion.
