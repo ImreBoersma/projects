@@ -49,7 +49,8 @@ by a person is pretband-backend (2026-07-29, 3.5 months).
 
 The Maintainer opens the status page. A project that had no work by a person for 12 months shows
 the badge "Archive?" in its row and a short line in its detail view: "No commit, PR or issue by a
-person since <date>." The badge links to the archive checklist.
+person since <date>." with a link to the archive checklist. The row is one link to the detail
+view, so the badge is text and the checklist link is in the detail view.
 
 **Why this priority**: each project costs maintenance (Renovate PRs, token renewals, conformance
 fixes, campaigns) also when nobody uses it. Without a signal, an old project stays in the catalog
@@ -62,8 +63,8 @@ and takes this time forever.
 **Acceptance Scenarios**:
 
 1. **Given** a project whose last commit by a person is more than 12 months old, with no open PR
-   and no open issue by a person, **When** the page updates, **Then** its row shows "Archive?" with
-   a link to the checklist, and the detail view gives the date of the last work.
+   and no open issue by a person, **When** the page updates, **Then** its row shows "Archive?",
+   and the detail view gives the date of the last work and a link to the checklist.
 2. **Given** the same project with one open issue by a person, **When** the page updates, **Then**
    it shows no suggestion.
 3. **Given** a project whose only commits and PRs in 12 months come from bots or campaigns,
@@ -85,13 +86,14 @@ catalog, remove the project from the board, and remove its secrets from the cata
 half-archived project (repo archived, domain still paid, secrets still listed) still costs time
 and money.
 
-**Independent Test**: open the checklist from the badge link. Make sure that it lists each step,
+**Independent Test**: open the checklist from the link in the detail view. Make sure that it lists each step,
 and that after the steps the project is no longer on the page (spec 001: archived projects are
 hidden).
 
 **Acceptance Scenarios**:
 
-1. **Given** the badge, **When** the Maintainer follows the link, **Then** the checklist opens and
+1. **Given** the detail view of a project with the badge, **When** the Maintainer follows the
+   checklist link, **Then** the checklist opens and
    lists the steps in order.
 2. **Given** a project with `status: archived` in the catalog, **When** the page updates, **Then**
    the project and its suggestion are not on the page.
@@ -105,8 +107,9 @@ hidden).
   (FR-002).
 - The repo data is not available (token error, rate limit): no suggestion for that project in
   that run. A missing value never counts as "old".
-- A repo with more bot commits than one read can contain: the search for the last commit by a
-  person continues until it finds one or reaches the start of the 12 months.
+- A repo with many bot commits: the search for the last commit by a person reads at most 500
+  commits. When none of them is by a person, the date of the oldest commit read is used, and the
+  detail view says "or earlier".
 - A new repo with fewer than 12 months of history and no commit by a person: the date of the
   repo creation counts as the last work, so a new repo gets no suggestion in its first 12 months.
 - An archived repo on GitHub whose catalog status is not yet `archived`: the suggestion shows,
@@ -127,11 +130,15 @@ hidden).
 - **FR-002**: Work by a bot MUST NOT count. A bot is an author that GitHub marks as a bot (for
   example Renovate, Dependabot, GitHub Actions and the HomeLab Renovate app). A campaign PR of
   spec 015 (label `campaign`) and the commits it brings to the default branch MUST NOT count
-  either: a campaign is the same change in all repos, not work on one project.
+  either: a campaign is the same change in all repos, not work on one project. A commit without a
+  PR counts only when its author is a GitHub user that is not a bot; a commit whose author has no
+  GitHub account does not count.
 - **FR-003**: A project MUST get the suggestion when its last work by a person is more than 12
   months old and it has no open PR and no open issue by a person.
-- **FR-004**: The project row MUST show a badge "Archive?" that links to the checklist. The
-  detail view MUST show "No commit, PR or issue by a person since <date>." with the date.
+- **FR-004**: The project row MUST show the badge "Archive?" (text, not a link). The detail view
+  MUST show "No commit, PR or issue by a person since <date>." with the date and a link to the
+  checklist. When the date is the oldest commit that was read (see Edge Cases), the text ends
+  with "since <date> or earlier.".
 - **FR-005**: The suggestion MUST NOT change the state of the project, the problem and warning
   counts, the filters of spec 019 or the issues of spec 001.
 - **FR-006**: When the data of a project is not available, the page MUST show no suggestion for
@@ -169,7 +176,8 @@ hidden).
 - **SC-003**: The Maintainer archives a project completely in less than 15 minutes with the
   checklist.
 - **SC-004**: 0 changes to the project state, problem counts and issues because of a suggestion.
-- **SC-005**: The feature costs €0 each month and adds no token.
+- **SC-005**: The feature costs €0 each month and adds no token (one read permission is added to
+  the two status tokens).
 - **SC-006**: A project with a `keep` date gets no suggestion until that date, and gets it again
   within 1 status run after the date when FR-003 is still true.
 
@@ -179,7 +187,9 @@ hidden).
 - Deploys do not count as separate work. A deploy comes from a commit, and the deploys after a
   bot merge are bot work. A deploy without a commit (for example a manual re-run) does not show
   that a person changes the project. This replaces "no deploy" of PLAN.md.
-- The data comes from GitHub with the status tokens that exist. The history of spec 010 starts
+- The data comes from GitHub with the status tokens that exist. They get one more read
+  permission, Issues, for the issue data; no new token. Before the Maintainer adds it, the page
+  shows no suggestion (FR-006). The history of spec 010 starts
   2026-11-05 and is too short for 12 months, so it is not used.
 - Projects without a repo stay out of scope; the page already shows "No repo" for them.
 - The board removal step is manual; the board sync of spec 004 does not remove projects.

@@ -36,17 +36,27 @@ defaultBranchRef { target { ... on Commit {
   }
 } } }
 pullRequests(first: 20, orderBy: { field: CREATED_AT, direction: DESC }) {
-  nodes { createdAt state author { __typename } labels(first: 10) { nodes { name } } }
+  nodes { createdAt author { __typename } labels(first: 10) { nodes { name } } }
 }
 issues(first: 20, orderBy: { field: CREATED_AT, direction: DESC }) {
-  nodes { createdAt state author { __typename } }
+  nodes { createdAt author { __typename } }
+}
+openPrs: pullRequests(states: OPEN, first: 50) {
+  pageInfo { hasNextPage }
+  nodes { author { __typename } labels(first: 10) { nodes { name } } }
+}
+openIssues: issues(states: OPEN, first: 50) {
+  pageInfo { hasNextPage }
+  nodes { author { __typename } }
 }
 ```
 
 - No title, body or commit message (FR-009).
-- Open PRs and issues come from the same lists (`state: OPEN`). A repo with more than 20 PRs or
-  issues in the list and no work by a person in them is "not sure": no suggestion (FR-006). Today
-  the largest list is 5 open bot PRs (pretband-backend).
+- The newest 20 PRs and issues give the last PR and the last issue by a person. When a list has
+  20 nodes and none of them is by a person, the run is "not sure": no suggestion (FR-006).
+- The open PRs and issues come from separate lists (`states: OPEN`, 50 nodes), so an old open
+  PR by a person is never missed. A list with `hasNextPage` is "not sure". Today the largest list
+  is 5 open bot PRs (pretband-backend).
 - Next commit pages: only while no commit by a person is found, with `after: <endCursor>`, at most
   5 pages (500 commits). Measured 2026-11-16: each repo has a commit by a person in its first page.
 
