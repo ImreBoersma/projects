@@ -179,6 +179,25 @@ describe("readArchive", () => {
     ).toMatchObject({ lastPersonPr: "2026-02-01T00:00:00Z", listsComplete: true });
   });
 
+  test("logs the GraphQL error type and field, not the message", async () => {
+    const lines: string[] = [];
+    const log = console.log;
+    console.log = (line: string) => lines.push(line);
+    try {
+      await readArchive(
+        [p("one", "ImreBoersma/one")],
+        env,
+        fake(() => ({
+          data: { r0: null },
+          errors: [{ type: "FORBIDDEN", path: ["r0", "issues"], message: "secret text" }],
+        })).fetch,
+      );
+    } finally {
+      console.log = log;
+    }
+    expect(lines).toEqual(["Archive ImreBoersma/one: GraphQL FORBIDDEN at r0.issues"]);
+  });
+
   test("no Issues permission: no issue data, not 'not available'", async () => {
     const { fetch } = fake(() => ({
       data: { r0: repo({ issues: null, openIssues: null }) },
