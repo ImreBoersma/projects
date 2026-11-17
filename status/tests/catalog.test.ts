@@ -81,6 +81,46 @@ describe("parseCatalog", () => {
     expect(() => e("exceptions: R2")).toThrow("field `exceptions`");
   });
 
+  test("reads keep (spec 018 contracts/catalog.md)", () => {
+    const e = (text: string) => parseCatalog(entry(`id: a\nname: A\nstatus: active\n${text}`));
+    expect(
+      e("keep:\n  until: 2027-06-01\n  reason: '  Event site, stays online. '")[0].keep,
+    ).toEqual({
+      until: "2027-06-01",
+      reason: "Event site, stays online.",
+    });
+    expect(e("")[0]).not.toHaveProperty("keep");
+    // A date in the past is valid: the field then has no effect.
+    expect(e("keep:\n  until: 2020-01-01\n  reason: Old")[0].keep?.until).toBe("2020-01-01");
+    const err = "Catalog error in entry 0, field `keep`: ";
+    expect(() => e("keep: 2027-06-01")).toThrow(`${err}must be a map with until and reason.`);
+    expect(() => e("keep:\n  - until: 2027-06-01")).toThrow(`${err}must be a map`);
+    expect(() => e("keep:\n  reason: x")).toThrow(`${err}until must be a date as YYYY-MM-DD.`);
+    expect(() => e("keep:\n  until: '2027-02-30'\n  reason: x")).toThrow(
+      `${err}until must be a date as YYYY-MM-DD.`,
+    );
+    expect(() => e("keep:\n  until: 2027-06-01")).toThrow(`${err}reason must be 1 to 80`);
+    expect(() => e("keep:\n  until: 2027-06-01\n  reason: '  '")).toThrow(
+      `${err}reason must be 1 to 80`,
+    );
+    expect(() => e(`keep:\n  until: 2027-06-01\n  reason: ${"x".repeat(81)}`)).toThrow(
+      `${err}reason must be 1 to 80`,
+    );
+    expect(
+      e(`keep:\n  until: 2027-06-01\n  reason: ${"x".repeat(80)}`)[0].keep?.reason,
+    ).toHaveLength(80);
+    expect(() => e("keep:\n  until: 2027-06-01\n  reason: x\n  note: y")).toThrow(
+      `${err}note is not a field of keep.`,
+    );
+  });
+
+  test("an archived project with keep is not visible (spec 018 T014)", () => {
+    const projects = parseCatalog(
+      `${valid}  - id: four\n    name: Four\n    repo: ImreBoersma/four\n    status: archived\n    keep:\n      until: 2027-06-01\n      reason: Done\n`,
+    );
+    expect(visibleProjects(projects).map((p) => p.id)).toEqual(["one", "two"]);
+  });
+
   test("reads renewals (spec 009)", () => {
     const e = (text: string) => parseCatalog(entry(`id: a\nname: A\nstatus: active\n${text}`));
     expect(

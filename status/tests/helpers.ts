@@ -38,6 +38,11 @@ export function worstCaseRows(): ProjectStatus[] {
       },
       problems: [{ projectId: `p${i}`, reason: "ci-failed", key: `p${i}/ci-failed` }],
       uptime: { state: "up", at: new Date("2026-10-28T05:03:00Z") },
+      // Spec 018: a suggestion on each project, and one keep with a reason of 80 characters.
+      archive:
+        i === 0
+          ? { state: "kept", until: "2027-06-01", reason: "x".repeat(80) }
+          : { state: "suggest", since: "2025-10-01", orEarlier: false },
       expiry: {
         certificate: { date: "2026-12-19", days: 52 },
         renewals: [{ name: "Domain", date: "2027-03-01", days: 124, source: "registry" }],

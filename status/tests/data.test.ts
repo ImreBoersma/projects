@@ -116,3 +116,21 @@ describe("statusJson (spec 020 US2)", () => {
     ).toBeLessThan(50_000);
   });
 });
+
+describe("statusJson archive (spec 018, contracts/page.md)", () => {
+  test("archive is in the project only with a suggestion or a keep date", () => {
+    const suggest = { state: "suggest" as const, since: "2025-10-01", orEarlier: false };
+    const json = JSON.parse(
+      statusJson({
+        generatedAt,
+        rows: [
+          status({ archive: suggest }),
+          status({ project: { id: "b", name: "B", repo: null, status: "active" } }),
+        ],
+        issues: new Map(),
+      }),
+    );
+    expect(json.projects[0].archive).toEqual(suggest);
+    expect(json.projects[1]).not.toHaveProperty("archive");
+  });
+});

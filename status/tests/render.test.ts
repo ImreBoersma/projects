@@ -1020,3 +1020,51 @@ describe("tabs (spec 019 T031)", () => {
     }
   });
 });
+
+describe("the archive suggestion (spec 018, contracts/page.md)", () => {
+  const suggest = { state: "suggest" as const, since: "2025-10-01", orEarlier: false };
+  const doc = "https://github.com/ImreBoersma/projects/blob/main/docs/archive.md";
+  const rowOf = (html: string) => html.match(/<li class="project[\s\S]*?<\/li>/)?.[0] ?? "";
+
+  test("suggest: a text badge in the one row link; nothing else in the row changes (FR-005)", () => {
+    const plain = rowOf(render([status()]));
+    const marked = rowOf(render([status({ archive: suggest })]));
+    expect(marked).toContain('<span class="badge badge-sm badge-ghost">Archive?</span>');
+    expect(marked.match(/<a /g)).toHaveLength(1);
+    expect(marked.replace(' <span class="badge badge-sm badge-ghost">Archive?</span>', "")).toBe(
+      plain,
+    );
+    expect(summary([status({ archive: suggest })])).toBe(summary([status()]));
+  });
+
+  test("suggest: the detail line with the date and the checklist link", () => {
+    expect(group(status({ archive: suggest }), "Archive")).toEqual([
+      `No commit, PR or issue by a person since <time datetime="2025-10-01">2025-10-01</time>. ${A(doc)}Archive checklist${NT}`,
+    ]);
+    expect(group(status({ archive: { ...suggest, orEarlier: true } }), "Archive")[0]).toContain(
+      "2025-10-01</time> or earlier.",
+    );
+  });
+
+  test("kept: no badge, the date and the escaped reason", () => {
+    const s = status({
+      archive: { state: "kept", until: "2027-06-01", reason: "Event <b>site</b>." },
+    });
+    expect(rowOf(render([s]))).not.toContain("Archive?");
+    expect(group(s, "Archive")).toEqual([
+      'Kept until <time datetime="2027-06-01">2027-06-01</time>: Event &lt;b&gt;site&lt;/b&gt;.',
+    ]);
+  });
+
+  test("no archive state: no badge and no group", () => {
+    const html = render([status()]);
+    expect(html).not.toContain("Archive?");
+    expect(html).not.toContain("<dt>Archive</dt>");
+  });
+
+  test("a suggestion is not a problem, so no issue is opened (US1 scenario 4)", () => {
+    const s = status({ archive: suggest });
+    expect(s.problems).toEqual([]);
+    expect(render([s])).not.toContain('class="problems');
+  });
+});

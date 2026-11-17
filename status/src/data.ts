@@ -43,6 +43,8 @@ export function statusJson(page: StatusPage): string {
             }
           : null,
         nextExpiry: nextExpiry(s),
+        // Spec 018: only for a project with a suggestion or a keep date.
+        ...(s.archive ? { archive: s.archive } : {}),
         link: `${PAGE}#p-${s.project.id}`,
       };
     }),
