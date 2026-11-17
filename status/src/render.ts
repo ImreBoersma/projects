@@ -206,7 +206,7 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
       badge(certificateKind(certificate.days), `${word} ${timeTag(certificate.date, now)}`),
     );
   }
-  const next = [...renewals].sort((a, b) => a.days - b.days)[0];
+  const next = renewals.toSorted((a, b) => a.days - b.days)[0];
   if (next) {
     const due = next.days < 0 ? "renewal was due" : "renewal";
     expiry.push(
@@ -214,7 +214,7 @@ function facts(s: ProjectStatus, now: Date, links: ReturnType<typeof rowLinks>) 
     );
   }
   if (registryNotKnown) expiry.push("Domain date not known");
-  const secrets = [...s.secrets].sort((a, b) => (a.days as number) - (b.days as number));
+  const secrets = s.secrets.toSorted((a, b) => (a.days as number) - (b.days as number));
   if (secrets.length) {
     const more = secrets.length > 1 ? ` (+${secrets.length - 1} more)` : "";
     expiry.push(`${secretText(secrets[0], now)}${more}`);
@@ -644,8 +644,8 @@ function sharedSection(
     const url = number ? `https://github.com/ImreBoersma/projects/issues/${number}` : null;
     return `<li>${link(html(p.text ?? PROBLEM_TEXT[p.reason]), url)}</li>`;
   });
-  const secrets = [...shared.secrets]
-    .sort((a, b) => (a.days as number) - (b.days as number))
+  const secrets = shared.secrets
+    .toSorted((a, b) => (a.days as number) - (b.days as number))
     .map((x) => secretText(x, now));
   const groups = [
     { label: "Expiry", items: undated.length ? [...secrets, noExpiryText(undated)] : secrets },

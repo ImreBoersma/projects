@@ -45,7 +45,7 @@ export function summarize(
   for (const s of states) counts[s]++;
   // A repo that could not be read can still need the change, so the campaign is not done (T027).
   const done = counts.open + counts["failed-ci"] + counts["to-do"] + counts["not-available"] === 0;
-  const doneAt = done && closedTimes.length ? ([...closedTimes].sort().at(-1) ?? null) : null;
+  const doneAt = done && closedTimes.length ? (closedTimes.toSorted().at(-1) ?? null) : null;
   if (done && (!doneAt || now.getTime() - Date.parse(doneAt) >= 7 * DAY)) return null;
   return {
     id: c.id,

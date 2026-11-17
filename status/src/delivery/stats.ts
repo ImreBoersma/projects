@@ -9,7 +9,7 @@ export const windowStart = (now: Date) => new Date(now.getTime() - WINDOW_DAYS *
 
 export function median(values: number[]): number | null {
   if (!values.length) return null;
-  const s = [...values].sort((a, b) => a - b);
+  const s = values.toSorted((a, b) => a - b);
   const mid = Math.floor(s.length / 2);
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 }
