@@ -122,6 +122,18 @@ Obey these main rules:
 Code identifiers, file paths, command output, error messages and product names are technical
 names. The vocabulary rules do not apply to them.
 
+Text for stakeholders in Dutch, for example the stakeholder pages of the status page (spec 022),
+MUST use taalniveau B1, not ASD-STE100. ASD-STE100 exists only for English, and the boards of
+the orchestras read Dutch. Obey these B1 rules:
+
+- Write short sentences with common words. Do not use technical words for a technical fact
+  ("CI", "deploy", "DNS").
+- Use the active voice and the "u" form.
+- Give one message in each sentence.
+
+Code, code comments, specs, issues, pull requests, commit messages and badges stay in ASD-STE100
+English. Text for stakeholders MUST NOT show cost (Principle VII).
+
 Reason: stakeholders and maintainers read the issues and the roadmap. Short and clear text is
 easier to read, translate and use.
 
@@ -156,4 +168,4 @@ change:
 Each spec and each plan MUST identify the principles that it affects. It MUST also give the reason
 for each exception.
 
-**Version**: 2.1.1 | **Ratified**: 2026-10-28 | **Last Amended**: 2026-10-30
+**Version**: 2.2.0 | **Ratified**: 2026-10-28 | **Last Amended**: 2026-11-17
