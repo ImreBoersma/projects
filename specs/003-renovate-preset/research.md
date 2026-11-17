@@ -46,7 +46,7 @@ Facts about the repos are from the GitHub API on 2026-11-02.
   timezone `Europe/Amsterdam`: Saturday 02:00 to 06:00, the same window as HomeLab. (Replaced on
   2026-11-09 by `* * * * 0,6`, §14.)
 - **Rationale**: SC-004 allows a maximum of 2 non-security PRs each week. A patch group makes one
-  CI run, not one for each patch.
+  CI run, not one for each patch. (SC-004 reworded on 2026-11-17, §13.)
 - **Risk accepted**: one bad patch stops the automerge of the full patch group. The PR stays open,
   and the status page marks it after 14 days (spec 001).
 
@@ -110,6 +110,55 @@ Facts about the repos are from the GitHub API on 2026-11-02.
   and the update is not tested before it reaches `main` (SC-003, FR-004).
 - **Alternatives considered**: `ci-node.yml` of spec 002 for `status/` (it expects the package in the
   repo root).
+
+## 13. Validation results
+
+Facts from the GitHub API on 2026-11-17. Times in Amsterdam time (UTC+1).
+
+**App installation**: the hosted Mend Renovate app runs in the five Node repos and `projects`
+(T010); each opened PRs as `renovate[bot]` or keeps a Dependency Dashboard. HomeLab runs its own
+Renovate with the app `imreboersma-homelab-renovate`. All 7 repos extend the preset and none has
+`.github/dependabot.yml` (T022).
+
+**Patch automerge (US2/AC1, FR-004)**: Renovate merged 4 patch PRs itself, each with all checks
+green: Beter-dan-de-MIDI #318 (Sat 14 Nov 01:06, merged 03:53), #321 (Sat 08:16, merged 09:52),
+#322 (Sun 15 Nov 03:20, merged 05:24), and boek-de-bus #9 (Sat 01:46, merged 09:21). All 4 are the
+branch `renovate/patch-updates`; a group with one package gets the title of that package
+("update dependency vite to v8.3.8"). The Maintainer merged no patch PR by hand (SC-003).
+scales-exercises #386 (Sun 16:41) has all checks green and `renovate/stability-days` passed, but is
+not merged on 2026-11-17: the app did not visit the repo after Sunday 16:42. It is expected to
+merge at the next visit; not a hand merge either way.
+
+**CI fail (US2/AC2)**: not tested with a commit (spec Clarifications 2026-11-17). Evidence:
+`platformAutomerge: false` (Renovate merges, not GitHub auto-merge) and `internalChecksFilter:
+strict`; Renovate merges only when all status checks of the branch pass, and each merged PR above
+had all checks green. No minor, major or security PR was merged by Renovate (T020).
+
+**PR count of the first full week, 14–15 Nov (SC-004 as reworded on 2026-11-17)**: PRs for the
+Maintainer, besides majors:
+
+| Repo | Minor group | Patch group (merges itself) | Majors |
+|---|---|---|---|
+| Beter-dan-de-MIDI | 0 | 3 (#318, #321, #322, merged) | 2 (#319, #320) |
+| boek-de-bus | 1 (#10) | 1 (#9, merged) | 2 (#11, #12) |
+| personal-website | 1 (#31) | 0 | 1 (#32) |
+| Reperatie-Formulier | 0 (#118 of 7 Nov still open) | 0 | 0 |
+| scales-exercises | 1 (#387) | 1 (#386, open) | 0 |
+| projects | 0 | 0 | 0 |
+
+Each repo is at 1 or 0. Beter-dan-de-MIDI shows that the patch group comes again after each merge
+when more patches reach the release age of 3 days; this is why SC-004 now counts only the PRs the
+Maintainer handles. All PRs were created on Saturday or Sunday (FR-002); the earliest is Sat 01:06,
+the latest Sun 16:42.
+
+**HomeLab**: the cron-job.org start (T025) works: on Sat 14 Nov the HomeLab app opened #34 (02:31),
+#35 (02:32) and #36 (03:32), inside the window 02:00–06:00. None is merged automatically.
+
+**US1/AC2 (a preset change reaches all repos)**: each repo extends
+`github>ImreBoersma/projects//renovate/default`, which Renovate reads from the default branch of
+`projects`. The window change on `main` (commit 569d9aa, 2026-11-09) reached the repos without a
+change in the repos: the PRs of 15 Nov were opened on Sunday, which the old window (Saturday
+02:00–06:00) never allowed.
 
 ## 14. The update window was too short (2026-11-09)
 

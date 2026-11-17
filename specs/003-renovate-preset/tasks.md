@@ -98,7 +98,7 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 **Independent Test**: quickstart.md §2 step 3.
 
-- [ ] T019 [US2] In one repo with a pending patch update, start the "patch updates" group from the Dependency Dashboard, or wait for the weekend window. Make sure that Renovate opens one PR "Update patch updates" from `renovate[bot]`, CI runs, and Renovate merges it after CI passes (FR-004). Record the repo and the PR. Before CI passes on that PR, or on the next patch PR: push one commit with a Biome error to the Renovate branch, make sure that CI fails and that Renovate does not merge (US2/AC2), then remove the commit.
+- [X] T019 [US2] In one repo with a pending patch update, start the "patch updates" group from the Dependency Dashboard, or wait for the weekend window. Make sure that Renovate opens one PR "Update patch updates" from `renovate[bot]`, CI runs, and Renovate merges it after CI passes (FR-004). Record the repo and the PR. Before CI passes on that PR, or on the next patch PR: push one commit with a Biome error to the Renovate branch, make sure that CI fails and that Renovate does not merge (US2/AC2), then remove the commit. Changed on 2026-11-17: the test commit is not done (it marks the branch as edited, so Renovate stops the automerge whatever CI says); US2/AC2 is checked with the configuration (spec.md Clarifications, research.md §13).
 - [X] T020 [US2] Make sure that no minor, major or security PR was merged by Renovate in any repo (FR-005): `gh search prs --author app/renovate --owner ImreBoersma --merged` shows only "patch updates" PRs. Make sure that no HomeLab PR was merged automatically.
 
 **Checkpoint**: SC-003: 0 patch updates merged by hand.
@@ -111,15 +111,15 @@ for example `scales-exercises: renovate.json`, are in that repo. Make each repo 
 
 **Independent Test**: quickstart.md §2 step 4, after the first weekend window.
 
-- [ ] T021 [US3] After the weekend window, for each repo with the hosted app (not HomeLab): count the non-security Renovate PRs opened in that week (`gh pr list --author app/renovate --state all --search "created:>=<date>"`). Each repo must have a maximum of 2, plus majors (SC-004). Make sure that each non-security PR was created on Saturday or Sunday (Amsterdam time), or from a start on the Dependency Dashboard (FR-002; the window until 2026-11-09 was Saturday 02:00–06:00).
+- [X] T021 [US3] After the weekend window, for each repo with the hosted app (not HomeLab): count the non-security Renovate PRs opened in that week (`gh pr list --author app/renovate --state all --search "created:>=<date>"`). Each repo must have a maximum of 2, plus majors (SC-004). (SC-004 reworded on 2026-11-17: a maximum of 1 PR for the Maintainer; research.md §13.) Make sure that each non-security PR was created on Saturday or Sunday (Amsterdam time), or from a start on the Dependency Dashboard (FR-002; the window until 2026-11-09 was Saturday 02:00–06:00).
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [X] T022 [P] For each of the 7 repos, make sure that the Renovate config (`renovate.json`, or `.github/renovate.json` in HomeLab) extends the preset and that `.github/dependabot.yml` does not exist (SC-001, SC-002). Use `gh api repos/ImreBoersma/<repo>/contents/<path>`.
-- [ ] T023 Record the results in a new section "13. Validation results" in `specs/003-renovate-preset/research.md`: the app installation, the first patch automerge and the failed-CI check, the PR count of the first week, the HomeLab result, and the evidence for US1/AC2: each repo extends the preset from the default branch of `projects`, so a change on `main` reaches all repos at their next run.
-- [ ] T024 [P] In `PLAN.md`, move feature 003 to "Done". In `specs/001-project-status-page/plan.md` the Principle IV exception ends; do not change that file, but write in `PLAN.md` that the exception ended with spec 003.
+- [X] T023 Record the results in a new section "13. Validation results" in `specs/003-renovate-preset/research.md`: the app installation, the first patch automerge and the failed-CI check, the PR count of the first week, the HomeLab result, and the evidence for US1/AC2: each repo extends the preset from the default branch of `projects`, so a change on `main` reaches all repos at their next run.
+- [X] T024 [P] In `PLAN.md`, move feature 003 to "Done". In `specs/001-project-status-page/plan.md` the Principle IV exception ends; do not change that file, but write in `PLAN.md` that the exception ended with spec 003.
 
 ---
 

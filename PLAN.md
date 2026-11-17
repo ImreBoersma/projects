@@ -17,6 +17,11 @@ roadmap.
 - Spec 001: the project status page on GitHub Pages, with one issue for each problem.
 - Spec 002: shared CI and deploy workflows. All 5 Node repos use the shared CI. GitHub Pages,
   Firebase and Vercel deploys run through shared workflows on push to `main`.
+- Spec 003: shared Renovate preset `renovate/default.json`, extended by all 7 repos; no
+  Dependabot. Renovate merges the patch group itself when CI passes; one minor group for the
+  Maintainer; PRs only on Saturday and Sunday (Amsterdam). HomeLab keeps its own window (Saturday
+  02:00–06:00), started by a cron-job.org job. The Principle IV exception of spec 001 ended with
+  this spec.
 - Spec 004: project board [Projects](https://github.com/users/ImreBoersma/projects/4). New issues
   of the public repos go to the board through the shared workflow. The sync in the status page run
   adds the issues of private repos, `pretband-backend` and problem issues. Public roadmap for
@@ -84,7 +89,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | Spec | Feature | Needs |
 |---|---|---|
 | 002 | Shared CI and deploy workflows (done) | — |
-| 003 | Shared Renovate preset | 002 (automerge needs CI) |
+| 003 | Shared Renovate preset (done) | 002 (automerge needs CI) |
 | 004 | Project board and public roadmap (done) | 002 (the shared workflow adds issues) |
 | 005 | Uptime checks on the status page (done) | 001 |
 | 006 | hob.nl in git with a deploy workflow (done) | 002 |

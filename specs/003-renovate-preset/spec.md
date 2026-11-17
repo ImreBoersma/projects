@@ -23,6 +23,19 @@ that extends `github>ImreBoersma/projects//renovate/default`. Remove Dependabot 
 - Q: Which flags does the validator use? → A: `--strict --no-global`
   (`.github/workflows/lint-renovate.yml`).
 
+### Session 2026-11-17 (validation)
+
+- Q: Beter-dan-de-MIDI got 3 "patch updates" PRs on 14 and 15 November (#318, #321, #322): after
+  each automerge, Renovate makes the group again when more patches reach the release age. Does
+  this break SC-004? → A: No. SC-004 counts the PRs that the Maintainer must handle (Maintainer,
+  2026-11-17). A patch group PR that Renovate merges itself costs no work and may come more than
+  once in a weekend.
+- Q: How is US2/AC2 (no merge on a CI fail) checked? → A: With the configuration, not with a test
+  commit (Maintainer, 2026-11-17). A commit by the Maintainer on a Renovate branch marks the branch
+  as edited, and Renovate then stops the automerge whatever CI says, so the test cannot show the
+  effect of CI. Evidence: `platformAutomerge: false` and `internalChecksFilter: strict`, and each
+  PR that Renovate merged had all checks green (research.md §13).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Get dependency updates from one shared configuration (Priority: P1)
@@ -138,9 +151,9 @@ one PR for them, in the weekly time window.
 - **SC-001**: 0 repos in the scope of FR-008 use Dependabot for version updates.
 - **SC-002**: 100% of the repos in the scope of FR-008 extend the preset.
 - **SC-003**: The Maintainer merges 0 patch updates by hand when CI passes.
-- **SC-004**: Each repo that uses the hosted Renovate app gets a maximum of 2 non-security update
-  PRs each week (one minor group and one patch group that merges automatically), plus major
-  updates. HomeLab keeps its own groups and is not in the scope of this criterion.
+- **SC-004**: Each repo that uses the hosted Renovate app gives the Maintainer a maximum of 1
+  non-security update PR each week to handle (the minor group), plus major updates. The patch
+  group merges automatically and may come more than once in a weekend. HomeLab keeps its own groups and is not in the scope of this criterion.
 - **SC-005**: The feature costs €0 each month to operate.
 
 ## Assumptions
