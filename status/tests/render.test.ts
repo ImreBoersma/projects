@@ -1068,3 +1068,20 @@ describe("the archive suggestion (spec 018, contracts/page.md)", () => {
     expect(render([s])).not.toContain('class="problems');
   });
 });
+
+// Spec 022 FR-013 (T010): one link for each stakeholder view in the header nav.
+describe("stakeholder links (spec 022)", () => {
+  const row = (id: string, stakeholder?: string) =>
+    status({ project: { id, name: id, repo: null, status: "active", stakeholder } });
+  test("one link for each stakeholder, in name order, after the status update link", () => {
+    const nav = render([row("a", "Harmonieorkest Brummen"), row("b", "A Orkest"), row("c")]).match(
+      /<header[\s\S]*?<nav[^>]*>([\s\S]*?)<\/nav>/,
+    )?.[1];
+    expect(nav).toContain(
+      `Run the status update now${NT}${A("s/a-orkest.html")}View for A Orkest${NT}${A("s/harmonieorkest-brummen.html")}View for Harmonieorkest Brummen${NT}`,
+    );
+  });
+  test("no link without stakeholders", () => {
+    expect(render([row("c")])).not.toContain("View for");
+  });
+});

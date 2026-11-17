@@ -37,6 +37,9 @@ import { renderPage } from "./render";
 import { gaps, type Used, usedSecrets } from "./secrets/compare";
 import { noExpiry, type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
 import { readWorkflowTexts, tokenExpiry } from "./secrets/read";
+import { badge } from "./stakeholder/badge";
+import { notFoundPage, renderStakeholderPage } from "./stakeholder/render";
+import { stakeholderViews } from "./stakeholder/view";
 import type { Problem, Project, SecretEntry, SecretStatus, StatusPage, VersionRow } from "./types";
 import { checkAll } from "./uptime";
 import { markDrift, markedCount } from "./versions/drift";
@@ -369,6 +372,9 @@ if (args.mode === "page") {
       now,
     ),
   };
+  // Spec 022 research.md §2: two stakeholders with the same address are a catalog error; the run
+  // stops before it writes a file.
+  const views = stakeholderViews(page);
   await Bun.write(join(args.out, "index.html"), renderPage(page));
   // Spec 020 US2: the data file next to the page.
   // Spec 020 T030: without the data file the page still deploys; the run log shows an error.
@@ -383,6 +389,36 @@ if (args.mode === "page") {
   await Bun.write(join(args.out, "manifest.webmanifest"), manifest());
   await Bun.write(join(args.out, "sw.js"), serviceWorker());
   for (const [name, svg] of Object.entries(icons())) await Bun.write(join(args.out, name), svg);
+  // Spec 022: a write error does not stop the deploy of the status page (as status.json, spec 020
+  // T030). The badges and 404.html have their own try, so a stakeholder page error does not stop them.
+  const write = async (what: string, step: () => Promise<void>) => {
+    try {
+      await step();
+    } catch (error) {
+      console.error(
+        `::error::${what} not written: ${error instanceof Error ? error.message : error}`,
+      );
+    }
+  };
+  await write("Stakeholder pages", async () => {
+    for (const view of views) {
+      await Bun.write(
+        join(args.out, "s", `${view.slug}.html`),
+        renderStakeholderPage(view, page.css ?? ""),
+      );
+      console.log(`Wrote s/${view.slug}.html with ${view.projects.length} projects.`);
+    }
+  });
+  await write("Badges", async () => {
+    for (const row of page.rows) {
+      const { id, svg } = badge(row);
+      await Bun.write(join(args.out, "badge", `${id}.svg`), svg);
+    }
+    console.log(`Wrote ${page.rows.length} badges.`);
+  });
+  await write("404.html", () =>
+    Bun.write(join(args.out, "404.html"), notFoundPage()).then(() => {}),
+  );
   console.log(
     `Wrote ${join(args.out, "index.html")} and status.json with ${statuses.length} projects.`,
   );

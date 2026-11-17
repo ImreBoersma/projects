@@ -3,6 +3,7 @@
 @import "tailwindcss";
 @source "./render.ts";
 @source "./client.ts";
+@source "./stakeholder/";
 @plugin "daisyui" {
   themes: false;
   include: alert, badge, button, input, kbd, link, list, modal, select, tab;
@@ -139,4 +140,45 @@ html:not(.js) [role="tablist"] {
 }
 .drift::before {
   content: "▼ ";
+}
+/* Spec 022 contracts/stakeholder-page.md "Print": the stakeholder page on one A4 page, black on
+   white in both schemes. The rules are in a print block and only for the stakeholder page. */
+.print-only {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  main[data-time] {
+    --color-base-100: #fff;
+    --color-base-content: #000;
+    --color-base-300: #000;
+    color-scheme: light;
+    max-width: none;
+    padding: 0;
+    color: #000;
+  }
+  body:has(main[data-time]) {
+    background: #fff;
+  }
+  main[data-time] .alert {
+    background: none;
+    border: 1px solid #000;
+    color: #000;
+  }
+  main[data-time] .project {
+    break-inside: avoid;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+  }
+  main[data-time] .status-link::after {
+    content: " (" attr(href) ")";
+  }
+  main[data-time] .print-only {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.85em;
+  }
 }

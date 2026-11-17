@@ -4,6 +4,13 @@ The control repo of the projects of ImreBoersma: the catalog (`projects.yaml`), 
 (<https://imreboersma.github.io/projects/>), the shared workflows and the Renovate preset. The
 plan is in [PLAN.md](PLAN.md).
 
+Each stakeholder in the catalog gets a plain Dutch page without developer facts, for example
+<https://imreboersma.github.io/projects/s/harmonieorkest-brummen.html> (the header of the status
+page links to it). Each project gets a status badge at
+`https://imreboersma.github.io/projects/badge/<project id>.svg`; put it in a README with
+`[![hob.nl status](https://imreboersma.github.io/projects/badge/hob-nl.svg)](https://imreboersma.github.io/projects/s/harmonieorkest-brummen.html)`.
+Spec 022.
+
 ## Commands
 
 Run all commands in `status/`. A command that changes a repo uses the `gh` login of the
