@@ -1,6 +1,6 @@
-// Spec 022 contracts/stakeholder-page.md "Texts". This file is Dutch at taalniveau B1 (plan.md
-// Complexity Tracking: a deviation from Principle X for the stakeholder page only). Keep each
-// sentence short, with common words and the active voice. Do not mention cost (Principle VII).
+// Spec 022 contracts/stakeholder-page.md "Texts". This file is Dutch at taalniveau B1, the rule of
+// Principle X for Dutch text for stakeholders (constitution v2.2.0). Keep each sentence short,
+// with common words and the active voice. Do not mention cost (Principle VII).
 const ZONE = "Europe/Amsterdam";
 
 export function untilText(days: number): string {

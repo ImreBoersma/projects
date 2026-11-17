@@ -51,7 +51,7 @@ B1 for the view, English for the badges; content rules of spec 001 FR-018.
 | VII. Read-only views for stakeholders | The reason for the feature: a page without an account and without developer facts. | Pass |
 | VIII. Keep the work small | Static files, about 20 fixed sentences, no library, no service. | Pass |
 | IX. Spec Kit for application code | This spec. | Pass |
-| X. ASD-STE100 | Spec, plan, code comments in STE. The text of the view is Dutch B1. | Deviation, see Complexity Tracking |
+| X. ASD-STE100 | Spec, plan, code comments in STE. The text of the view is Dutch at taalniveau B1, the rule for Dutch text for stakeholders since constitution v2.2.0. | Pass |
 
 Re-check after Phase 1: no change. The design adds no service, token or external file.
 
@@ -96,6 +96,6 @@ status/
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| Principle X: the text of the stakeholder page is Dutch at taalniveau B1, not ASD-STE100 | The HOB board reads Dutch (spec clarification 2026-11-17). ASD-STE100 exists only for English. B1 has the same aims: short sentences, common words, active voice. | English in STE: board members must translate a page that exists to tell them something in less than 1 minute (SC-001). The deviation is only for the text of this page; code, comments, specs and badges stay in STE English. |
+None. The plan had a Principle X exception for the Dutch B1 text of the stakeholder page. On
+2026-11-17 constitution v2.2.0 made taalniveau B1 the rule for Dutch text for stakeholders, so
+the exception is not necessary.

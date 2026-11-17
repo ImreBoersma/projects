@@ -75,7 +75,7 @@ roadmap.
   campaign PRs do not count. The catalog field `keep` (a date and a reason) stops it until that
   date. The status tokens need "Issues: Read-only"; without it, no suggestion shows.
 - Spec 022: each stakeholder gets a separate page `s/<slug>.html` in Dutch (taalniveau B1, a
-  deviation from Principle X for that page only) without developer facts, with a print layout
+  the rule of Principle X for Dutch text for stakeholders since constitution v2.2.0) without developer facts, with a print layout
   for one A4 page; the status page header links to it. The top line changes only for a site that
   is offline for 2 hours or more; renewals are facts (the Maintainer renews), with no cost. Only
   CI and deploy faults are a problem for a part without a site. Each project gets a badge

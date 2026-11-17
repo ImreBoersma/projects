@@ -25,7 +25,8 @@ people not). Reason: constitution Principle VII (read-only views for stakeholder
   Dutch government uses for text to the public), because the board reads Dutch (Maintainer).
   ASD-STE100 exists only for English, so B1 is the rule for the Dutch text: short sentences,
   common words, active voice, one message in each sentence. The badges stay in English. This is a
-  deviation from Principle X for the text of the view only; the plan records it.
+  deviation from Principle X for the text of the view only; the plan records it. (Constitution
+  v2.2.0 of 2026-11-17 makes B1 the rule for Dutch text for stakeholders.)
 - Q: Which problems make "Has a problem" for a project without a site, and "problem" on a badge?
   → A: Only faults: CI failed and deploy failed (Maintainer, review 2026-11-17). Old Renovate PRs,
   no recent work, conformance and secret expiry are work of the Maintainer; they would tell the
@@ -251,4 +252,4 @@ down. Make sure that two images are written next to the page, with the right tex
 | III. No secrets or private data | Only names, addresses, dates, percentages and states. |
 | VII. Read-only views for stakeholders | The main reason: a view for the board without an account and without developer facts. |
 | VIII. Keep the work small | Static files from the hourly run; no service, no token, no badge service. |
-| X. ASD-STE100 | Spec text uses STE. Deviation: the text of the view is Dutch at level B1 (FR-010), because ASD-STE100 has no Dutch version and the board reads Dutch. |
+| X. ASD-STE100 | Spec text uses STE. The text of the view is Dutch at taalniveau B1 (FR-010), the rule for Dutch text for stakeholders since constitution v2.2.0. |
