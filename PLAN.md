@@ -74,6 +74,12 @@ roadmap.
   "Archive?" on the status page, with a link to the checklist `docs/archive.md`. Bot work and
   campaign PRs do not count. The catalog field `keep` (a date and a reason) stops it until that
   date. The status tokens need "Issues: Read-only"; without it, no suggestion shows.
+- Spec 022: each stakeholder gets a separate page `s/<slug>.html` in Dutch (taalniveau B1, a
+  deviation from Principle X for that page only) without developer facts, with a print layout
+  for one A4 page; the status page header links to it. The top line changes only for a site that
+  is offline for 2 hours or more; renewals are facts (the Maintainer renews), with no cost. Only
+  CI and deploy faults are a problem for a part without a site. Each project gets a badge
+  `badge/<id>.svg`; a `404.html` covers wrong addresses.
 - Token renewal: `STATUS_READ_TOKEN_HOB` (fine-grained, owner `harmonieorkest-brummen`, read only)
   expires on 2027-11-06. Make a new token with the same settings before that date and set the
   secret again (spec 006).
@@ -107,8 +113,8 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 018 | Archive suggestions for old projects (done) | 010 |
 | 019 | Status page filters, sorting and detail views (done) | 012, 013, 015 |
 | 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (done) | 019 |
-| 021 | History charts | 010, 019, 020 |
-| 022 | Stakeholder view and status badges | 019, 020 |
+| 022 | Stakeholder view and status badges (done) | 019, 020 |
+| 021 | History charts (after 022: wait for about 90 days of history, early February 2027) | 010, 019, 020 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -305,10 +311,13 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 - Charts without an external library when possible (inline SVG); else one small library built
   into the page (spec 007 FR-011: no external files).
 - Reason: the history grows each hour since 2026-11-05; now it shows only "since" and 30 marks.
+- Moved after 022 on 2026-11-17: the history had 13 days, 4 checked sites, 0 minutes down and
+  0 problems, so the charts would be flat. Start it when the history has about 90 days.
 
 ### 022. Stakeholder view and status badges
 
-- **Stakeholder view**: with `?stakeholder=<organisation>` the page can show a plain-language
+- **Stakeholder view**: a separate page for each stakeholder (decided 2026-11-17, Dutch at
+  language level B1) shows a plain-language
   view without the technical facts (CI, Renovate, commits): "The website was online for 30 days.
   The domain renewal is in 5 months. Nothing needs your attention." A print layout for a monthly
   page in a board meeting.

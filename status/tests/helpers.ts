@@ -1,3 +1,4 @@
+import { daysUntil } from "../src/expiry/expiry";
 import type { DeliveryRow, ProjectStatus, VersionRow } from "../src/types";
 
 export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
@@ -94,4 +95,52 @@ export function deliveryWorstCase(): { rows: DeliveryRow[]; months: string[] } {
       months: months.map((m, j): [string, number] => [m, j + i]),
     })),
   };
+}
+
+// Spec 022 T002: the 3 projects of Harmonieorkest Brummen (spec.md "Current state"). `now` sets the
+// days to each renewal, for SC-003 (2026-11-17) and SC-004 (2027-01-25).
+export function hobRows(now: Date): ProjectStatus[] {
+  const stakeholder = "Harmonieorkest Brummen";
+  const renewal = (date: string) => ({
+    name: "Domain",
+    date,
+    days: daysUntil(date, now),
+    source: "catalog" as const,
+  });
+  const site = (id: string, date: string) => ({
+    uptime: { state: "up" as const, at: now },
+    expiry: { certificate: null, renewals: [renewal(date)], registryNotKnown: false },
+    history: {
+      since: {},
+      sinceIsHistoryStart: [],
+      uptime: { percent: 100, days: Array(30).fill("up") },
+    },
+    project: { id, name: "", repo: null, status: "active" as const, stakeholder },
+  });
+  const hob = site("hob-nl", "2027-05-01");
+  const pretband = site("pretband", "2027-02-01");
+  return [
+    status({
+      ...hob,
+      project: {
+        ...hob.project,
+        name: "hob.nl",
+        repo: "harmonieorkest-brummen/hob-nl",
+        domain: "harmonieorkestbrummen.nl",
+      },
+    }),
+    status({
+      ...pretband,
+      project: { ...pretband.project, name: "Pretband", domain: "pretband.nl" },
+    }),
+    status({
+      project: {
+        id: "pretband-backend",
+        name: "Pretband backend",
+        repo: "harmonieorkest-brummen/pretband-backend",
+        status: "active",
+        stakeholder,
+      },
+    }),
+  ];
 }

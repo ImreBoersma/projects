@@ -1,5 +1,7 @@
 import { beforeAll, expect, test } from "bun:test";
 import { renderPage } from "../src/render";
+import { renderStakeholderPage } from "../src/stakeholder/render";
+import { stakeholderViews } from "../src/stakeholder/view";
 import { markDrift } from "../src/versions/drift";
 import { deliveryWorstCase, versionsWorstCase, worstCaseRows } from "./helpers";
 
@@ -25,4 +27,23 @@ test("the 20-site worst case with its CSS is less than 30 KB gzip", () => {
   const gzip = Bun.gzipSync(html).length;
   console.log(`Page size: ${Buffer.byteLength(html)} B raw, ${gzip} B gzip.`);
   expect(gzip).toBeLessThan(30_000);
+});
+
+// Spec 022 SC-005 (T020): the stakeholder page is a separate file with its own budget.
+test("the stakeholder page with 20 projects and its CSS is less than 15 KB gzip", () => {
+  const rows = worstCaseRows().map((s) => ({
+    ...s,
+    project: { ...s.project, stakeholder: "Harmonieorkest Brummen" },
+  }));
+  const [view] = stakeholderViews({
+    generatedAt: new Date("2026-10-28T05:03:00Z"),
+    rows,
+    issues: new Map(),
+    historyStart: "2026-09-01",
+  });
+  const html = renderStakeholderPage(view, css);
+  const gzip = Bun.gzipSync(html).length;
+  console.log(`Stakeholder page size: ${Buffer.byteLength(html)} B raw, ${gzip} B gzip.`);
+  expect(view.projects.length).toBe(20);
+  expect(gzip).toBeLessThan(15_000);
 });

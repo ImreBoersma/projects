@@ -17,6 +17,7 @@ import { deliveryTotal, median, timeText } from "./delivery/stats";
 import { rowLinks, STATUS_WORKFLOW, shortcuts } from "./links";
 import { HOSTS } from "./new-project/hosts";
 import { PROBLEM_TEXT } from "./problems";
+import { slug as stakeholderSlug } from "./stakeholder/view";
 import { FAVICON, ICON } from "./style";
 import type {
   CampaignSummary,
@@ -55,11 +56,11 @@ const ARCHIVE_DOC = "https://github.com/ImreBoersma/projects/blob/main/docs/arch
 
 const DAY = 24 * 60 * 60 * 1000;
 // The page updates each hour, so 3 hours without an update means that the schedule stopped.
-const STALE_MS = 3 * 60 * 60 * 1000;
+export const STALE_MS = 3 * 60 * 60 * 1000;
 
 // Inline JSON: each "<" as the escape \u003c, so that the text cannot end the script (spec 020 T008).
 const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
-const html = (text: string) =>
+export const html = (text: string) =>
   text.replace(
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
@@ -507,7 +508,7 @@ ${page.css ?? ""}
 <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
 <header class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
 <h1 class="text-xl font-semibold">Project status</h1>
-<nav class="flex flex-wrap gap-4 text-sm">${link("Roadmap", ROADMAP)}${link("Project board", BOARD)}${link("Run the status update now", STATUS_WORKFLOW)}</nav>
+<nav class="flex flex-wrap gap-4 text-sm">${link("Roadmap", ROADMAP)}${link("Project board", BOARD)}${link("Run the status update now", STATUS_WORKFLOW)}${stakeholders.map((name) => link(`View for ${html(name)}`, `s/${stakeholderSlug(name)}.html`)).join("")}</nav>
 </header>
 <section class="total ${total.kind} alert ${totalClass} mb-6 flex flex-col items-start gap-1">
 <p class="state flex items-center gap-3 text-xl font-semibold"><span aria-hidden="true" class="size-6">${ICON[total.kind]}</span>${total.text}</p>
