@@ -57,8 +57,19 @@ export async function readArchive(
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query: buildArchiveQuery(items) }),
     }).catch(() => null);
-    if (!res?.ok) return null;
-    const body = (await res.json().catch(() => null)) as { data?: Record<string, RepoData> } | null;
+    const repo = items[0]?.repo;
+    if (!res?.ok) {
+      console.log(`Archive ${repo}: HTTP ${res?.status ?? "no answer"}`);
+      return null;
+    }
+    const body = (await res.json().catch(() => null)) as {
+      data?: Record<string, RepoData>;
+      errors?: { type?: string; path?: (string | number)[] }[];
+    } | null;
+    // The error type and the field only, never the message (it can name private data).
+    for (const e of body?.errors ?? []) {
+      console.log(`Archive ${repo}: GraphQL ${e.type ?? "error"} at ${(e.path ?? []).join(".")}`);
+    }
     return body?.data ?? null;
   };
 
