@@ -132,7 +132,7 @@ export function nextExpiry(s: ProjectStatus): string | null {
     ...renewals.map((r) => r.date),
     ...s.secrets.map((x) => x.date as string),
   ].filter(Boolean);
-  return dates.length ? [...dates].sort()[0] : null;
+  return dates.length ? dates.toSorted()[0] : null;
 }
 
 // Spec 019 data-model.md "Row": the data attributes of a row.

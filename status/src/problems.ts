@@ -39,7 +39,7 @@ function repoReasons(s: ProjectStatus, now: Date): Reason[] {
 }
 
 export function sortRows(rows: ProjectStatus[]): ProjectStatus[] {
-  return [...rows].sort(
+  return rows.toSorted(
     (a, b) =>
       Number(b.problems.length > 0) - Number(a.problems.length > 0) ||
       a.project.name.localeCompare(b.project.name),
