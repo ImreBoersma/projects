@@ -48,7 +48,7 @@ jobs:
         if: always()
         run: |
           # hashFiles() cannot see files outside the workspace, so the check is here.
-          file=$(ls ../_quality/*.json 2>/dev/null | head -n 1)
+          file=$(find ../_quality -maxdepth 1 -name '*.json' 2>/dev/null | head -n 1)
           [ -n "$file" ] || { echo "No day file."; exit 0; }
           name=$(basename "$file")
           git config user.name "github-actions[bot]"
