@@ -30,6 +30,8 @@ function lines(b: ProjectBlock): string[] {
         p(b.uptime.since ? TEXT.uptimeSince(datum(b.uptime.since), value) : TEXT.uptime30(value)),
       );
     }
+    // Spec 023 FR-010: speed only; no score, rule or header.
+    if (b.speed) out.push(p(TEXT[b.speed]));
   } else {
     out.push(
       p(

@@ -40,6 +40,9 @@ export const TEXT = {
   uptime30: (p: string) => `De afgelopen 30 dagen was de website ${p} van de tijd online.`,
   uptimeSince: (date: string, p: string) => `Sinds ${date} was de website ${p} van de tijd online.`,
   works: "Dit onderdeel werkt.",
+  // Spec 023 research.md §10.
+  fast: "De website laadt snel op een telefoon.",
+  slow: "De website laadt langzaam op een telefoon. De beheerder weet het.",
   problem: "Er is een probleem. De beheerder weet het.",
   notCheckedPart: "Dit onderdeel is niet gecontroleerd.",
   renewal: (name: string, date: string, until: string) =>

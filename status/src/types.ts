@@ -95,7 +95,66 @@ export interface ProjectStatus {
   secretsNoExpiry: string[];
   // Spec 018: set in page mode only.
   archive?: ArchiveState;
+  // Spec 023: page mode only, the page view of the day files (data-model.md).
+  quality?: QualityCheck;
 }
+
+// Spec 023, data-model.md. "warn" is the level "warning" of the spec.
+export type QualityLevel = "good" | "warn" | "poor" | "not-checked";
+export type QualityNote = "no key" | "site down" | "service error";
+interface QualityBase {
+  level: QualityLevel;
+  note?: QualityNote;
+  // Page view only: the date of the earlier day file of this result. Never in a day file.
+  from?: string;
+}
+export interface SpeedResult extends QualityBase {
+  score: number | null;
+  field: {
+    source: "url" | "origin";
+    lcpMs?: number;
+    inpMs?: number;
+    cls?: number;
+    slow: string[];
+  } | null;
+  report: string;
+}
+export interface AccessibilityResult extends QualityBase {
+  score: number | null;
+  failed: number | null;
+  report: string;
+}
+export interface BrokenLink {
+  url: string;
+  page: string;
+  status: number | "error";
+}
+export interface LinkResult extends QualityBase {
+  pages: number;
+  broken: BrokenLink[];
+  blocked: number;
+}
+export interface HeaderResult extends QualityBase {
+  present: string[];
+  missing: string[];
+  report: string;
+}
+export interface QualityCheck {
+  projectId: string;
+  domain: string;
+  checkedAt: string;
+  speed: SpeedResult;
+  accessibility: AccessibilityResult;
+  links: LinkResult;
+  headers: HeaderResult;
+}
+export interface QualityDay {
+  version: 1;
+  date: string;
+  checks: QualityCheck[];
+}
+export const QUALITY_KINDS = ["speed", "accessibility", "links", "headers"] as const;
+export type QualityKind = (typeof QUALITY_KINDS)[number];
 
 export interface StatusPage {
   // Spec 010: date of the first stored result, and the repair time of 90 days.
@@ -117,6 +176,9 @@ export interface StatusPage {
   versions?: VersionRow[];
   // Spec 017: the delivery numbers of the last 90 days.
   delivery?: { rows: DeliveryRow[]; months: string[] };
+  // Spec 023: the date of the newest quality day file, and the open quality issue of each project.
+  qualityDate?: string | null;
+  qualityIssues?: Map<string, number>;
 }
 
 // Spec 017, data-model.md.

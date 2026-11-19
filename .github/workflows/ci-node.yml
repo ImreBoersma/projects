@@ -11,6 +11,10 @@ on:
         description: Folder to upload as artifact `build` after the build.
         type: string
         default: ""
+      legacy-scan:
+        description: Scan the repo for legacy web code (Modern Web Guidance) and write a job summary. Never fails the job.
+        type: boolean
+        default: false
     secrets:
       build-env:
         description: KEY=value lines. CI writes them to .env.local before the build.
@@ -102,6 +106,28 @@ jobs:
             yarn) yarn test ;;
             npm) npm test ;;
           esac
+
+      # Spec 023 US4, contracts/ci-input.md: a report only; a finding or an error never fails CI.
+      # A pinned version gives the same rules in each run; Renovate does not update it (a campaign does).
+      - name: Scan for legacy web code
+        if: inputs.legacy-scan
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          DISABLE_TELEMETRY: "1"
+        run: |
+          out="$RUNNER_TEMP/legacy.json"
+          if ! npx -y modern-web-guidance@1.0.1 legacy-scan . --json > "$out" || ! summary=$(jq -r '
+              [.guides[] | .guideId as $g | .rules[].findings[] | {file, line, g: $g, m: .message}] as $f
+              | if ($f | length) == 0 then "### Legacy web code: no findings"
+                else "### Legacy web code: \($f | length) findings\n\n| File | Line | Guide | Change |\n|---|---|---|---|\n"
+                  + ($f | map("| \(.file) | \(.line) | \(.g) | \(.m | gsub("\\s*\n\\s*"; " ") | gsub("\\|"; "\\|")) |") | join("\n"))
+                  + "\n\nThe scan checks about 20 % of the Modern Web Guidance catalogue."
+                end' "$out"); then
+            echo "### Legacy web code: scan not available" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
 
       - if: inputs.artifact != ''
         uses: actions/upload-artifact@v7

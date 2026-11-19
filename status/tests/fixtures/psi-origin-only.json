@@ -1,0 +1,17 @@
+{
+  "lighthouseResult": {
+    "categories": {
+      "performance": { "score": 0.95 },
+      "accessibility": { "score": 0.9, "auditRefs": [] }
+    },
+    "audits": {}
+  },
+  "loadingExperience": { "metrics": {} },
+  "originLoadingExperience": {
+    "metrics": {
+      "LARGEST_CONTENTFUL_PAINT_MS": { "percentile": 1800, "category": "FAST" },
+      "INTERACTION_TO_NEXT_PAINT": { "percentile": 90, "category": "FAST" },
+      "CUMULATIVE_LAYOUT_SHIFT_SCORE": { "percentile": 2, "category": "FAST" }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "lighthouseResult": {
+    "categories": {
+      "performance": { "score": 0.92 },
+      "accessibility": { "score": 1, "auditRefs": [{ "id": "image-alt", "weight": 10 }] }
+    },
+    "audits": { "image-alt": { "score": 1, "title": "MARKER-AUDIT-TEXT alt" } }
+  },
+  "loadingExperience": {
+    "metrics": {
+      "LARGEST_CONTENTFUL_PAINT_MS": { "percentile": 4300, "category": "SLOW" },
+      "INTERACTION_TO_NEXT_PAINT": { "percentile": 180, "category": "FAST" },
+      "CUMULATIVE_LAYOUT_SHIFT_SCORE": { "percentile": 5, "category": "FAST" }
+    }
+  }
+}

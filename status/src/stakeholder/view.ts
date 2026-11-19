@@ -24,6 +24,8 @@ export interface ProjectBlock {
   uptime: { percent: number; since: string | null } | null;
   renewal: { name: string; date: string; days: number } | null;
   state: "works" | "problem" | "not-checked";
+  // Spec 023 FR-010: one sentence about speed for good or poor; null for a warning or no result.
+  speed: "fast" | "slow" | null;
 }
 export interface StakeholderView {
   name: string;
@@ -62,6 +64,11 @@ function site(s: ProjectStatus): SiteFact | null {
   return { address, state: "not-checked", since: s.uptime.at?.toISOString() ?? null };
 }
 
+function speedFact(s: ProjectStatus): ProjectBlock["speed"] {
+  const level = s.project.domain ? s.quality?.speed.level : undefined;
+  return level === "good" ? "fast" : level === "poor" ? "slow" : null;
+}
+
 function block(s: ProjectStatus, page: StatusPage): ProjectBlock {
   const percent = s.history.uptime?.percent ?? null;
   const start = page.historyStart;
@@ -75,6 +82,7 @@ function block(s: ProjectStatus, page: StatusPage): ProjectBlock {
     uptime: percent === null ? null : { percent, since: long ? null : start },
     renewal: next ? { name: next.name, date: next.date, days: next.days } : null,
     state: projectState(s),
+    speed: speedFact(s),
   };
 }
 

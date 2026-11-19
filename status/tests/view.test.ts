@@ -6,10 +6,11 @@ import {
   deployKind,
   relTime,
   renewalKind,
+  rowKind,
   siteKind,
   totalState,
 } from "../src/view";
-import { status } from "./helpers";
+import { notChecked, qualityCheck, status } from "./helpers";
 
 const now = Date.parse("2026-11-05T12:00:00Z");
 const ago = (ms: number) => new Date(now - ms).toISOString();
@@ -215,5 +216,35 @@ describe("rowKeys (spec 020)", () => {
         }),
       ),
     ).toEqual(["one/warning"]);
+  });
+});
+
+// Spec 023 FR-006: a quality result is a warning, never a problem.
+describe("rowKind with quality (spec 023 T018)", () => {
+  const base = {
+    project: { id: "a", name: "A", repo: null, status: "active" as const, domain: "a.example" },
+  };
+  test("a poor or warning result makes the row a warning", () => {
+    const poor = qualityCheck({
+      links: {
+        level: "poor",
+        pages: 1,
+        broken: [{ url: "u", page: "p", status: 404 }],
+        blocked: 0,
+      },
+    });
+    expect(rowKind(status({ ...base, quality: poor }))).toBe("warn");
+    const warn = qualityCheck({ headers: { ...qualityCheck().headers, level: "warn" } });
+    expect(rowKind(status({ ...base, quality: warn }))).toBe("warn");
+  });
+  test("all good or all not checked: good", () => {
+    expect(rowKind(status({ ...base, quality: qualityCheck() }))).toBe("good");
+    expect(rowKind(status({ ...base, quality: notChecked("site down") }))).toBe("good");
+  });
+  test("totalState counts no problem for a poor quality result", () => {
+    const quality = qualityCheck({ speed: { ...qualityCheck().speed, level: "poor", score: 20 } });
+    const total = totalState([status({ ...base, quality })]);
+    expect(total.problems).toBe(0);
+    expect(total).toEqual(totalState([status(base)]));
   });
 });

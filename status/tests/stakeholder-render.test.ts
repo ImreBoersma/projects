@@ -3,7 +3,7 @@ import { STALE_MS } from "../src/render";
 import { notFoundPage, renderStakeholderPage } from "../src/stakeholder/render";
 import { stakeholderViews } from "../src/stakeholder/view";
 import type { ProjectStatus } from "../src/types";
-import { hobRows, status } from "./helpers";
+import { hobRows, notChecked, qualityCheck, status } from "./helpers";
 
 const NOW = new Date("2026-11-17T11:00:00Z");
 const page = (rows: ProjectStatus[], now = NOW, historyStart = "2026-11-05") =>
@@ -123,6 +123,11 @@ describe("spec 022 stakeholder page (T007)", () => {
         { projectId: "busy", reason: "renovate-stale", key: "busy/renovate-stale" },
       ],
       secretsNoExpiry: ["BOARD_TOKEN"],
+      // Spec 023 T034: quality facts must not show.
+      quality: qualityCheck({
+        accessibility: { ...qualityCheck().accessibility, level: "poor", score: 31, failed: 4 },
+        headers: { ...qualityCheck().headers, level: "poor", present: [] },
+      }),
     });
     const markup = outsideStyle(page([...hobRows(NOW), busy]));
     for (const word of [
@@ -134,6 +139,13 @@ describe("spec 022 stakeholder page (T007)", () => {
       /conform/i,
       /token/i,
       /github\.com/,
+      /accessibility/i,
+      /toegankelijkheid/i,
+      /Content-Security-Policy/i,
+      /Strict-Transport-Security/i,
+      /pagespeed/i,
+      /observatory/i,
+      /\b\d{1,3}\/100\b/,
     ]) {
       expect(markup).not.toMatch(word);
     }
@@ -169,4 +181,51 @@ describe("spec 022 print (T013)", () => {
 
 test("the old-data script uses the 3 hours of the status page (T029)", () => {
   expect(page(hobRows(NOW))).toContain(`>${STALE_MS})s.hidden=false`);
+});
+
+// Spec 023 T034, contracts/page.md "Stakeholder page".
+describe("the speed sentence (spec 023)", () => {
+  const speed = (level: "good" | "warn" | "poor") =>
+    qualityCheck({ speed: { ...qualityCheck().speed, level, score: level === "good" ? 94 : 30 } });
+  const withSpeed = (quality: ReturnType<typeof qualityCheck> | undefined) =>
+    withPretband((s) => ({ ...s, quality }));
+
+  test("good: fast, after the uptime sentence", () => {
+    const text = render(withSpeed(speed("good")));
+    expect(text).toContain("De website laadt snel op een telefoon.");
+    expect(text.indexOf("van de tijd online.")).toBeLessThan(text.indexOf("laadt snel"));
+  });
+
+  test("poor: slow, and the top line does not change", () => {
+    const text = render(withSpeed(speed("poor")));
+    expect(text).toContain("De website laadt langzaam op een telefoon. De beheerder weet het.");
+    expect(text).toContain("Er is niets waar het bestuur iets mee moet.");
+    const [view] = stakeholderViews({
+      generatedAt: NOW,
+      rows: withSpeed(speed("poor")),
+      issues: new Map(),
+      historyStart: "2026-11-05",
+    });
+    expect(view.attention).toEqual([]);
+    expect(view.projects.find((b) => b.name === "Pretband")?.speed).toBe("slow");
+  });
+
+  test("a warning, not checked or no result: no sentence", () => {
+    for (const q of [speed("warn"), notChecked("site down"), undefined]) {
+      expect(render(withSpeed(q))).not.toContain("laadt");
+    }
+  });
+
+  test("no sentence for a project without a site", () => {
+    const rows = hobRows(NOW).map((s) =>
+      s.project.id === "pretband-backend" ? { ...s, quality: speed("good") } : s,
+    );
+    const [view] = stakeholderViews({
+      generatedAt: NOW,
+      rows,
+      issues: new Map(),
+      historyStart: "2026-11-05",
+    });
+    expect(view.projects.find((b) => b.name === "Pretband backend")?.speed).toBeNull();
+  });
 });

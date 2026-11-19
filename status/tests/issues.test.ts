@@ -1,10 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 import {
   issueContent,
   keepsOpen,
   type OpenIssue,
   parseMarker,
   planIssueActions,
+  updateIssue,
 } from "../src/issues";
 import type { Problem, Project } from "../src/types";
 
@@ -255,5 +256,32 @@ describe("keepsOpen (spec 009 T025, spec 010 T024)", () => {
     expect(keepsOpen({ ...ctx, setupUnavailableIds: new Set(["two"]) }, "two/not-conformant")).toBe(
       true,
     );
+  });
+});
+
+// Spec 023 T028.
+describe("quality issues (spec 023)", () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  test("updateIssue replaces the body with PATCH", async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    globalThis.fetch = (async (url: string, init: RequestInit) => {
+      calls.push({ url, init });
+      return new Response("{}", { status: 200 });
+    }) as unknown as typeof fetch;
+    await updateIssue("ImreBoersma/projects", "T", 41, "new body");
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe("https://api.github.com/repos/ImreBoersma/projects/issues/41");
+    expect(calls[0].init.method).toBe("PATCH");
+    expect(JSON.parse(calls[0].init.body as string)).toEqual({ body: "new body" });
+  });
+
+  test("the hourly reconcile does not close a site-quality issue", () => {
+    const actions = plan([], [{ number: 5, body: "<!-- site-quality: one -->\nText" }]);
+    expect(actions.close).toEqual([]);
+    expect(parseMarker("<!-- site-quality: one -->")).toBeNull();
   });
 });
