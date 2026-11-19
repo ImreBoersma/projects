@@ -61,6 +61,13 @@ describe("findEntry", () => {
     expect(findEntry(projects, "ImreBoersma/unknown", null)).toBeNull();
   });
 
+  // Spec 023 T031: the quality issue of a site gets its project too.
+  test("reads the marker of a quality issue in projects", () => {
+    expect(
+      findEntry(projects, "ImreBoersma/projects", "<!-- site-quality: boek-de-bus -->\nText")?.id,
+    ).toBe("boek-de-bus");
+  });
+
   test("reads the marker of a problem issue in projects", () => {
     expect(findEntry(projects, "ImreBoersma/projects", marker)?.id).toBe("boek-de-bus");
     expect(findEntry(projects, "ImreBoersma/projects", "No marker.")).toBeNull();

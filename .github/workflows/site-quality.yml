@@ -1,0 +1,75 @@
+name: site-quality
+
+# Spec 023: check the quality of each catalog site once each day. The hourly status run reads the
+# day file from the branch data; this workflow does not deploy.
+on:
+  schedule:
+    - cron: "43 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: site-quality
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # Plan.md "Performance Goals": about 30 minutes for 20 sites.
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+        working-directory: status
+      # The earlier day files, for the 2-checks rule of the issues. A missing branch is normal.
+      - name: Get the stored results
+        run: |
+          if git ls-remote --exit-code --heads origin data >/dev/null; then
+            git fetch -q --depth=1 origin data:refs/remotes/origin/data
+            git worktree add --detach ../_data origin/data
+            echo "Quality: $(find ../_data/quality -maxdepth 1 -type f 2>/dev/null | wc -l) day files."
+          else
+            echo "Quality: no branch data yet."
+          fi
+      - name: Check the sites
+        working-directory: status
+        run: bun run quality --out ../../_quality --data ../../_data/quality
+        env:
+          PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Runs also when the issue part of the step above failed, so that the day file is stored
+      # (tasks.md T030). Same retry as the history job of status-page.yml.
+      - name: Store the day file on the branch data
+        if: always()
+        run: |
+          # hashFiles() cannot see files outside the workspace, so the check is here.
+          file=$(find ../_quality -maxdepth 1 -name '*.json' 2>/dev/null | head -n 1)
+          [ -n "$file" ] || { echo "No day file."; exit 0; }
+          name=$(basename "$file")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          store() {
+            mkdir -p quality
+            cp "$file" "quality/$name"
+            git add "quality/$name"
+            git diff --cached --quiet || git commit -q -m "chore: add the quality result of ${name%.json}"
+          }
+          if git rev-parse --verify -q origin/data >/dev/null; then
+            git checkout -q -B data origin/data
+          else
+            git checkout -q --orphan data
+            git rm -rqf .
+          fi
+          store
+          if ! git push -q origin data; then
+            echo "The push failed. Get the branch again and try one more time."
+            git fetch -q origin data
+            git reset -q --hard origin/data
+            store
+            git push -q origin data
+          fi

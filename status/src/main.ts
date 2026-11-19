@@ -33,6 +33,8 @@ import {
   planIssueActions,
 } from "./issues";
 import { conformanceProblem, evaluateProblems, PROBLEM_TEXT, sortRows } from "./problems";
+import { parseQualityMarker } from "./quality/issues";
+import { pageView, readDays } from "./quality/store";
 import { renderPage } from "./render";
 import { gaps, type Used, usedSecrets } from "./secrets/compare";
 import { noExpiry, type ReadDates, SHARED, secretProblems, secretStatuses } from "./secrets/expiry";
@@ -92,6 +94,9 @@ for (const p of projects) {
   const u = uptime.get(p.id);
   if (p.domain && u) console.log(`Site ${p.domain}: ${LOG_TEXT[u.state]}`);
 }
+// Spec 023 T033: the open quality issue of each project, from the same list as the problem issues.
+const qualityIssues = new Map<string, number>();
+
 // Spec 013: workflow texts of the own repos, kept from the conformance check for the compare.
 const workflowTexts = new Map<string, string[]>();
 const unavailableSetup = await checkConformance();
@@ -336,6 +341,7 @@ if (args.mode === "page") {
   const versions = await checkVersions();
   const delivery = await checkDelivery();
   await checkArchive();
+  const qualityDate = await readQuality();
   await mkdir(args.out, { recursive: true });
   const page: StatusPage = {
     generatedAt: now,
@@ -364,6 +370,9 @@ if (args.mode === "page") {
     shared,
     versions,
     delivery,
+    // Spec 023: the date of the newest quality day file.
+    qualityDate,
+    qualityIssues,
     // Spec 015: the progress of the campaigns.
     campaigns: await readCampaigns(
       join(dirname(args.catalog), "campaigns"),
@@ -502,6 +511,19 @@ async function checkArchive() {
   }
 }
 
+// Spec 023 T024: the quality day files are next to the history files on the branch data, so
+// status-page.yml does not change. Each row gets the page view (with the fallback of research.md §7).
+async function readQuality(): Promise<string | null> {
+  if (!args.history) return null;
+  const { newest, days } = await readDays(join(dirname(args.history), "quality"), now);
+  for (const s of statuses) {
+    const view = pageView(days, s.project.id);
+    if (view && s.project.domain) s.quality = view;
+  }
+  console.log(newest ? `Quality: day file ${newest.date}` : "Quality: no day file");
+  return newest?.date ?? null;
+}
+
 // Spec 007: issue numbers for the problem links. Without them, the page shows problems without links.
 async function issueNumbers(): Promise<Map<string, number>> {
   const repo = process.env.GITHUB_REPOSITORY ?? "ImreBoersma/projects";
@@ -512,6 +534,8 @@ async function issueNumbers(): Promise<Map<string, number>> {
     for (const issue of await listOpenIssues(repo, token)) {
       const key = parseMarker(issue.body);
       if (key) numbers.set(key, issue.number);
+      const quality = parseQualityMarker(issue.body);
+      if (quality) qualityIssues.set(quality, issue.number);
     }
   } catch {
     console.log("Issue links not available.");

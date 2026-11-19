@@ -2,7 +2,7 @@
 // as the rows, so the page and the file agree. Content rules of spec 001 apply.
 import { rowLinks } from "./links";
 import { PROBLEM_TEXT } from "./problems";
-import type { StatusPage } from "./types";
+import type { QualityCheck, StatusPage } from "./types";
 import { nextExpiry, rowKind, summaryFact, totalState } from "./view";
 
 const PAGE = "https://imreboersma.github.io/projects/";
@@ -40,6 +40,8 @@ export function statusJson(page: StatusPage): string {
                 s.history.uptime?.percent == null
                   ? null
                   : Number(s.history.uptime.percent.toFixed(1)),
+              // Spec 023 contracts/page.md: own derived facts; the list of broken links is a count.
+              quality: s.quality ? qualityJson(s.quality) : null,
             }
           : null,
         nextExpiry: nextExpiry(s),
@@ -49,4 +51,16 @@ export function statusJson(page: StatusPage): string {
       };
     }),
   });
+}
+
+// `note` and `from` are page details; they are not in the data file.
+function qualityJson(q: QualityCheck) {
+  const { speed: s, accessibility: a, links: l, headers: h } = q;
+  return {
+    checkedAt: q.checkedAt,
+    speed: { level: s.level, score: s.score, field: s.field, report: s.report },
+    accessibility: { level: a.level, score: a.score, failed: a.failed, report: a.report },
+    links: { level: l.level, pages: l.pages, broken: l.broken.length, blocked: l.blocked },
+    headers: { level: h.level, missing: h.missing, report: h.report },
+  };
 }

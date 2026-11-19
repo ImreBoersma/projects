@@ -137,6 +137,11 @@ secrets:
     kind: actions-secret
     where: ImreBoersma/projects
     expires: none
+  # Google API key, restricted to the PageSpeed Insights API, no expiry, in a project without billing (spec 023).
+  - name: PSI_API_KEY
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: never
   # Fine-grained PAT, projects only, Actions read/write: starts status-page.yml each hour (spec 005 T025).
   - name: STATUS_PAGE_TRIGGER
     kind: external

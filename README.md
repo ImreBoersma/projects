@@ -11,6 +11,18 @@ page links to it). Each project gets a status badge at
 `[![hob.nl status](https://imreboersma.github.io/projects/badge/hob-nl.svg)](https://imreboersma.github.io/projects/s/harmonieorkest-brummen.html)`.
 Spec 022.
 
+Each day the workflow `site-quality.yml` checks each catalog site: speed and accessibility on a
+phone (PageSpeed Insights), broken links on up to 50 pages, and 4 security headers. The tab
+"Quality" of the status page shows the results; a site that is poor in 2 checks in a row gets one
+issue. The check needs one secret:
+
+| Name | Where | Kind | Value |
+|---|---|---|---|
+| `PSI_API_KEY` | `ImreBoersma/projects` | Actions secret | A Google API key in a Google Cloud project without billing, restricted to the PageSpeed Insights API, with no expiry |
+
+A project repo can add a report of legacy web code to its CI job summary with
+`legacy-scan: true` in the call of `ci-node.yml`; it never fails the build. Spec 023.
+
 ## Commands
 
 Run all commands in `status/`. A command that changes a repo uses the `gh` login of the
@@ -61,6 +73,17 @@ closes the problem issues (`--mode issues`; with `--dry-run` it only shows them)
 tokens in the environment: `STATUS_READ_TOKEN`, `STATUS_READ_TOKEN_HOB`,
 `CONFORMANCE_READ_TOKEN`, and `GITHUB_TOKEN` for the issues. The workflow `status-page.yml` runs
 it each hour. Spec 001.
+
+### quality
+
+```text
+bun run quality [--out <dir>] [--data <dir>] [--only <project id>] [--dry-run] [--catalog <file>]
+```
+
+Checks the quality of each catalog site and writes the day file `<out>/YYYY-MM-DD.json` (default
+`../_quality`). `--data` is the folder `quality/` of the branch `data`, for the issue rule; with
+`--dry-run` it only shows the issue actions. Needs `PSI_API_KEY` for speed and accessibility, and
+`GITHUB_TOKEN` for the issues. The workflow `site-quality.yml` runs it each day. Spec 023.
 
 ### Checks
 

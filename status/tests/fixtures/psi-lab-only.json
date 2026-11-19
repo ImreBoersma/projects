@@ -1,0 +1,21 @@
+{
+  "lighthouseResult": {
+    "categories": {
+      "performance": { "score": 0.71 },
+      "accessibility": {
+        "score": 0.96,
+        "auditRefs": [
+          { "id": "color-contrast", "weight": 10 },
+          { "id": "html-has-lang", "weight": 0 },
+          { "id": "image-alt", "weight": 10 }
+        ]
+      }
+    },
+    "audits": {
+      "color-contrast": { "score": 0, "title": "MARKER-AUDIT-TEXT contrast" },
+      "html-has-lang": { "score": 0, "title": "MARKER-AUDIT-TEXT lang" },
+      "image-alt": { "score": 1, "title": "MARKER-AUDIT-TEXT alt" }
+    }
+  },
+  "loadingExperience": { "id": "https://harmonieorkestbrummen.nl/" }
+}

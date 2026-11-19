@@ -2,7 +2,7 @@
 import { CERT_LIMIT, RENEWAL_LIMIT } from "./expiry/expiry";
 import { PROBLEM_TEXT } from "./problems";
 import { SECRET_LIMIT } from "./secrets/expiry";
-import type { ProjectStatus } from "./types";
+import { type ProjectStatus, QUALITY_KINDS } from "./types";
 
 export type BadgeKind = "good" | "warn" | "bad" | "unknown";
 
@@ -86,7 +86,11 @@ export function rowKind(s: ProjectStatus): BadgeKind {
     ...renewals.map((r) => renewalKind(r.days)),
     ...s.secrets.map((x) => secretKind(x.days as number)),
   ];
-  return dates.includes("bad") || dates.includes("warn") ? "warn" : "good";
+  // Spec 023 FR-006: a quality warning or poor result is a warning, never a problem.
+  const quality = s.quality
+    ? QUALITY_KINDS.some((k) => ["warn", "poor"].includes(s.quality?.[k].level ?? ""))
+    : false;
+  return quality || dates.includes("bad") || dates.includes("warn") ? "warn" : "good";
 }
 
 // Spec 019, research.md §5: the most important fact of a project, for its row.

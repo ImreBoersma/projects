@@ -115,6 +115,7 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
 | 020 | Status app basics: data file, "since your last visit", installable app, shortcut links, ⌘K (done) | 019 |
 | 022 | Stakeholder view and status badges (done) | 019, 020 |
 | 021 | History charts (after 022: wait for about 90 days of history, early February 2027) | 010, 019, 020 |
+| 023 | Website quality checks (implemented on branch `023-site-quality`; first run after the merge and `PSI_API_KEY`) | 005, 010, 019, 022 |
 
 ### 002. Shared CI and deploy workflows
 
@@ -325,6 +326,17 @@ configuration. Principle IX does not require a spec for them, but a spec gives a
   for the README of each repo and the footer of a site. No external badge service.
 - Both follow the content rules of spec 001 (organisation names allowed, names of people not).
 - Reason: constitution Principle VII (read-only views for stakeholders).
+
+### 023. Website quality checks
+
+- A daily workflow checks each catalog site: speed and accessibility on a phone (PageSpeed
+  Insights, with the key `PSI_API_KEY`), broken links on up to 50 pages, and 4 security headers.
+- The tab "Quality" shows the results; a result is a warning, never a problem. A site that is
+  poor in 2 daily checks in a row gets one issue.
+- The stakeholder page gets one Dutch B1 sentence about speed. The shared CI gets the optional
+  input `legacy-scan` (Modern Web Guidance).
+- Reason: the orchestra sites are the main product, and nothing checked their quality
+  (docs/landscape.md gap 1).
 
 ## Ongoing (no spec)
 

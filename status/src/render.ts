@@ -25,6 +25,8 @@ import type {
   DeliveryRow,
   Problem,
   ProjectStatus,
+  QualityCheck,
+  QualityLevel,
   SecretStatus,
   StatusPage,
   ToolVersion,
@@ -277,7 +279,12 @@ function row(s: ProjectStatus, order: number): string {
 </a></li>`;
 }
 
-function modal(s: ProjectStatus, now: Date, issues: Map<string, number>): string {
+function modal(
+  s: ProjectStatus,
+  now: Date,
+  issues: Map<string, number>,
+  qualityIssues: Map<string, number> = new Map(),
+): string {
   const links = rowLinks(s, issues);
   const kind = rowKind(s);
   const problems = s.problems.map((p) => {
@@ -288,9 +295,10 @@ function modal(s: ProjectStatus, now: Date, issues: Map<string, number>): string
     s.project.status === "active"
       ? ""
       : ` <span class="badge badge-ghost badge-sm">${html(s.project.status)}</span>`;
-  const list = facts(s, now, links)
-    .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
-    .join("");
+  const list =
+    facts(s, now, links)
+      .map((g) => `<div><dt>${g.label}</dt><dd>${g.items.join(SEP)}</dd></div>`)
+      .join("") + (s.quality ? qualityFacts(s.quality, qualityIssues.get(s.project.id)) : "");
   const id = s.project.id;
   // Spec 020 US4: the GitHub pages to act on this project.
   const go = shortcuts(s.project.repo);
@@ -383,6 +391,7 @@ export function renderPage(page: StatusPage): string {
     campaigns: campaigns.filter((c) => c.counts["failed-ci"] > 0).length,
     tokens: shared.problems.length + (shared.noExpiry ?? []).length,
     versions: markedCount(page.versions ?? []),
+    quality: page.rows.filter((s) => s.quality && hasPoor(s.quality)).length,
     history: 0,
   };
   const TABS: [keyof typeof tabCount, string][] = [
@@ -390,6 +399,7 @@ export function renderPage(page: StatusPage): string {
     ["campaigns", "Campaigns"],
     ["tokens", "Shared tokens"],
     ["versions", "Versions"],
+    ["quality", "Quality"],
     ["history", "History"],
   ];
   const tabs = TABS.map(
@@ -424,7 +434,7 @@ ${controls}
 ${ordered.map(({ s, i }) => row(s, i)).join("\n")}
 </ul>
 <div data-empty hidden class="py-6 text-center"><p class="mb-2">No project matches the filter.</p><button type="button" data-clear class="btn btn-sm">Clear the filter</button></div>
-${page.rows.map((s) => modal(s, now, page.issues)).join("\n")}`;
+${page.rows.map((s) => modal(s, now, page.issues, page.qualityIssues)).join("\n")}`;
   // Spec 020 US5: the command box; only the script opens it.
   const commandBox = `<div id="command" class="modal" role="dialog" aria-modal="true" aria-label="Command box">
 <div class="modal-box max-w-md">
@@ -521,6 +531,7 @@ ${panel("projects", "Projects", projectsBody, true)}
 ${panel("campaigns", "Campaigns", campaignSection(campaigns, now) || "<p>No open campaign.</p>")}
 ${panel("tokens", "Shared tokens", sharedSection(shared, now, page.issues) || "<p>No shared tokens with a date.</p>")}
 ${panel("versions", "Versions", versionsSection(page.versions))}
+${panel("quality", "Quality", qualitySection(page.rows, page.qualityDate ?? null, page.qualityIssues ?? new Map()))}
 ${panel("history", "History", historyPanel(page.rows, repairText(page.repair ?? null), page.delivery))}
 ${commandBox}
 ${newProject}
@@ -586,6 +597,136 @@ ${rows.map(tr).join("\n")}
 </tbody>
 <tfoot>${tr(deliveryTotal(rows, months))}</tfoot>
 </table></div>`;
+}
+
+// Spec 023 contracts/page.md: the 4 quality results of each site.
+const LEVEL: Record<QualityLevel, [BadgeKind, string]> = {
+  good: ["good", "Good"],
+  warn: ["warn", "Warning"],
+  poor: ["bad", "Poor"],
+  "not-checked": ["unknown", "Not checked"],
+};
+const NOTE_TEXT = {
+  "no key": "No key",
+  "site down": "Site down",
+  "service error": "Service error",
+};
+const SHOWN_LINKS = 10;
+const hasPoor = (q: QualityCheck) =>
+  [q.speed, q.accessibility, q.links, q.headers].some((r) => r.level === "poor");
+const shortDate = (date: string) =>
+  new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }).format(
+    new Date(`${date}T00:00:00Z`),
+  );
+
+// `withList`: the tab lists the broken links; the pop-up shows only the count (FR-013 size).
+function qualityCells(q: QualityCheck, issue: number | undefined, withList = true): string[] {
+  const level = (r: { level: QualityLevel }, text = "") => {
+    const [kind, word] = LEVEL[r.level];
+    return badge(kind, `${word}${text}`);
+  };
+  const tail = (r: { from?: string; note?: keyof typeof NOTE_TEXT }, parts: string[]) => [
+    ...(r.note && !r.from ? [NOTE_TEXT[r.note]] : []),
+    ...parts,
+    ...(r.from ? [`from ${shortDate(r.from)}`] : []),
+  ];
+  const join = (head: string, parts: string[]) => [head, ...parts].join(SEP);
+  const report = (url: string) => link("Report", url);
+  const { speed: s, accessibility: a, links: l, headers: h } = q;
+  const checked = (r: { level: QualityLevel }) => r.level !== "not-checked";
+
+  const f = s.field;
+  const field = f
+    ? `Real users: ${[
+        f.lcpMs !== undefined ? `LCP ${(f.lcpMs / 1000).toFixed(1)} s` : "",
+        f.inpMs !== undefined ? `INP ${f.inpMs} ms` : "",
+        f.cls !== undefined ? `CLS ${f.cls}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ")}`
+    : "Lab test only";
+  const speed = checked(s)
+    ? join(level(s, ` ${s.score}`), tail(s, [field, report(s.report)]))
+    : join(level(s), tail(s, []));
+  const access = checked(a)
+    ? join(
+        level(a, ` ${a.score}`),
+        tail(a, [
+          `${count(a.failed ?? 0, "rule")} fail${a.failed === 1 ? "s" : ""}`,
+          report(a.report),
+        ]),
+      )
+    : join(level(a), tail(a, []));
+  let links = join(level(l), tail(l, []));
+  if (checked(l)) {
+    const head =
+      l.level === "poor"
+        ? level(l, `: ${l.broken.length} broken`)
+        : l.level === "warn"
+          ? level(l, `: ${l.blocked} blocked`)
+          : level(l);
+    // The path is the text (the site is in the row); the full address is the link.
+    const path = (url: string) =>
+      html(new URL(url).host === q.domain ? new URL(url).pathname : url);
+    const list = (withList ? l.broken.slice(0, SHOWN_LINKS) : []).map(
+      (b) => `<li>${link(path(b.url), b.url)} on ${link(path(b.page), b.page)} (${b.status})</li>`,
+    );
+    const more = l.broken.length - SHOWN_LINKS;
+    if (withList && more > 0) {
+      const text = `and ${more} more`;
+      list.push(
+        `<li>${issue ? link(text, `https://github.com/ImreBoersma/projects/issues/${issue}`) : text}</li>`,
+      );
+    }
+    links = join(head, tail(l, [`${count(l.pages, "page")}`]));
+    if (list.length) links += `<ul class="broken">${list.join("")}</ul>`;
+  }
+  const headers = checked(h)
+    ? join(
+        level(h, `: ${h.present.length} of 4`),
+        tail(h, [
+          ...(h.missing.length ? [`Missing: ${h.missing.join(", ")}`] : []),
+          report(h.report),
+        ]),
+      )
+    : join(level(h), tail(h, []));
+  return [speed, access, links, headers];
+}
+
+const QUALITY_LABELS = ["Speed (phone)", "Accessibility", "Broken links", "Security headers"];
+
+function qualityFacts(q: QualityCheck, issue: number | undefined): string {
+  return qualityCells(q, issue, false)
+    .map((cell, i) => `<div><dt>${QUALITY_LABELS[i]}</dt><dd>${cell}</dd></div>`)
+    .join("");
+}
+
+function qualitySection(
+  rows: ProjectStatus[],
+  date: string | null,
+  issues: Map<string, number>,
+): string {
+  const sites = rows.filter((s) => s.project.domain);
+  if (!sites.length) return "<p>No site in the catalog.</p>";
+  const head = QUALITY_LABELS.map((l) => `<th scope="col">${l}</th>`).join("");
+  const body = sites
+    .map((s) => {
+      const domain = s.project.domain as string;
+      const cells = s.quality
+        ? qualityCells(s.quality, issues.get(s.project.id))
+            .map((c) => `<td>${c}</td>`)
+            .join("")
+        : `<td colspan="4">Not checked yet</td>`;
+      return `<tr><th scope="row">${link(html(domain), `https://${domain}/`)}</th>${cells}</tr>`;
+    })
+    .join("\n");
+  return `<p class="mb-2 text-sm">${date ? `Checked on ${shortDate(date)} ${date.slice(0, 4)}.` : "Not checked yet."} One check each day: speed and accessibility of the home page on a phone, broken links on up to 50 pages, and 4 security headers.</p>
+<div class="overflow-x-auto">
+<table class="data-table text-sm">
+<thead><tr><th scope="col">Site</th>${head}</tr></thead>
+<tbody>
+${body}
+</tbody></table></div>`;
 }
 
 // Spec 016, contracts/page.md: one table of the tool versions; a marked cell is behind.

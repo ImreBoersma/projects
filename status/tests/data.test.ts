@@ -4,7 +4,7 @@ import { mapRepo } from "../src/github";
 import type { ProjectStatus } from "../src/types";
 import { rowKind, summaryFact } from "../src/view";
 import fixture from "./fixtures/graphql-response.json";
-import { status } from "./helpers";
+import { notChecked, type qualityCheck, status } from "./helpers";
 
 const generatedAt = new Date("2026-10-28T05:03:00Z");
 const ci = (id: string) => ({
@@ -62,6 +62,8 @@ describe("statusJson (spec 020 US2)", () => {
         state: "up",
         checkedAt: "2026-10-28T05:03:00.000Z",
         uptime30: 99.5,
+        // Spec 023: a new field; readers ignore unknown fields.
+        quality: null,
       },
       nextExpiry: null,
       link: "https://imreboersma.github.io/projects/#p-one",
@@ -132,5 +134,47 @@ describe("statusJson archive (spec 018, contracts/page.md)", () => {
     );
     expect(json.projects[0].archive).toEqual(suggest);
     expect(json.projects[1]).not.toHaveProperty("archive");
+  });
+});
+
+// Spec 023 T022, contracts/page.md "status.json".
+describe("site.quality (spec 023)", () => {
+  const site = (quality?: ReturnType<typeof qualityCheck>) =>
+    status({
+      project: { id: "a", name: "A", repo: null, status: "active", domain: "a.example" },
+      quality,
+    });
+  const read = (s: ProjectStatus) =>
+    JSON.parse(statusJson({ generatedAt, rows: [s], issues: new Map() }));
+
+  test("the 4 results; links.broken is a count; no note or from", () => {
+    const q = notChecked("site down");
+    q.links = {
+      level: "poor",
+      pages: 38,
+      broken: [{ url: "https://a.example/x", page: "https://a.example/", status: 404 }],
+      blocked: 2,
+      from: "2026-11-17",
+    };
+    const data = read(site(q));
+    expect(data.version).toBe(1);
+    expect(data.projects[0].site.quality.links).toEqual({
+      level: "poor",
+      pages: 38,
+      broken: 1,
+      blocked: 2,
+    });
+    expect(data.projects[0].site.quality.checkedAt).toBe(q.checkedAt);
+    expect(JSON.stringify(data)).not.toContain('"note"');
+    expect(JSON.stringify(data)).not.toContain('"from"');
+    expect(data.projects[0].site.quality.headers).toEqual({
+      level: "not-checked",
+      missing: [],
+      report: q.headers.report,
+    });
+  });
+
+  test("null without a result", () => {
+    expect(read(site()).projects[0].site.quality).toBeNull();
   });
 });

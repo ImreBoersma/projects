@@ -1,6 +1,7 @@
 // Pure rules of the project board (spec 004). The GraphQL calls are in graphql.ts.
 import { RENOVATE } from "../github";
 import { LABEL, parseMarker } from "../issues";
+import { parseQualityMarker } from "../quality/issues";
 import type { Project } from "../types";
 
 // The repo of the catalog. Its `status-problem` issues get the Project of the marker (FR-006).
@@ -44,7 +45,7 @@ const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 export function findEntry(projects: Project[], repo: string, body: string | null): Project | null {
   let entry: Project | undefined;
   if (same(repo, PROJECTS_REPO)) {
-    const id = parseMarker(body)?.split("/")[0];
+    const id = (parseMarker(body) ?? parseQualityMarker(body))?.split("/")[0];
     entry = projects.find((p) => p.id === id);
   } else {
     entry = projects.find((p) => p.repo !== null && same(p.repo, repo));

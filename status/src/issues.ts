@@ -208,3 +208,11 @@ export async function closeIssue(repo: string, token: string, number: number, co
     body: JSON.stringify({ state: "closed", state_reason: "completed" }),
   });
 }
+
+// Spec 023 T029: replace the body of an issue (the quality issue of a site).
+export async function updateIssue(repo: string, token: string, number: number, body: string) {
+  await api(`/repos/${repo}/issues/${number}`, token, {
+    method: "PATCH",
+    body: JSON.stringify({ body }),
+  });
+}

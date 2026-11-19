@@ -1,5 +1,55 @@
 import { daysUntil } from "../src/expiry/expiry";
-import type { DeliveryRow, ProjectStatus, VersionRow } from "../src/types";
+import type {
+  DeliveryRow,
+  ProjectStatus,
+  QualityCheck,
+  QualityNote,
+  VersionRow,
+} from "../src/types";
+
+// Spec 023 T003: a quality check with all 4 results good.
+export function qualityCheck(overrides: Partial<QualityCheck> = {}): QualityCheck {
+  const domain = overrides.domain ?? "harmonieorkestbrummen.nl";
+  const report = `https://pagespeed.web.dev/analysis?url=https://${domain}/&form_factor=mobile`;
+  return {
+    projectId: "hob-nl",
+    domain,
+    checkedAt: "2026-11-19T04:44:10Z",
+    speed: { level: "good", score: 94, field: null, report },
+    accessibility: { level: "good", score: 96, failed: 0, report },
+    links: { level: "good", pages: 12, broken: [], blocked: 0 },
+    headers: {
+      level: "good",
+      present: [
+        "strict-transport-security",
+        "content-security-policy",
+        "x-content-type-options",
+        "referrer-policy",
+      ],
+      missing: [],
+      report: `https://developer.mozilla.org/en-US/observatory/analyze?host=${domain}`,
+    },
+    ...overrides,
+  };
+}
+
+// Spec 023 T003: a quality check with all 4 results not checked, with one note.
+export function notChecked(note: QualityNote, overrides: Partial<QualityCheck> = {}): QualityCheck {
+  const base = qualityCheck(overrides);
+  return {
+    ...base,
+    speed: { ...base.speed, level: "not-checked", score: null, note },
+    accessibility: {
+      ...base.accessibility,
+      level: "not-checked",
+      score: null,
+      failed: null,
+      note,
+    },
+    links: { level: "not-checked", pages: 0, broken: [], blocked: 0, note },
+    headers: { ...base.headers, level: "not-checked", present: [], missing: [], note },
+  };
+}
 
 export function status(overrides: Partial<ProjectStatus> = {}): ProjectStatus {
   return {

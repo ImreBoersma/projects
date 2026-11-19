@@ -13,7 +13,7 @@ import type {
 } from "../src/types";
 import { markDrift } from "../src/versions/drift";
 import fixture from "./fixtures/graphql-response.json";
-import { status } from "./helpers";
+import { notChecked, qualityCheck, status } from "./helpers";
 
 const generatedAt = new Date("2026-10-28T05:03:00Z");
 const render = (rows: ProjectStatus[], issues = new Map<string, number>()) =>
@@ -870,7 +870,7 @@ describe("the tab Versions (spec 016, contracts/page.md)", () => {
   test("the tab between Shared tokens and History, with the number of marked repos", () => {
     const html = page(rows);
     const tabs = [...html.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1]);
-    expect(tabs).toEqual(["projects", "campaigns", "tokens", "versions", "history"]);
+    expect(tabs).toEqual(["projects", "campaigns", "tokens", "versions", "quality", "history"]);
     expect(html).toContain('href="?tab=versions"');
     expect(html).toMatch(
       /data-tab="versions"[^>]*>Versions <span class="badge badge-sm badge-warning ml-1">2<\/span><\/a>/,
@@ -1083,5 +1083,133 @@ describe("stakeholder links (spec 022)", () => {
   });
   test("no link without stakeholders", () => {
     expect(render([row("c")])).not.toContain("View for");
+  });
+});
+
+// Spec 023 T020, contracts/page.md "Tab Quality".
+describe("the tab Quality (spec 023)", () => {
+  const site = (id: string, domain: string, quality?: ReturnType<typeof qualityCheck>) =>
+    status({ project: { id, name: id, repo: null, status: "active", domain }, quality });
+  const broken = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      url: `https://a.example/gone${i}`,
+      page: "https://a.example/",
+      status: 404 as const,
+    }));
+  const base = qualityCheck({ domain: "a.example", projectId: "a" });
+  const mixed = qualityCheck({
+    domain: "a.example",
+    projectId: "a",
+    speed: { ...base.speed, level: "warn", score: 71 },
+    links: { level: "poor", pages: 38, broken: broken(1), blocked: 0 },
+    headers: {
+      ...base.headers,
+      level: "warn",
+      present: ["strict-transport-security", "x-content-type-options"],
+      missing: ["content-security-policy", "referrer-policy"],
+    },
+  });
+  const render = (
+    rows: ReturnType<typeof status>[],
+    extra: Partial<Parameters<typeof renderPage>[0]> = {},
+  ) => renderPage({ generatedAt, rows, issues: new Map(), ...extra });
+  const panel = (html: string) =>
+    html.match(/<section id="tab-quality"[\s\S]*?<\/section>/)?.[0] ?? "";
+
+  test("the tab after Versions, with the number of sites with a poor result", () => {
+    const html = render([site("a", "a.example", mixed), site("b", "b.example", qualityCheck())], {
+      qualityDate: "2026-11-19",
+    });
+    const tabs = [...html.matchAll(/data-tab="(\w+)"/g)].map((m) => m[1]);
+    expect(tabs.indexOf("quality")).toBe(tabs.indexOf("versions") + 1);
+    expect(html).toContain('href="?tab=quality"');
+    expect(html).toMatch(
+      /data-tab="quality"[^>]*>Quality <span class="badge badge-sm badge-warning ml-1">1<\/span>/,
+    );
+  });
+
+  test("the date of the check, or Not checked yet", () => {
+    expect(panel(render([site("a", "a.example", base)], { qualityDate: "2026-11-19" }))).toContain(
+      "Checked on 19 Nov 2026.",
+    );
+    expect(panel(render([site("a", "a.example")], { qualityDate: null }))).toContain(
+      "Not checked yet.",
+    );
+  });
+
+  test("one row for each site; a site without a result: Not checked yet; no row without a domain", () => {
+    const p = panel(
+      render([site("a", "a.example", base), site("b", "b.example"), status()], {
+        qualityDate: "2026-11-19",
+      }),
+    );
+    expect(p.match(/<tr><th scope="row">/g)).toHaveLength(2);
+    expect(p).toContain('<td colspan="4">Not checked yet</td>');
+  });
+
+  test("the 4 cells with text, colour and report links", () => {
+    const p = panel(render([site("a", "a.example", mixed)], { qualityDate: "2026-11-19" }));
+    expect(p).toContain('<span class="badge badge-sm badge-warning warn">Warning 71</span>');
+    expect(p).toContain("Lab test only");
+    expect(p).toContain("Good 96");
+    expect(p).toContain("0 rules fail");
+    expect(p).toContain('<span class="badge badge-sm badge-error bad">Poor: 1 broken</span>');
+    expect(p).toContain("https://a.example/gone0");
+    expect(p).toContain('<span class="badge badge-sm badge-warning warn">Warning: 2 of 4</span>');
+    expect(p).toContain("Missing: content-security-policy, referrer-policy");
+    expect(p).toMatch(
+      /<a class="link" href="https:\/\/pagespeed\.web\.dev\/analysis\?url=https:\/\/a\.example\/&amp;form_factor=mobile" target="_blank" rel="noopener noreferrer" aria-describedby="nt">Report<\/a>/,
+    );
+    expect(p).toContain("observatory/analyze?host=a.example");
+  });
+
+  test("field data of real users", () => {
+    const q = qualityCheck({
+      speed: {
+        ...base.speed,
+        level: "poor",
+        score: 92,
+        field: {
+          source: "url",
+          lcpMs: 4300,
+          inpMs: 180,
+          cls: 0.05,
+          slow: ["LARGEST_CONTENTFUL_PAINT_MS"],
+        },
+      },
+    });
+    expect(panel(render([site("a", "a.example", q)]))).toContain(
+      "Real users: LCP 4.3 s, INP 180 ms, CLS 0.05",
+    );
+  });
+
+  test("10 broken links, then 'and N more': text without an issue, a link with one", () => {
+    const q = qualityCheck({ links: { level: "poor", pages: 5, broken: broken(12), blocked: 0 } });
+    const without = panel(render([site("a", "a.example", q)]));
+    expect(without.match(/gone\d+<\/a> on/g)).toHaveLength(10);
+    expect(without).toContain("<li>and 2 more</li>");
+    const withIssue = panel(
+      render([site("a", "a.example", q)], { qualityIssues: new Map([["a", 77]]) }),
+    );
+    expect(withIssue).toContain('href="https://github.com/ImreBoersma/projects/issues/77"');
+    expect(withIssue).toContain(">and 2 more</a>");
+  });
+
+  test("a result from an earlier day, and a result not checked with its note", () => {
+    const q = notChecked("site down");
+    q.links = { level: "good", pages: 12, broken: [], blocked: 0, from: "2026-11-17" };
+    const p = panel(render([site("a", "a.example", q)]));
+    expect(p).toContain("from 17 Nov");
+    expect(p).toContain('<span class="badge badge-sm badge-neutral unknown">Not checked</span>');
+    expect(p).toContain("Site down");
+  });
+
+  test("the pop-up has the same 4 results; the row is a warning, not a problem", () => {
+    const html = render([site("a", "a.example", mixed)]);
+    const modal = html.match(/<div id="p-a" class="modal"[\s\S]*?<\/dl>/)?.[0] ?? "";
+    expect(modal).toContain("<dt>Speed (phone)</dt>");
+    expect(modal).toContain("<dt>Security headers</dt>");
+    expect(modal).toContain("Poor: 1 broken");
+    expect(html).toMatch(/data-tab="projects"[^>]*>Projects<\/a>/);
   });
 });

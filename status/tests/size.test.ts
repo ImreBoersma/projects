@@ -3,7 +3,7 @@ import { renderPage } from "../src/render";
 import { renderStakeholderPage } from "../src/stakeholder/render";
 import { stakeholderViews } from "../src/stakeholder/view";
 import { markDrift } from "../src/versions/drift";
-import { deliveryWorstCase, versionsWorstCase, worstCaseRows } from "./helpers";
+import { deliveryWorstCase, qualityCheck, versionsWorstCase, worstCaseRows } from "./helpers";
 
 // Spec 011 research §8 (replaces the raw budgets of spec 019 SC-005): GitHub Pages sends the page
 // with gzip, so the budget is on the gzip size. 2026-11-09: 147.7 KB raw, 18.7 KB gzip.
@@ -14,10 +14,55 @@ beforeAll(async () => {
   css = await Bun.file(new URL("../build/page.css", import.meta.url)).text();
 });
 
+// Spec 023 T025: each site with the largest quality cells (10 broken links shown, field data,
+// missing headers), in the tab and in the pop-up.
+const withQuality = () =>
+  worstCaseRows().map((s, i) => {
+    const domain = s.project.domain as string;
+    const base = qualityCheck({ projectId: s.project.id, domain });
+    return {
+      ...s,
+      quality: qualityCheck({
+        projectId: s.project.id,
+        domain,
+        speed: {
+          ...base.speed,
+          level: "poor" as const,
+          score: 42,
+          field: {
+            source: "url" as const,
+            lcpMs: 4300,
+            inpMs: 520,
+            cls: 0.31,
+            slow: ["LARGEST_CONTENTFUL_PAINT_MS"],
+          },
+        },
+        accessibility: { ...base.accessibility, level: "warn", score: 78, failed: 6 },
+        links: {
+          level: "poor",
+          pages: 50,
+          blocked: 3,
+          broken: Array.from({ length: 12 }, (_, j) => ({
+            url: `https://${domain}/a-long-page-address-that-is-gone-${i}-${j}/`,
+            page: `https://${domain}/news/2026/11/some-article-${j}/`,
+            status: 404,
+          })),
+        },
+        headers: {
+          ...base.headers,
+          level: "warn",
+          present: ["strict-transport-security"],
+          missing: ["content-security-policy", "x-content-type-options", "referrer-policy"],
+        },
+      }),
+    };
+  });
+
 test("the 20-site worst case with its CSS is less than 30 KB gzip", () => {
   const html = renderPage({
     generatedAt: new Date("2026-10-28T05:03:00Z"),
-    rows: worstCaseRows(),
+    rows: withQuality(),
+    qualityDate: "2026-10-28",
     issues: new Map(),
     css,
     versions: markDrift(versionsWorstCase()),
