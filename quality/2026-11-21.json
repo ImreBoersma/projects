@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "date": "2026-11-21",
+  "checks": [
+    {
+      "projectId": "personal-website",
+      "domain": "imreboersma.nl",
+      "checkedAt": "2026-11-21T12:58:27.299Z",
+      "speed": {
+        "level": "not-checked",
+        "score": null,
+        "field": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://imreboersma.nl/&form_factor=mobile",
+        "note": "no key"
+      },
+      "accessibility": {
+        "level": "not-checked",
+        "score": null,
+        "failed": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://imreboersma.nl/&form_factor=mobile",
+        "note": "no key"
+      },
+      "links": {
+        "level": "warn",
+        "pages": 2,
+        "broken": [],
+        "blocked": 1
+      },
+      "headers": {
+        "level": "warn",
+        "present": [
+          "strict-transport-security",
+          "x-content-type-options",
+          "referrer-policy"
+        ],
+        "missing": [
+          "content-security-policy"
+        ],
+        "report": "https://developer.mozilla.org/en-US/observatory/analyze?host=imreboersma.nl"
+      }
+    },
+    {
+      "projectId": "scales-exercises",
+      "domain": "scales-imreboersma.web.app",
+      "checkedAt": "2026-11-21T12:58:28.343Z",
+      "speed": {
+        "level": "not-checked",
+        "score": null,
+        "field": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://scales-imreboersma.web.app/&form_factor=mobile",
+        "note": "no key"
+      },
+      "accessibility": {
+        "level": "not-checked",
+        "score": null,
+        "failed": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://scales-imreboersma.web.app/&form_factor=mobile",
+        "note": "no key"
+      },
+      "links": {
+        "level": "good",
+        "pages": 1,
+        "broken": [],
+        "blocked": 0
+      },
+      "headers": {
+        "level": "good",
+        "present": [
+          "strict-transport-security",
+          "content-security-policy",
+          "x-content-type-options",
+          "referrer-policy"
+        ],
+        "missing": [],
+        "report": "https://developer.mozilla.org/en-US/observatory/analyze?host=scales-imreboersma.web.app"
+      }
+    },
+    {
+      "projectId": "pretband",
+      "domain": "pretband.nl",
+      "checkedAt": "2026-11-21T12:58:29.392Z",
+      "speed": {
+        "level": "not-checked",
+        "score": null,
+        "field": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://pretband.nl/&form_factor=mobile",
+        "note": "no key"
+      },
+      "accessibility": {
+        "level": "not-checked",
+        "score": null,
+        "failed": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://pretband.nl/&form_factor=mobile",
+        "note": "no key"
+      },
+      "links": {
+        "level": "good",
+        "pages": 1,
+        "broken": [],
+        "blocked": 0
+      },
+      "headers": {
+        "level": "warn",
+        "present": [
+          "strict-transport-security"
+        ],
+        "missing": [
+          "content-security-policy",
+          "x-content-type-options",
+          "referrer-policy"
+        ],
+        "report": "https://developer.mozilla.org/en-US/observatory/analyze?host=pretband.nl"
+      }
+    },
+    {
+      "projectId": "hob-nl",
+      "domain": "harmonieorkestbrummen.nl",
+      "checkedAt": "2026-11-21T12:58:43.192Z",
+      "speed": {
+        "level": "not-checked",
+        "score": null,
+        "field": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://harmonieorkestbrummen.nl/&form_factor=mobile",
+        "note": "no key"
+      },
+      "accessibility": {
+        "level": "not-checked",
+        "score": null,
+        "failed": null,
+        "report": "https://pagespeed.web.dev/analysis?url=https://harmonieorkestbrummen.nl/&form_factor=mobile",
+        "note": "no key"
+      },
+      "links": {
+        "level": "good",
+        "pages": 13,
+        "broken": [],
+        "blocked": 0
+      },
+      "headers": {
+        "level": "poor",
+        "present": [],
+        "missing": [
+          "strict-transport-security",
+          "content-security-policy",
+          "x-content-type-options",
+          "referrer-policy"
+        ],
+        "report": "https://developer.mozilla.org/en-US/observatory/analyze?host=harmonieorkestbrummen.nl"
+      }
+    }
+  ]
+}
