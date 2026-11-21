@@ -22,7 +22,7 @@
     "@biomejs/biome": "^2.2.4",
     "@tailwindcss/cli": "4.3.4",
     "@types/bun": "^1.2.22",
-    "daisyui": "5.7.50",
+    "daisyui": "5.8.1",
     "tailwindcss": "4.3.4",
     "typescript": "5.9.3"
   }
