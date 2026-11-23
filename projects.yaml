@@ -80,6 +80,24 @@ projects:
     renewal:
       - name: Domain
         date: 2027-05-01
+  - id: cjw-theme
+    name: CJW theme
+    repo: CJW-Brummen/CJW-theme
+    status: active
+    stack: WordPress, PHP
+    host: WordPress hosting
+    domain: cjw-brummen.nl
+    stakeholder: CJW Brummen
+    renewal:
+  - id: cjw-plugin
+    name: CJW plugin
+    repo: CJW-Brummen/CJW-plugin
+    status: active
+    stack: WordPress, PHP
+    host: WordPress hosting
+    domain:
+    stakeholder: CJW Brummen
+    renewal:
   - id: homelab
     name: HomeLab
     repo: ImreBoersma/HomeLab
@@ -121,6 +139,11 @@ secrets:
     kind: actions-secret
     where: ImreBoersma/projects
     expires: 2027-11-06
+  # Fine-grained, owner CJW-Brummen, read only (same settings as STATUS_READ_TOKEN_HOB).
+  - name: STATUS_READ_TOKEN_CJW
+    kind: actions-secret
+    where: ImreBoersma/projects
+    expires: 2027-11-23
   - name: CONFORMANCE_READ_TOKEN
     kind: actions-secret
     where: ImreBoersma/projects
@@ -203,6 +226,76 @@ secrets:
     where: harmonieorkest-brummen/hob-nl
     expires: none
     project: hob-nl
+  - name: SFTP_HOST
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_PORT
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_USER
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_PASSWORD
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_KEY
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_KNOWN_HOSTS
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_PATH
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: none
+    project: cjw-theme
+  - name: SFTP_HOST
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
+  - name: SFTP_PORT
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
+  - name: SFTP_USER
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
+  - name: SFTP_PASSWORD
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
+  - name: SFTP_KEY
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
+  - name: SFTP_KNOWN_HOSTS
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
+  - name: SFTP_PATH
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: none
+    project: cjw-plugin
   - name: RENOVATE_APP_PRIVATE_KEY
     kind: actions-secret
     where: ImreBoersma/HomeLab
