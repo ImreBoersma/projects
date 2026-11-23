@@ -3,6 +3,7 @@ import type { Deploy, Project, ProjectStatus } from "./types";
 const TOKEN_BY_OWNER: Record<string, string> = {
   ImreBoersma: "STATUS_READ_TOKEN",
   "harmonieorkest-brummen": "STATUS_READ_TOKEN_HOB",
+  "CJW-Brummen": "STATUS_READ_TOKEN_CJW",
 };
 // The hosted app (renovate) and self-hosted Renovate apps such as imreboersma-homelab-renovate.
 export const RENOVATE = /(^|-)renovate(\[bot\])?$/;

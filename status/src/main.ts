@@ -121,7 +121,12 @@ async function checkSecrets(): Promise<{
   noExpiry: string[];
 }> {
   const read: ReadDates = new Map();
-  for (const name of ["STATUS_READ_TOKEN", "STATUS_READ_TOKEN_HOB", "CONFORMANCE_READ_TOKEN"]) {
+  for (const name of [
+    "STATUS_READ_TOKEN",
+    "STATUS_READ_TOKEN_HOB",
+    "STATUS_READ_TOKEN_CJW",
+    "CONFORMANCE_READ_TOKEN",
+  ]) {
     const token = process.env[name];
     if (!token) continue;
     const date = await tokenExpiry(token);

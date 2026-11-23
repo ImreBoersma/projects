@@ -10,7 +10,7 @@ import { planRepo } from "./plan";
 
 const OWN = "ImreBoersma/";
 export const searchUrl = (id: string) =>
-  `https://github.com/pulls?q=is%3Apr+head%3Acampaign%2F${id}+user%3AImreBoersma+user%3Aharmonieorkest-brummen`;
+  `https://github.com/pulls?q=is%3Apr+head%3Acampaign%2F${id}+user%3AImreBoersma+user%3Aharmonieorkest-brummen+user%3ACJW-Brummen`;
 
 export const prBody = (c: Campaign) => `${c.reason.trim()}
 
