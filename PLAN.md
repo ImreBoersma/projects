@@ -87,7 +87,7 @@ roadmap.
   permissions as `STATUS_READ_TOKEN_HOB`) expires on 2027-11-22.
 - Tokens: `BOARD_TOKEN` (classic PAT) expires on 2027-11-24 and `BOARD_SYNC_TOKEN` (classic PAT)
   on 2027-11-06. Make new classic PATs with the same scopes before those dates. Set `BOARD_TOKEN`
-  again in all 7 repos with `bun run secret-set BOARD_TOKEN` (spec 004, research.md §3).
+  again in all 8 repos with `bun run secret-set BOARD_TOKEN` (spec 004, research.md §3).
 
 ## Features
 
