@@ -157,7 +157,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/projects
-    expires: 2027-11-06
+    expires: 2027-11-24
   - name: BOARD_SYNC_TOKEN
     kind: actions-secret
     where: ImreBoersma/projects
@@ -180,12 +180,12 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/Beter-dan-de-MIDI
-    expires: 2027-11-06
+    expires: 2027-11-24
     project: beter-dan-de-midi
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/boek-de-bus
-    expires: 2027-11-06
+    expires: 2027-11-24
     project: boek-de-bus
   - name: VERCEL_TOKEN
     kind: actions-secret
@@ -195,7 +195,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/personal-website
-    expires: 2027-11-06
+    expires: 2027-11-24
     project: personal-website
   - name: VERCEL_TOKEN
     kind: actions-secret
@@ -205,7 +205,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: ImreBoersma/scales-exercises
-    expires: 2027-11-06
+    expires: 2027-11-24
     project: scales-exercises
   - name: BUILD_ENV
     kind: actions-secret
@@ -235,7 +235,7 @@ secrets:
   - name: BOARD_TOKEN
     kind: actions-secret
     where: CJW-Brummen/CJW-theme
-    expires: 2027-11-06
+    expires: 2027-11-24
     project: cjw-theme
   - name: SFTP_HOST
     kind: actions-secret
