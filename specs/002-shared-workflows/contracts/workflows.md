@@ -33,7 +33,8 @@ Permissions: `contents: read`. Concurrency: `ci-<repo>-<ref>`, cancel in progres
 
 Job `deploy`: runs only on the default branch, never for a pull request. `environment: github-pages`. Permissions
 `pages: write`, `id-token: write`. Steps: download `build`, upload it as the Pages artifact,
-deploy. Concurrency `deploy-<repo>`, no cancel.
+deploy. If the deploy fails, wait 30 seconds and deploy once more; the job fails only when the
+second deploy fails too. Concurrency `deploy-<repo>`, no cancel.
 
 ## `deploy-firebase.yml`
 
