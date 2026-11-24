@@ -272,6 +272,11 @@ secrets:
     where: CJW-Brummen/CJW-theme
     expires: none
     project: cjw-theme
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: CJW-Brummen/CJW-plugin
+    expires: 2027-11-24
+    project: cjw-plugin
   - name: SFTP_HOST
     kind: actions-secret
     where: CJW-Brummen/CJW-plugin
