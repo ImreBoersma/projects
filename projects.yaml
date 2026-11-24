@@ -113,6 +113,15 @@ projects:
     domain:
     stakeholder:
     renewal:
+  - id: volti
+    name: Volti
+    repo: ImreBoersma/Volti
+    status: active
+    stack: Kotlin, Jetpack Compose (Android)
+    host:
+    domain:
+    stakeholder:
+    renewal:
   - id: dev-toolkit
     name: dev-toolkit
     repo:
@@ -232,6 +241,11 @@ secrets:
     where: harmonieorkest-brummen/hob-nl
     expires: none
     project: hob-nl
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: ImreBoersma/Volti
+    expires: 2027-11-24
+    project: volti
   - name: BOARD_TOKEN
     kind: actions-secret
     where: CJW-Brummen/CJW-theme
