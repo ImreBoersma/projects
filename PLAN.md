@@ -86,7 +86,7 @@ roadmap.
 - Token renewal: `STATUS_READ_TOKEN_CJW` (fine-grained, owner `CJW-Brummen`, read only, the same
   permissions as `STATUS_READ_TOKEN_HOB`) expires on 2027-11-22.
 - Tokens: `BOARD_TOKEN` and `BOARD_SYNC_TOKEN` (classic PATs) expire on 2027-11-06. Make new
-  classic PATs with the same scopes before that date, and set `BOARD_TOKEN` again in all 5 repos
+  classic PATs with the same scopes before that date, and set `BOARD_TOKEN` again in all 6 repos
   (spec 004, research.md §3).
 
 ## Features

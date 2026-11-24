@@ -1,6 +1,11 @@
 # Shared setup rules
 
-The status page checks each own repo of the catalog against these rules each hour (spec 008). A
+The status page checks each repo of the catalog against these rules each hour (spec 008). An own
+repo is read with `CONFORMANCE_READ_TOKEN`; a repo of `harmonieorkest-brummen` or `CJW-Brummen`
+with the status token of that owner (`STATUS_READ_TOKEN_HOB`, `STATUS_READ_TOKEN_CJW`). For R7 and
+R9, that token needs the read permissions Administration, Secrets and Variables. The repair steps
+use `ImreBoersma/<repo>`; for a repo of an organisation, use its owner. Do the repair in that
+repo: the constitution does not permit changes to its settings from `projects`. A
 repo that fails a rule gets the problem "The repo does not follow the shared setup." and one issue.
 The page and the issue link to the section of each failed rule.
 

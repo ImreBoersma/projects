@@ -20,7 +20,7 @@ import {
   slug,
 } from "./expiry/expiry";
 import { readBootstrap, readCertificate, readRegistryDate } from "./expiry/read";
-import { fetchStatuses, tokenFor } from "./github";
+import { fetchStatuses, setupToken, tokenFor } from "./github";
 import { carryKeys, recentChanges, repairTime, since, uptime as uptimeOf } from "./history/stats";
 import { readHistory, resultLine } from "./history/store";
 import {
@@ -242,25 +242,25 @@ async function checkExpiry(): Promise<Set<string>> {
   return keep;
 }
 
-// Spec 008: check each own repo against the shared setup. Returns the ids of the projects whose
-// repo could not be read, so that their conformance issues stay open.
+// Spec 008: check each catalog repo against the shared setup. Returns the ids of the projects
+// whose repo could not be read, so that their conformance issues stay open.
 async function checkConformance(): Promise<Set<string>> {
   const unavailable = new Set<string>();
-  const token = process.env.CONFORMANCE_READ_TOKEN;
-  const own = statuses.filter((s) => s.project.repo?.startsWith("ImreBoersma/"));
-  if (!token) {
-    // Spec 008 FR-007: nothing was checked, so the open not-conformant issues stay open.
-    console.log("Conformance check not available: no token.");
-    for (const s of own) unavailable.add(s.project.id);
-    return unavailable;
-  }
+  const repos = statuses.filter((s) => s.project.repo);
   // R9: the vars that each shared workflow of this repo reads from the caller repo.
   const sharedVars = await sharedWorkflowVars(
     new URL("../../.github/workflows", import.meta.url).pathname,
   );
   await Promise.all(
-    own.map(async (s) => {
+    repos.map(async (s) => {
       const repo = s.project.repo as string;
+      const token = setupToken(repo, process.env);
+      if (!token) {
+        // Spec 008 FR-007: nothing was checked, so the open not-conformant issues stay open.
+        console.log(`Conformance ${repo}: not available, no token`);
+        unavailable.add(s.project.id);
+        return;
+      }
       const facts = await readFacts(repo, token);
       if (facts !== "not-available" && facts.workflows !== "not-available") {
         workflowTexts.set(
@@ -451,9 +451,7 @@ async function checkVersions(): Promise<VersionRow[]> {
     statuses.map(async (s): Promise<VersionRow | null> => {
       const { id, repo } = s.project;
       if (!repo) return null;
-      const owner = repo.split("/")[0];
-      const token =
-        owner === "ImreBoersma" ? process.env.CONFORMANCE_READ_TOKEN : tokenFor(owner, process.env);
+      const token = setupToken(repo, process.env);
       const row = token
         ? await readVersions(id, repo, token, workflowTexts.get(id) ?? [], shared)
         : { projectId: id, repo, state: "not-available" as const, tools: {} };
