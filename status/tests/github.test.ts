@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildQuery, mapRepo, tokenFor } from "../src/github";
+import { buildQuery, mapRepo, setupToken, tokenFor } from "../src/github";
 import type { Project } from "../src/types";
 import fixture from "./fixtures/graphql-response.json";
 
@@ -119,6 +119,30 @@ describe("tokenFor", () => {
     expect(tokenFor("harmonieorkest-brummen", env)).toBe("b");
     expect(tokenFor("someone-else", env)).toBeUndefined();
     expect(tokenFor("harmonieorkest-brummen", {})).toBeUndefined();
+  });
+  test("selects the CJW-Brummen token", () => {
+    expect(tokenFor("CJW-Brummen", { STATUS_READ_TOKEN_CJW: "c" })).toBe("c");
+  });
+});
+
+describe("setupToken", () => {
+  const env = {
+    STATUS_READ_TOKEN: "a",
+    STATUS_READ_TOKEN_HOB: "b",
+    STATUS_READ_TOKEN_CJW: "c",
+    CONFORMANCE_READ_TOKEN: "own",
+  };
+  test("an own repo uses CONFORMANCE_READ_TOKEN, not the status token", () => {
+    expect(setupToken("ImreBoersma/HomeLab", env)).toBe("own");
+  });
+  test("an organisation repo uses the status token of its owner", () => {
+    expect(setupToken("harmonieorkest-brummen/hob-nl", env)).toBe("b");
+    expect(setupToken("CJW-Brummen/CJW-theme", env)).toBe("c");
+  });
+  test("no token: undefined, so the check is not available", () => {
+    expect(setupToken("ImreBoersma/HomeLab", { STATUS_READ_TOKEN: "a" })).toBeUndefined();
+    expect(setupToken("ImreBoersma/HomeLab", { CONFORMANCE_READ_TOKEN: "" })).toBeUndefined();
+    expect(setupToken("someone-else/repo", env)).toBeUndefined();
   });
 });
 

@@ -24,6 +24,13 @@ export function tokenFor(owner: string, env: Record<string, string | undefined>)
   return name ? env[name] || undefined : undefined;
 }
 
+// The token that reads a repo for the setup check (spec 008) and the versions (spec 016): an own
+// repo uses CONFORMANCE_READ_TOKEN, a repo of an organisation the status token of that owner.
+export function setupToken(repo: string, env: Record<string, string | undefined>) {
+  const owner = repo.split("/")[0];
+  return owner === "ImreBoersma" ? env.CONFORMANCE_READ_TOKEN || undefined : tokenFor(owner, env);
+}
+
 // FR-018: request no text fields (commit messages, PR titles, branch names).
 const FIELDS = `
   defaultBranchRef { target { ... on Commit { oid committedDate statusCheckRollup { state } } } }

@@ -58,6 +58,8 @@ projects:
     domain:
     stakeholder: Harmonieorkest Brummen
     renewal:
+    exceptions:
+      R2: Other owner. The board sync adds its issues (spec 004, research.md §1).
   - id: pretband
     name: Pretband
     repo:
@@ -89,6 +91,8 @@ projects:
     domain: cjw-brummen.nl
     stakeholder: CJW Brummen
     renewal:
+    exceptions:
+      R1: A PHP repo with its own quality.yml (composer and npm checks). ci-node.yml checks Node only.
   - id: cjw-plugin
     name: CJW plugin
     repo: CJW-Brummen/CJW-plugin
@@ -98,6 +102,8 @@ projects:
     domain:
     stakeholder: CJW Brummen
     renewal:
+    exceptions:
+      R1: A PHP repo with its own quality.yml (composer and npm checks). ci-node.yml checks Node only.
   - id: homelab
     name: HomeLab
     repo: ImreBoersma/HomeLab
@@ -226,6 +232,11 @@ secrets:
     where: harmonieorkest-brummen/hob-nl
     expires: none
     project: hob-nl
+  - name: BOARD_TOKEN
+    kind: actions-secret
+    where: CJW-Brummen/CJW-theme
+    expires: 2027-11-06
+    project: cjw-theme
   - name: SFTP_HOST
     kind: actions-secret
     where: CJW-Brummen/CJW-theme
