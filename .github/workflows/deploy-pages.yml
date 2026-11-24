@@ -15,7 +15,7 @@ jobs:
     # GitHub Pages deploys only to this environment (constitution, Development Workflow).
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.retry.outputs.page_url }}
     concurrency:
       group: deploy-${{ github.repository }}
       cancel-in-progress: false
@@ -27,5 +27,14 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
+      # Sometimes the API does not list the Pages artifact of this job yet, and deploy-pages stops
+      # with "No artifacts named github-pages were found" (3 times on 2026-11-24). Try once more.
       - id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Wait before the second try
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 30
+      - id: retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v5
