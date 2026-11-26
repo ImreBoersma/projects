@@ -10,6 +10,7 @@
 | `minimumReleaseAge` | `3 days` | FR-007 |
 | `internalChecksFilter` | `strict` | FR-007 |
 | `platformAutomerge` | `false` | FR-004 (research.md §3) |
+| `assignees` | `["ImreBoersma"]` (added 2026-11-26; automerge PRs get the assignee only when the automerge fails) | — |
 | rule: `matchUpdateTypes: ["patch"]` | `groupName: "patch updates"`, `automerge: true` | FR-004 |
 | rule: `matchUpdateTypes: ["minor"]` | `groupName: "minor updates"`, `automerge: false` | FR-003, FR-005 |
 | rule: `matchPackageNames: ["ImreBoersma/projects"]` | `enabled: false` | research.md §7 |
