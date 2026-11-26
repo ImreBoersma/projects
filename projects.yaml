@@ -62,15 +62,17 @@ projects:
       R2: Other owner. The board sync adds its issues (spec 004, research.md §1).
   - id: pretband
     name: Pretband
-    repo:
+    repo: harmonieorkest-brummen/pretband
     status: active
-    stack:
-    host:
+    stack: Vite, React
+    host: GitHub Pages
     domain: pretband.nl
     stakeholder: Harmonieorkest Brummen
     renewal:
       - name: Domain
         date: 2027-02-01
+    exceptions:
+      R2: Other owner. The board sync adds its issues (spec 004, research.md §1).
   - id: hob-nl
     name: hob.nl
     repo: harmonieorkest-brummen/hob-nl
