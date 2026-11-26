@@ -82,6 +82,8 @@ export function realDeps(token: string): Deps {
         hasIssues: meta.has_issues === true,
         vulnerabilityAlerts: alerts.status === 204,
         securityFixes: fixes.ok ? (await fixes.json()).enabled === true : false,
+        deleteBranch: meta.delete_branch_on_merge === true,
+        autoMerge: meta.allow_auto_merge === true,
         pages: pages.ok,
       };
     },
@@ -137,6 +139,16 @@ export function realDeps(token: string): Deps {
     async setSettings(repo, input, now) {
       if (!now.hasIssues)
         await must(api("PATCH", `/repos/${repo}`, { has_issues: true }), "turn on issues");
+      // Spec 008 R10 and R11. A private repo on a free plan cannot turn on auto-merge.
+      const autoMerge = input.visibility === "public" && !now.autoMerge;
+      if (!now.deleteBranch || autoMerge)
+        await must(
+          api("PATCH", `/repos/${repo}`, {
+            delete_branch_on_merge: true,
+            ...(input.visibility === "public" && { allow_auto_merge: true }),
+          }),
+          "turn on branch deletion and auto-merge",
+        );
       if (!now.vulnerabilityAlerts)
         await must(
           api("PUT", `/repos/${repo}/vulnerability-alerts`),

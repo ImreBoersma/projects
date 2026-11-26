@@ -34,6 +34,8 @@ function facts(overrides: Partial<RepoFacts> = {}): RepoFacts {
     dependabot: false,
     vulnerabilityAlerts: true,
     securityFixes: false,
+    deleteBranchOnMerge: true,
+    allowAutoMerge: true,
     secretNames: ["BUILD_ENV", "BOARD_TOKEN"],
     variableNames: [],
     ...overrides,
@@ -103,6 +105,17 @@ describe("checkRepo", () => {
   test("R7: alerts on and security updates off", () => {
     expect(failed(facts({ vulnerabilityAlerts: false }))).toEqual(["R7"]);
     expect(failed(facts({ securityFixes: true }))).toEqual(["R7"]);
+  });
+
+  test("R10: head branches are deleted after a merge", () => {
+    expect(failed(facts({ deleteBranchOnMerge: false }))).toEqual(["R10"]);
+    expect(stateOf(facts({ deleteBranchOnMerge: "not-available" }), "R10")).toBe("not-available");
+  });
+
+  test("R11: a public repo allows auto-merge; a private repo does not need it", () => {
+    expect(failed(facts({ allowAutoMerge: false }))).toEqual(["R11"]);
+    expect(stateOf(facts({ private: true, allowAutoMerge: false }), "R11")).toBe("not-applicable");
+    expect(stateOf(facts({ allowAutoMerge: "not-available" }), "R11")).toBe("not-available");
   });
 
   test("an exception makes a rule not applicable", () => {

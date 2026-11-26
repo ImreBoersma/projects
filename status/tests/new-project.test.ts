@@ -27,12 +27,16 @@ const OK: Settings = {
   hasIssues: true,
   vulnerabilityAlerts: true,
   securityFixes: false,
+  deleteBranch: true,
+  autoMerge: true,
   pages: true,
 };
 const FRESH: Settings = {
   hasIssues: true,
   vulnerabilityAlerts: false,
   securityFixes: true,
+  deleteBranch: false,
+  autoMerge: false,
   pages: false,
 };
 
