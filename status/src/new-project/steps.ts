@@ -15,6 +15,8 @@ export interface Settings {
   hasIssues: boolean;
   vulnerabilityAlerts: boolean;
   securityFixes: boolean;
+  deleteBranch: boolean;
+  autoMerge: boolean;
   pages: boolean;
 }
 
@@ -133,7 +135,12 @@ export interface State {
 }
 
 const SETTINGS_OK = (s: Settings, input: NewProject) =>
-  s.hasIssues && s.vulnerabilityAlerts && !s.securityFixes && (input.host !== "pages" || s.pages);
+  s.hasIssues &&
+  s.vulnerabilityAlerts &&
+  !s.securityFixes &&
+  s.deleteBranch &&
+  (input.visibility === "private" || s.autoMerge) &&
+  (input.host !== "pages" || s.pages);
 
 // Research §4: read only. A stop reason means: no change at all.
 export async function checkState(input: NewProject, deps: Deps): Promise<State> {

@@ -71,10 +71,11 @@ describe("parseCatalog", () => {
       R2: "The repo is private.",
     });
     expect(e("")[0].exceptions).toBeUndefined();
-    expect(() => e("exceptions:\n  R10: Reason.")).toThrow(
-      "Catalog error in entry 0, field `exceptions`: R10 is not a rule. Use R1 to R9.",
+    expect(e("exceptions:\n  R11: Reason.")[0].exceptions).toEqual({ R11: "Reason." });
+    expect(() => e("exceptions:\n  R12: Reason.")).toThrow(
+      "Catalog error in entry 0, field `exceptions`: R12 is not a rule. Use R1 to R11.",
     );
-    expect(() => e("exceptions:\n  x: Reason.")).toThrow("x is not a rule. Use R1 to R9.");
+    expect(() => e("exceptions:\n  x: Reason.")).toThrow("x is not a rule. Use R1 to R11.");
     expect(() => e('exceptions:\n  R2: ""')).toThrow(
       "Catalog error in entry 0, field `exceptions`: give a reason for R2.",
     );

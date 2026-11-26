@@ -3,6 +3,7 @@
 import type { NA, RepoFacts } from "../types";
 
 const NA_: NA = "not-available";
+const bool = (v: unknown): boolean | NA => (typeof v === "boolean" ? v : NA_);
 
 export async function readFacts(
   repo: string,
@@ -99,6 +100,9 @@ export async function readFacts(
     dependabot: dep,
     vulnerabilityAlerts: va,
     securityFixes: sf,
+    // GitHub leaves these out of the response when the token cannot read the repo settings.
+    deleteBranchOnMerge: bool(repoData.delete_branch_on_merge),
+    allowAutoMerge: bool(repoData.allow_auto_merge),
     secretNames,
     variableNames,
   };

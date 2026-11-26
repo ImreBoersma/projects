@@ -7,7 +7,7 @@ import { archiveState } from "./archive/rule";
 import { readCampaigns } from "./campaign/status";
 import { parseCatalog, parseSecrets, visibleProjects } from "./catalog";
 import { readFacts } from "./conformance/read";
-import { checkRepo } from "./conformance/rules";
+import { checkRepo, RULES } from "./conformance/rules";
 import { sharedWorkflowVars } from "./conformance/workflows";
 import { statusJson } from "./data";
 import { readDelivery } from "./delivery/read";
@@ -272,9 +272,9 @@ async function checkConformance(): Promise<Set<string>> {
         facts === "not-available" ? null : checkRepo(facts, s.project.exceptions, sharedVars);
       const notAvailable = results
         ? results.filter((r) => r.state === "not-available").map((r) => r.rule)
-        : ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"];
+        : RULES.map((r) => r.id);
       s.conformanceNotAvailable = notAvailable;
-      if (notAvailable.length === 9) unavailable.add(s.project.id);
+      if (notAvailable.length === RULES.length) unavailable.add(s.project.id);
       const problem = results ? conformanceProblem(s.project.id, results) : null;
       if (problem) s.problems = [problem];
       const failed = problem?.detail?.map((d) => d.split(" ")[0]).join(", ");

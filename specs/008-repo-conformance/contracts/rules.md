@@ -1,4 +1,4 @@
-# Contract: rules R1 to R9
+# Contract: rules R1 to R11
 
 Each rule is a pure function on `RepoFacts` (data-model.md). The reads are in research.md §1.
 `docs/conformance.md` has the same ids, names and order, with the repair steps.
@@ -14,6 +14,8 @@ Each rule is a pure function on `RepoFacts` (data-model.md). The reads are in re
 | R7 | Security alerts | all | vulnerability alerts are off, or Dependabot security updates are on |
 | R8 | Default branch | all | the default branch is not `main` |
 | R9 | Secrets and variables | each caller workflow | it uses `secrets.NAME` (not `GITHUB_TOKEN`) that is not a repo secret, or `vars.NAME` that is not a repo variable; the `vars.NAME` of each called shared workflow count too (since 2026-11-09: `deploy-vercel.yml` reads `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`) |
+| R10 | Delete head branches | all | "Automatically delete head branches" is off (added 2026-11-26) |
+| R11 | Auto-merge | public repos | "Allow auto-merge" is off (added 2026-11-26; a private repo on a free plan cannot turn it on) |
 
 A rule that does not apply gives `not-applicable`. An exception in the catalog also gives
 `not-applicable`. A read error gives `not-available` (research.md §5).

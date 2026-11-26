@@ -1,4 +1,4 @@
-// Rules R1 to R9 of spec 008 (contracts/rules.md). Pure functions on RepoFacts.
+// Rules R1 to R11 of spec 008 (contracts/rules.md). Pure functions on RepoFacts.
 import type { NA, RepoFacts, RuleResult, RuleState } from "../types";
 import { parseCaller } from "./workflows";
 
@@ -21,6 +21,8 @@ export const RULES: Rule[] = [
   ["R7", "Security alerts"],
   ["R8", "Default branch"],
   ["R9", "Secrets and variables"],
+  ["R10", "Delete head branches"],
+  ["R11", "Auto-merge"],
 ].map(([id, name]) => ({ id, name, anchor: `${id}-${name}`.toLowerCase().replace(/ /g, "-") }));
 
 // `ImreBoersma/projects/.github/workflows/deploy-vercel.yml@main` → `deploy-vercel.yml`.
@@ -89,6 +91,15 @@ export function checkRepo(
         ),
       );
     },
+    R10: () =>
+      na(facts.deleteBranchOnMerge) ? "not-available" : state(!facts.deleteBranchOnMerge),
+    // Private repos on a free plan cannot turn on auto-merge.
+    R11: () =>
+      facts.private
+        ? "not-applicable"
+        : na(facts.allowAutoMerge)
+          ? "not-available"
+          : state(!facts.allowAutoMerge),
   };
   return RULES.map((r) => ({
     rule: r.id,

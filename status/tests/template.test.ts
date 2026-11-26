@@ -29,6 +29,8 @@ const facts = async (
     dependabot: files.has(".github/dependabot.yml"),
     vulnerabilityAlerts: true,
     securityFixes: false,
+    deleteBranchOnMerge: true,
+    allowAutoMerge: true,
     secretNames: "not-available",
     variableNames: "not-available",
   };

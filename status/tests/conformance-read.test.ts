@@ -19,7 +19,15 @@ function fake(answers: Record<string, Answer>) {
 }
 
 const full: Record<string, Answer> = {
-  "": { json: { private: false, has_issues: true, default_branch: "main" } },
+  "": {
+    json: {
+      private: false,
+      has_issues: true,
+      default_branch: "main",
+      delete_branch_on_merge: true,
+      allow_auto_merge: false,
+    },
+  },
   "/contents/package.json": { text: "{}" },
   "/contents/.github/workflows": {
     json: [
@@ -48,6 +56,8 @@ describe("readFacts", () => {
       dependabot: false,
       vulnerabilityAlerts: true,
       securityFixes: false,
+      deleteBranchOnMerge: true,
+      allowAutoMerge: false,
       secretNames: ["BUILD_ENV"],
       variableNames: ["VERCEL_ORG_ID"],
     });
