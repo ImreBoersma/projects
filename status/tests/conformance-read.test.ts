@@ -2,13 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { readFacts } from "../src/conformance/read";
 
 const API = "https://api.github.com/repos/ImreBoersma/one";
+const GRAPHQL = "https://api.github.com/graphql";
 type Answer = number | { status?: number; json?: unknown; text?: string };
 
 // A fake fetch: a path (after the repo URL, without query) gives an answer. Other paths give 404.
 function fake(answers: Record<string, Answer>) {
   const methods: string[] = [];
   const fetch = async (url: string, init?: RequestInit) => {
-    methods.push(init?.method ?? "GET");
+    methods.push(`${init?.method ?? "GET"} ${url === GRAPHQL ? "graphql" : "rest"}`);
     const path = url.replace(API, "").replace(/\?.*$/, "");
     const a = answers[path] ?? 404;
     if (typeof a === "number") return new Response(null, { status: a });
@@ -24,9 +25,10 @@ const full: Record<string, Answer> = {
       private: false,
       has_issues: true,
       default_branch: "main",
-      delete_branch_on_merge: true,
-      allow_auto_merge: false,
     },
+  },
+  [GRAPHQL]: {
+    json: { data: { repository: { deleteBranchOnMerge: true, autoMergeAllowed: false } } },
   },
   "/contents/package.json": { text: "{}" },
   "/contents/.github/workflows": {
@@ -61,7 +63,8 @@ describe("readFacts", () => {
       secretNames: ["BUILD_ENV"],
       variableNames: ["VERCEL_ORG_ID"],
     });
-    expect(new Set(methods)).toEqual(new Set(["GET"]));
+    // Reads only: REST GETs and one GraphQL query.
+    expect(new Set(methods)).toEqual(new Set(["GET rest", "POST graphql"]));
   });
 
   test("reads .github/renovate.json when there is no renovate.json", async () => {
@@ -79,6 +82,12 @@ describe("readFacts", () => {
     const facts = await readFacts("ImreBoersma/one", "t", fake(answers).fetch);
     expect(facts !== "not-available" && facts.vulnerabilityAlerts).toBe(false);
     expect(facts !== "not-available" && facts.secretNames).toBe("not-available");
+  });
+
+  test("a failed GraphQL query makes R10 and R11 not available", async () => {
+    const facts = await readFacts("ImreBoersma/one", "t", fake({ ...full, [GRAPHQL]: 502 }).fetch);
+    expect(facts !== "not-available" && facts.deleteBranchOnMerge).toBe("not-available");
+    expect(facts !== "not-available" && facts.allowAutoMerge).toBe("not-available");
   });
 
   test("a failed repo read makes the full repo not available", async () => {

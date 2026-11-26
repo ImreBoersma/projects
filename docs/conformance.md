@@ -2,8 +2,9 @@
 
 The status page checks each repo of the catalog against these rules each hour (spec 008). An own
 repo is read with `CONFORMANCE_READ_TOKEN`; a repo of `harmonieorkest-brummen` or `CJW-Brummen`
-with the status token of that owner (`STATUS_READ_TOKEN_HOB`, `STATUS_READ_TOKEN_CJW`). For R7, R9,
-R10 and R11, that token needs the read permissions Administration, Secrets and Variables. The repair steps
+with the status token of that owner (`STATUS_READ_TOKEN_HOB`, `STATUS_READ_TOKEN_CJW`). For R7 and
+R9, that token needs the read permissions Administration, Secrets and Variables. R10 and R11
+read the merge settings through GraphQL, which needs only read access to the repo. The repair steps
 use `ImreBoersma/<repo>`; for a repo of an organisation, use its owner. Do the repair in that
 repo: the constitution does not permit changes to its settings from `projects`. A
 repo that fails a rule gets the problem "The repo does not follow the shared setup." and one issue.
