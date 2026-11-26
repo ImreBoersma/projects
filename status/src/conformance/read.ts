@@ -1,5 +1,5 @@
 // Read the facts of one repo for the conformance rules (spec 008, research.md §1 and §5).
-// Only GET requests: the check never changes a repo (FR-010).
+// Only GET requests and one GraphQL query: the check never changes a repo (FR-010).
 import type { NA, RepoFacts } from "../types";
 
 const NA_: NA = "not-available";
@@ -72,6 +72,21 @@ export async function readFacts(
     const res = await get("/automated-security-fixes");
     return res?.ok ? Boolean((await res.json()).enabled) : NA_;
   };
+  // REST gives the merge settings only to admins; GraphQL gives them to each reader (R10, R11).
+  const mergeSettings = async () => {
+    const [owner, name] = repo.split("/");
+    const res = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        query:
+          "query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { autoMergeAllowed deleteBranchOnMerge } }",
+        variables: { owner, name },
+      }),
+    }).catch(() => null);
+    if (!res?.ok) return null;
+    return ((await res.json())?.data?.repository ?? null) as Record<string, unknown> | null;
+  };
   const dependabot = async () => {
     const [yml, yaml] = await Promise.all([
       exists(".github/dependabot.yml"),
@@ -80,16 +95,18 @@ export async function readFacts(
     return yml === NA_ || yaml === NA_ ? NA_ : yml || yaml;
   };
 
-  const [hasPackageJson, wf, ren, dep, va, sf, secretNames, variableNames] = await Promise.all([
-    exists("package.json"),
-    workflows(),
-    renovate(),
-    dependabot(),
-    alerts(),
-    fixes(),
-    names("/actions/secrets", "secrets"),
-    names("/actions/variables", "variables"),
-  ]);
+  const [hasPackageJson, wf, ren, dep, va, sf, secretNames, variableNames, merge] =
+    await Promise.all([
+      exists("package.json"),
+      workflows(),
+      renovate(),
+      dependabot(),
+      alerts(),
+      fixes(),
+      names("/actions/secrets", "secrets"),
+      names("/actions/variables", "variables"),
+      mergeSettings(),
+    ]);
   return {
     private: Boolean(repoData.private),
     hasIssues: Boolean(repoData.has_issues),
@@ -100,9 +117,8 @@ export async function readFacts(
     dependabot: dep,
     vulnerabilityAlerts: va,
     securityFixes: sf,
-    // GitHub leaves these out of the response when the token cannot read the repo settings.
-    deleteBranchOnMerge: bool(repoData.delete_branch_on_merge),
-    allowAutoMerge: bool(repoData.allow_auto_merge),
+    deleteBranchOnMerge: bool(merge?.deleteBranchOnMerge),
+    allowAutoMerge: bool(merge?.autoMergeAllowed),
     secretNames,
     variableNames,
   };
