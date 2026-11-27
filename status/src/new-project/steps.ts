@@ -15,8 +15,10 @@ export interface Settings {
   hasIssues: boolean;
   vulnerabilityAlerts: boolean;
   securityFixes: boolean;
-  deleteBranch: boolean;
-  autoMerge: boolean;
+  // Spec 008 R10 to R14 (REPO_SETTINGS) and, for a public repo, R11 auto-merge.
+  repoSettings: boolean;
+  // Spec 008 R15, public repos only.
+  ruleset: boolean;
   pages: boolean;
 }
 
@@ -138,8 +140,8 @@ const SETTINGS_OK = (s: Settings, input: NewProject) =>
   s.hasIssues &&
   s.vulnerabilityAlerts &&
   !s.securityFixes &&
-  s.deleteBranch &&
-  (input.visibility === "private" || s.autoMerge) &&
+  s.repoSettings &&
+  (input.visibility === "private" || s.ruleset) &&
   (input.host !== "pages" || s.pages);
 
 // Research §4: read only. A stop reason means: no change at all.

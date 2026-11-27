@@ -7,7 +7,7 @@ export interface Project {
   status: ProjectState;
   stakeholder?: string | null;
   domain?: string | null;
-  // Spec 008: rule id (R1 to R11) to the reason why the rule does not apply.
+  // Spec 008: rule id (R1 to R15) to the reason why the rule does not apply.
   exceptions?: Record<string, string>;
   // Spec 009: renewal dates from the catalog field `renewal`.
   renewals?: { name: string; date: string }[];
@@ -228,6 +228,19 @@ export interface RepoFacts {
   securityFixes: boolean | NA;
   deleteBranchOnMerge: boolean | NA;
   allowAutoMerge: boolean | NA;
+  mergeMethods:
+    | {
+        merge: boolean;
+        squash: boolean;
+        rebase: boolean;
+        squashTitle: string;
+        squashMessage: string;
+      }
+    | NA;
+  allowUpdateBranch: boolean | NA;
+  hasWiki: boolean;
+  // Active rules on the default branch: a PR rule, and the number of required status checks.
+  mainRules: { pullRequest: boolean; requiredChecks: number } | NA;
   secretNames: string[] | NA;
   variableNames: string[] | NA;
 }

@@ -1,4 +1,4 @@
-// Rules R1 to R11 of spec 008 (contracts/rules.md). Pure functions on RepoFacts.
+// Rules R1 to R15 of spec 008 (contracts/rules.md). Pure functions on RepoFacts.
 import type { NA, RepoFacts, RuleResult, RuleState } from "../types";
 import { parseCaller } from "./workflows";
 
@@ -23,6 +23,10 @@ export const RULES: Rule[] = [
   ["R9", "Secrets and variables"],
   ["R10", "Delete head branches"],
   ["R11", "Auto-merge"],
+  ["R12", "Squash merge"],
+  ["R13", "Update branch"],
+  ["R14", "Wiki off"],
+  ["R15", "Main ruleset"],
 ].map(([id, name]) => ({ id, name, anchor: `${id}-${name}`.toLowerCase().replace(/ /g, "-") }));
 
 // `ImreBoersma/projects/.github/workflows/deploy-vercel.yml@main` → `deploy-vercel.yml`.
@@ -100,6 +104,27 @@ export function checkRepo(
         : na(facts.allowAutoMerge)
           ? "not-available"
           : state(!facts.allowAutoMerge),
+    R12: () => {
+      const m = facts.mergeMethods;
+      if (na(m)) return "not-available";
+      return state(
+        !(
+          m.squash &&
+          !m.merge &&
+          !m.rebase &&
+          m.squashTitle === "PR_TITLE" &&
+          m.squashMessage === "COMMIT_MESSAGES"
+        ),
+      );
+    },
+    R13: () => (na(facts.allowUpdateBranch) ? "not-available" : state(!facts.allowUpdateBranch)),
+    R14: () => state(facts.hasWiki),
+    // Rulesets need a paid plan on a private repo, like R11.
+    R15: () => {
+      if (facts.private) return "not-applicable";
+      if (na(facts.mainRules)) return "not-available";
+      return state(!(facts.mainRules.pullRequest && facts.mainRules.requiredChecks > 0));
+    },
   };
   return RULES.map((r) => ({
     rule: r.id,

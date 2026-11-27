@@ -6,7 +6,7 @@ const STATES: ProjectState[] = ["active", "maintenance", "archived"];
 const ID = /^[a-z0-9-]+$/;
 const REPO = /^[\w.-]+\/[\w.-]+$/;
 // A host name without scheme, path or port (spec 005, research.md §8).
-const RULE = /^R([1-9]|1[01])$/;
+const RULE = /^R([1-9]|1[0-5])$/;
 const HOST = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 
 export function parseCatalog(text: string): Project[] {
@@ -33,10 +33,10 @@ export function parseCatalog(text: string): Project[] {
     }
     if (exceptions != null) {
       if (typeof exceptions !== "object" || Array.isArray(exceptions)) {
-        fail("exceptions", "must be a map from a rule id (R1 to R11) to a reason.");
+        fail("exceptions", "must be a map from a rule id (R1 to R15) to a reason.");
       }
       for (const [key, reason] of Object.entries(exceptions as Record<string, unknown>)) {
-        if (!RULE.test(key)) fail("exceptions", `${key} is not a rule. Use R1 to R11.`);
+        if (!RULE.test(key)) fail("exceptions", `${key} is not a rule. Use R1 to R15.`);
         if (typeof reason !== "string" || reason.trim() === "") {
           fail("exceptions", `give a reason for ${key}.`);
         }

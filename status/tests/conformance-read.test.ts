@@ -25,10 +25,24 @@ const full: Record<string, Answer> = {
       private: false,
       has_issues: true,
       default_branch: "main",
+      has_wiki: true,
     },
   },
   [GRAPHQL]: {
-    json: { data: { repository: { deleteBranchOnMerge: true, autoMergeAllowed: false } } },
+    json: {
+      data: {
+        repository: {
+          deleteBranchOnMerge: true,
+          autoMergeAllowed: false,
+          mergeCommitAllowed: true,
+          squashMergeAllowed: true,
+          rebaseMergeAllowed: false,
+          squashMergeCommitTitle: "COMMIT_OR_PR_TITLE",
+          squashMergeCommitMessage: "COMMIT_MESSAGES",
+          allowUpdateBranch: false,
+        },
+      },
+    },
   },
   "/contents/package.json": { text: "{}" },
   "/contents/.github/workflows": {
@@ -41,6 +55,15 @@ const full: Record<string, Answer> = {
   "/contents/renovate.json": { text: '{"extends":["x"]}' },
   "/vulnerability-alerts": 204,
   "/automated-security-fixes": { json: { enabled: false } },
+  "/rules/branches/main": {
+    json: [
+      { type: "pull_request", parameters: {} },
+      {
+        type: "required_status_checks",
+        parameters: { required_status_checks: [{ context: "ci / ci" }] },
+      },
+    ],
+  },
   "/actions/secrets": { json: { secrets: [{ name: "BUILD_ENV" }] } },
   "/actions/variables": { json: { variables: [{ name: "VERCEL_ORG_ID" }] } },
 };
@@ -60,6 +83,16 @@ describe("readFacts", () => {
       securityFixes: false,
       deleteBranchOnMerge: true,
       allowAutoMerge: false,
+      mergeMethods: {
+        merge: true,
+        squash: true,
+        rebase: false,
+        squashTitle: "COMMIT_OR_PR_TITLE",
+        squashMessage: "COMMIT_MESSAGES",
+      },
+      allowUpdateBranch: false,
+      hasWiki: true,
+      mainRules: { pullRequest: true, requiredChecks: 1 },
       secretNames: ["BUILD_ENV"],
       variableNames: ["VERCEL_ORG_ID"],
     });

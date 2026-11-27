@@ -36,6 +36,16 @@ function facts(overrides: Partial<RepoFacts> = {}): RepoFacts {
     securityFixes: false,
     deleteBranchOnMerge: true,
     allowAutoMerge: true,
+    mergeMethods: {
+      merge: false,
+      squash: true,
+      rebase: false,
+      squashTitle: "PR_TITLE",
+      squashMessage: "COMMIT_MESSAGES",
+    },
+    allowUpdateBranch: true,
+    hasWiki: false,
+    mainRules: { pullRequest: true, requiredChecks: 1 },
     secretNames: ["BUILD_ENV", "BOARD_TOKEN"],
     variableNames: [],
     ...overrides,
@@ -116,6 +126,32 @@ describe("checkRepo", () => {
     expect(failed(facts({ allowAutoMerge: false }))).toEqual(["R11"]);
     expect(stateOf(facts({ private: true, allowAutoMerge: false }), "R11")).toBe("not-applicable");
     expect(stateOf(facts({ allowAutoMerge: "not-available" }), "R11")).toBe("not-available");
+  });
+
+  test("R12: squash only, with the PR title and the commit messages", () => {
+    const m = facts().mergeMethods as Exclude<RepoFacts["mergeMethods"], "not-available">;
+    expect(failed(facts({ mergeMethods: { ...m, merge: true } }))).toEqual(["R12"]);
+    expect(failed(facts({ mergeMethods: { ...m, rebase: true } }))).toEqual(["R12"]);
+    expect(failed(facts({ mergeMethods: { ...m, squashTitle: "COMMIT_OR_PR_TITLE" } }))).toEqual([
+      "R12",
+    ]);
+    expect(stateOf(facts({ mergeMethods: "not-available" }), "R12")).toBe("not-available");
+  });
+
+  test("R13 and R14: the update-branch button on, the wiki off", () => {
+    expect(failed(facts({ allowUpdateBranch: false }))).toEqual(["R13"]);
+    expect(failed(facts({ hasWiki: true }))).toEqual(["R14"]);
+  });
+
+  test("R15: a public repo needs a PR rule and a required check on main", () => {
+    expect(failed(facts({ mainRules: { pullRequest: true, requiredChecks: 0 } }))).toEqual(["R15"]);
+    expect(failed(facts({ mainRules: { pullRequest: false, requiredChecks: 1 } }))).toEqual([
+      "R15",
+    ]);
+    expect(stateOf(facts({ private: true, mainRules: "not-available" }), "R15")).toBe(
+      "not-applicable",
+    );
+    expect(stateOf(facts({ mainRules: "not-available" }), "R15")).toBe("not-available");
   });
 
   test("an exception makes a rule not applicable", () => {
