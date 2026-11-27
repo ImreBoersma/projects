@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import { client } from "../campaign/github";
+import { mainRuleset, REPO_SETTINGS } from "../conformance/settings";
 import {
   type Deps,
   ghToken,
@@ -78,12 +79,19 @@ export function realDeps(token: string): Deps {
       const alerts = await api("GET", `/repos/${repo}/vulnerability-alerts`);
       const fixes = await api("GET", `/repos/${repo}/automated-security-fixes`);
       const pages = await api("GET", `/repos/${repo}/pages`);
+      const rules = await api("GET", `/repos/${repo}/rules/branches/main`);
       return {
         hasIssues: meta.has_issues === true,
         vulnerabilityAlerts: alerts.status === 204,
         securityFixes: fixes.ok ? (await fixes.json()).enabled === true : false,
-        deleteBranch: meta.delete_branch_on_merge === true,
-        autoMerge: meta.allow_auto_merge === true,
+        repoSettings:
+          Object.entries(REPO_SETTINGS).every(([k, v]) => meta[k] === v) &&
+          (meta.private || meta.allow_auto_merge === true),
+        ruleset: rules.ok
+          ? ((await rules.json()) as { type: string }[]).some(
+              (r) => r.type === "required_status_checks",
+            )
+          : false,
         pages: pages.ok,
       };
     },
@@ -139,15 +147,21 @@ export function realDeps(token: string): Deps {
     async setSettings(repo, input, now) {
       if (!now.hasIssues)
         await must(api("PATCH", `/repos/${repo}`, { has_issues: true }), "turn on issues");
-      // Spec 008 R10 and R11. A private repo on a free plan cannot turn on auto-merge.
-      const autoMerge = input.visibility === "public" && !now.autoMerge;
-      if (!now.deleteBranch || autoMerge)
+      // Spec 008 R10 to R15. A private repo on a free plan has no auto-merge and no rulesets.
+      const isPublic = input.visibility === "public";
+      if (!now.repoSettings)
         await must(
           api("PATCH", `/repos/${repo}`, {
-            delete_branch_on_merge: true,
-            ...(input.visibility === "public" && { allow_auto_merge: true }),
+            ...REPO_SETTINGS,
+            ...(isPublic && { allow_auto_merge: true }),
           }),
-          "turn on branch deletion and auto-merge",
+          "set the merge settings",
+        );
+      // The template's CI caller is job `ci` of ci-node.yml (template/ci/*.yml).
+      if (isPublic && !now.ruleset)
+        await must(
+          api("POST", `/repos/${repo}/rulesets`, mainRuleset("ci / ci")),
+          "add the main ruleset",
         );
       if (!now.vulnerabilityAlerts)
         await must(

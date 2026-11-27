@@ -31,6 +31,16 @@ const facts = async (
     securityFixes: false,
     deleteBranchOnMerge: true,
     allowAutoMerge: true,
+    mergeMethods: {
+      merge: false,
+      squash: true,
+      rebase: false,
+      squashTitle: "PR_TITLE",
+      squashMessage: "COMMIT_MESSAGES",
+    },
+    allowUpdateBranch: true,
+    hasWiki: false,
+    mainRules: { pullRequest: true, requiredChecks: 1 },
     secretNames: "not-available",
     variableNames: "not-available",
   };

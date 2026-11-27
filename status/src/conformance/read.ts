@@ -80,12 +80,26 @@ export async function readFacts(
       headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         query:
-          "query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { autoMergeAllowed deleteBranchOnMerge } }",
+          "query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { autoMergeAllowed deleteBranchOnMerge mergeCommitAllowed squashMergeAllowed rebaseMergeAllowed squashMergeCommitTitle squashMergeCommitMessage allowUpdateBranch } }",
         variables: { owner, name },
       }),
     }).catch(() => null);
     if (!res?.ok) return null;
     return ((await res.json())?.data?.repository ?? null) as Record<string, unknown> | null;
+  };
+  const mainRules = async () => {
+    const res = await get(`/rules/branches/${encodeURIComponent(String(repoData.default_branch))}`);
+    if (!res?.ok) return NA_;
+    const rules = (await res.json()) as {
+      type: string;
+      parameters?: { required_status_checks?: unknown[] };
+    }[];
+    return {
+      pullRequest: rules.some((r) => r.type === "pull_request"),
+      requiredChecks: rules
+        .filter((r) => r.type === "required_status_checks")
+        .reduce((n, r) => n + (r.parameters?.required_status_checks?.length ?? 0), 0),
+    };
   };
   const dependabot = async () => {
     const [yml, yaml] = await Promise.all([
@@ -95,7 +109,7 @@ export async function readFacts(
     return yml === NA_ || yaml === NA_ ? NA_ : yml || yaml;
   };
 
-  const [hasPackageJson, wf, ren, dep, va, sf, secretNames, variableNames, merge] =
+  const [hasPackageJson, wf, ren, dep, va, sf, secretNames, variableNames, merge, rules] =
     await Promise.all([
       exists("package.json"),
       workflows(),
@@ -106,6 +120,7 @@ export async function readFacts(
       names("/actions/secrets", "secrets"),
       names("/actions/variables", "variables"),
       mergeSettings(),
+      mainRules(),
     ]);
   return {
     private: Boolean(repoData.private),
@@ -119,6 +134,19 @@ export async function readFacts(
     securityFixes: sf,
     deleteBranchOnMerge: bool(merge?.deleteBranchOnMerge),
     allowAutoMerge: bool(merge?.autoMergeAllowed),
+    mergeMethods:
+      typeof merge?.squashMergeAllowed === "boolean"
+        ? {
+            merge: merge.mergeCommitAllowed === true,
+            squash: merge.squashMergeAllowed === true,
+            rebase: merge.rebaseMergeAllowed === true,
+            squashTitle: String(merge.squashMergeCommitTitle),
+            squashMessage: String(merge.squashMergeCommitMessage),
+          }
+        : NA_,
+    allowUpdateBranch: bool(merge?.allowUpdateBranch),
+    hasWiki: Boolean(repoData.has_wiki),
+    mainRules: rules,
     secretNames,
     variableNames,
   };

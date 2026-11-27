@@ -4,14 +4,15 @@ The status page checks each repo of the catalog against these rules each hour (s
 repo is read with `CONFORMANCE_READ_TOKEN`; a repo of `harmonieorkest-brummen` or `CJW-Brummen`
 with the status token of that owner (`STATUS_READ_TOKEN_HOB`, `STATUS_READ_TOKEN_CJW`). For R7 and
 R9, that token needs the read permissions Administration, Secrets and Variables. R10 and R11
-read the merge settings through GraphQL, which needs only read access to the repo. The repair steps
+and R12 to R15 read
+the merge settings through GraphQL and the rules of `main`, which need only read access. The repair steps
 use `ImreBoersma/<repo>`; for a repo of an organisation, use its owner. Do the repair in that
 repo: the constitution does not permit changes to its settings from `projects`. A
 repo that fails a rule gets the problem "The repo does not follow the shared setup." and one issue.
 The page and the issue link to the section of each failed rule.
 
 A new project starts with `cd status && bun run new-project … --dry-run` (spec 011): it makes a
-repo from `template/` that passes R1 to R8, R10 and R11, and prints the secrets and variables to set; R9 passes
+repo from `template/` that passes R1 to R8 and R10 to R15, and prints the secrets and variables to set; R9 passes
 when they are set. Use the rules below for a repo that exists already.
 
 A rule that does not apply to a repo can get an exception in `projects.yaml`, with a reason:
@@ -199,4 +200,68 @@ for a second visit.
 
 ```sh
 gh repo edit ImreBoersma/<repo> --enable-auto-merge
+```
+
+## R12 Squash merge
+
+**Reason**: each PR becomes one commit on `main`, with the PR title as its title. Renovate's PR
+titles and ours are conventional commits, so the history reads like a changelog. GitHub signs a
+squash merge from the web, so `main` stays verified.
+
+**Applies to**: all repos. A PR merges only with squash; the commit message lists the commits of
+the PR.
+
+**Repair**:
+
+```sh
+gh api -X PATCH repos/ImreBoersma/<repo> -F allow_squash_merge=true -F allow_merge_commit=false \
+  -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE \
+  -f squash_merge_commit_message=COMMIT_MESSAGES
+```
+
+## R13 Update branch
+
+**Reason**: a PR that is behind `main` shows a button to merge `main` into it, so a grouped
+Renovate PR or an old PR can catch up without a local checkout.
+
+**Applies to**: all repos.
+
+**Repair**:
+
+```sh
+gh repo edit ImreBoersma/<repo> --allow-update-branch
+```
+
+## R14 Wiki off
+
+**Reason**: documentation lives in the repo (`README.md`, `docs/`), where PRs review it. A wiki
+next to it goes stale.
+
+**Applies to**: all repos.
+
+**Repair**:
+
+```sh
+gh repo edit ImreBoersma/<repo> --enable-wiki=false
+```
+
+## R15 Main ruleset
+
+**Reason**: `main` changes only through a PR whose CI passed. Without a required check GitHub
+merges an auto-merge PR at once (R11), and a red PR can be merged by mistake. Repo admins may
+bypass the ruleset, so the Maintainer can still push to `main` when needed.
+
+**Applies to**: public repos. A private repo on a free plan has no rulesets. The required
+check must run on each PR: a check with a `paths` filter never runs on some PRs and then blocks
+them. A repo without such a check gets an exception with that reason.
+
+The required check is the CI job: `ci / ci` for a caller of `ci-node.yml`, the gate job for a
+repo with its own workflow (for example `PR review gate` in the CJW repos).
+
+**Repair**: add a ruleset named `main` with the values of `mainRuleset` in
+`status/src/conformance/settings.ts`, for example:
+
+```sh
+cd status && bun -e 'console.log(JSON.stringify(require("./src/conformance/settings").mainRuleset("ci / ci")))' \
+  | gh api -X POST repos/ImreBoersma/<repo>/rulesets --input -
 ```
